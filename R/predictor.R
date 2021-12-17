@@ -1,20 +1,21 @@
 #' Predictor Object
+#' @importFrom R6 R6Class
 #'
-#' A wrapper to pass through an ML algorithm (rpart, etc.) through the
-#' interpretability functions, the data used to create the algorithm
 #'
-#' The necessary variables are model, data, y. The other variables are
-#' optional, and depend on the use cases. Type should be used only when
-#' a prediction function is NOT specified.
 #'
-#' The outputs of the algorithm must be the values if it is regression, or
-#' probabilities if classification. For classification problems with more than
-#' two categories, the output comes out as vectors of probabilities for each
-#' category. Because this is for ML interpretability, other types of
-#' predictions (ex: predictions that spit out the factor) are not allowed.
 #'
-library(R6)
-Predictor <- R6Class("Predictor",
+#'
+#' @title Predictor
+#' @rdname Predictor
+#' @param model A trained model.
+#' @param data A dataframe containing the training data.
+#' @param task A function to run predictions for the model.
+#' @param class The name of the outcome variable in data.
+#' @param prediction.function The prediction class, either `classification` or `regression`.
+#' @param batch.size The size of the batch used to create pdp grids
+#' @param y Vector for outcomes
+#' @export
+Predictor <- R6::R6Class("Predictor",
     public = list(
     data = NULL,
     model = NULL,
@@ -24,6 +25,29 @@ Predictor <- R6Class("Predictor",
     batch.size = NULL,
     y = NULL,
 
+
+
+    #' @param model A trained model.
+    #' @param data A dataframe containing the training data.
+    #' @param predict.func A function to run predictions for the model.
+    #' @param y The name of the outcome variable in data.
+    #' @param task The prediction class, either `classification` or `regression`
+    #' @param type The type of regression.
+    #' @param batch.size The size of the batch used to create pdp grids
+    #' @return A `Predictor` object.
+    #' @note
+    #' A wrapper to pass through an ML algorithm (rpart, etc.) through the
+    #' interpretability functions, the data used to create the algorithm
+    #'
+    #' The necessary variables are model, data, y. The other variables are
+    #' optional, and depend on the use cases. Type should be used only when
+    #' a prediction function is NOT specified.
+    #'
+    #' The outputs of the algorithm must be the values if it is regression, or
+    #' probabilities if classification. For classification problems with more than
+    #' two categories, the output comes out as vectors of probabilities for each
+    #' category. Because this is for ML interpretability, other types of
+    #' predictions (ex: predictions that spit out the factor) are not allowed.
     initialize = function(model=NULL, data=NULL, predict.func=NULL,
                           y=NULL, task = NULL, class=NULL, type=NULL,
                           batch.size = 1000) {
@@ -83,6 +107,9 @@ Predictor <- R6Class("Predictor",
       self$y <- y
     },
 
+    #' @rdname predict.Predictor
+    #' @param newdata The data frame to run predictions on.
+    #' @export
     predict = function(newdata){
       # check that the new data is a dataframe
       checkmate::assert_data_frame(newdata)
@@ -118,6 +145,8 @@ Predictor <- R6Class("Predictor",
       return(preds)
     },
 
+    #' @title print.Predictor
+    #' @rdname print.Predictor
     print = function(){
       cat("Prediction Task:", self$task, "\n")
       if (self$task == "classification"){
@@ -128,5 +157,5 @@ Predictor <- R6Class("Predictor",
     private = list(
       predictionCheck = FALSE
     )
-    )
+)
 

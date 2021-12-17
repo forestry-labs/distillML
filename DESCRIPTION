@@ -1,0 +1,36 @@
+Package: interpret
+Type: Package
+Title: Model distillation and interpretability methods for machine learning models.
+Version: 0.0.0.1
+Authors@R: c(
+    person("Brian", "Cho", role = "aut"),
+    person("Theo", "Saarinen", role = c("aut","cre"), email = "theo_s@berkeley.edu"),
+    person("Jasjeet", "Sekhon", role = "aut")
+    )
+Maintainer: Theo Saarinen <theo_s@berkeley.edu>
+BugReports: https://github.com/forestry-labs/interpretability_sandbox/issues
+URL: https://github.com/forestry-labs/interpretability_sandbox
+Description: Provides several methods for model distillation and interpretability 
+    for general black box machine learning models and treatment effect estimation
+    methods.  Brian Cho, Theo F. Saarinen, Jasjeet S. Sekhon.
+License: GPL (>=3)
+Encoding: UTF-8
+Imports:
+    MASS,
+    parallel,
+    methods,
+    ggplot2,
+    glmnet,
+    onehot,
+    dplyr,
+    R6 (>= 2.0),
+    data.table
+Suggests:
+    testthat,
+    knitr,
+    rmarkdown,
+    mvtnorm
+Collate:
+    'predictor.R'
+    'interpret.R'
+RoxygenNote: 7.1.2
