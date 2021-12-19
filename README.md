@@ -9,8 +9,8 @@ The test data set we use to demonstrate this is the MASS Boston data set for
 regression tasks, and the crabs data set for classification tasks.
 ```
 library(MASS)
-source("predictor.R")
-source("interpret.R")
+library(interpret)
+
 data <- MASS::Boston
 set.seed(491)
 test_ind <- sample(1:nrow(data), nrow(data)%/%5)

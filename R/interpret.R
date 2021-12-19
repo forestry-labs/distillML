@@ -1,18 +1,42 @@
 #' @include predictor.R
 #' @importFrom R6 R6Class
+
+#' @title The class for different interpretability methods.
+#' @description Interpreter class description
+#' @field feature Feature to be examined in the model
+#' @field n.features Number of features the model was trained on
+#' @field predictor The predictor object to use as a standardised wrapper for the model
+#' @field grid.points The points at which to run the predictions.
+#' @field center.at The place we center the predictions at.
+#' @field group A categorical group variable in order to stratify the PDP predictions by.
+#' @field data.points Data points to use for the predictions.
+#' @examples
+#' data <- MASS::Boston
+#' set.seed(491)
+#' test_ind <- sample(1:nrow(data), nrow(data)%/%5)
+#' train_reg <- data[-test_ind,]
+#' test_reg <- data[test_ind,]
 #'
 #'
+#' data_class <- MASS::crabs
+#' test_ind <- sample(1:nrow(data_class), nrow(data_class)%/%5)
+#' train_class <- data_class[-test_ind,]
+#' test_class <- data_class[test_ind,]
 #'
 #'
-#' @title Interpreter
-#' @rdname Interpreter
-#' @param feature The feature to use for interpretation
-#' @param n.features The number of features in the model
-#' @param predictor A function to run predictions for the model.
-#' @param grid.points The number of grid points to use
-#' @param center.at The location to center the predictions with
-#' @param group A vector of group categories.
-#' @param data.points the data points to use in the interpretor.
+#' linreg <- lm(crim ~., data=train_reg)
+#' linreg_predictor <- Predictor$new(model = linreg, data = train_reg, y="crim",
+#'                                   predict = predict, task = "regression")
+#' actual <- predict(linreg, test_reg)
+#' method <- linreg_predictor$predict(test_reg)
+#' sum(actual != method) # all the same values
+#'
+#' linreg_predictor$print()
+#'
+#' linreginterpret <- Interpreter$new(predictor = linreg_predictor,
+#'                                    feature = "indus")
+#'
+#' linreginterpret$plot()
 #' @export
 Interpreter <- R6::R6Class("Interpreter",
   public = list(
@@ -25,7 +49,6 @@ Interpreter <- R6::R6Class("Interpreter",
     data.points = NULL,
 
     # initialize an interpreter object
-    #' @rdname initialize.Interpreter
     #' @param predictor The trained predictor object for the model that we want to
     #'  interpret.
     #' @param feature The name of the feature that we use for the interpretability model.
@@ -136,8 +159,6 @@ Interpreter <- R6::R6Class("Interpreter",
     },
 
     # can go back and change the scale of the gridpoints
-    #' @title set.gridpoints.Interpreter
-    #' @rdname set.gridpoints.Interpreter
     #' @param grid.points The grid points to be used.
     #' @export
     set.gridpoints = function(grid.points){
@@ -150,8 +171,6 @@ Interpreter <- R6::R6Class("Interpreter",
     },
 
     # change center
-    #' @title set.center.Interpreter
-    #' @rdname set.center.Interpreter
     #' @param center The value to center the predictions at
     #' @export
     set.center = function(center = NULL){
@@ -164,94 +183,112 @@ Interpreter <- R6::R6Class("Interpreter",
         }
         self$center.at <- center
       }
-    },
-
-    # prediction function for grid points
-    #' @title predict_grid.Interpreter
-    #' @rdname predict_grid.Interpreter
-    #' @export
-    predict_grid = function(){
-      # get the data for the selected samples
-      data.points <- self$data.points
-      data <- self$predictor$data[data.points, , drop=FALSE]
-      # make a table for results
-      results <- data.frame(sentinel = rep(0, length(data.points)))
-      for (val in self$grid.points){
-        newdata <- data
-        newdata[, self$feature] <- val
-        #return((self$predictor$predict(newdata)))
-        results <- cbind.data.frame(results,
-                                    val = (self$predictor$predict(newdata))[,1])
-      }
-      results <- data.frame(results)
-      results <- results[,-1, drop = FALSE]
-      colnames(results) <- self$grid.points
-
-      # subtract out the centered value
-      newdata <- data
-      newdata[,self$feature] <- self$center.at
-      base <- self$predictor$predict(newdata)
-
-      # normalize results
-      results <- results - base[,1]
-      names.row <- rownames(data)
-
-      # return transpose (easier for plotting)
-      results <- (t(results))
-      colnames(results) <- names.row
-      results <- cbind(feature = self$grid.points, results)
-      rownames(results) <- NULL
-
-      return(data.frame(results))
-    },
-
-    #' @title plot.Interpreter
-    #' @rdname plot.Interpreter
-    #' @param method The type of plot to make. Can be one of `ice`,`pdp`,`pdp+ice`.
-    #' @export
-    plot = function(method = "pdp+ice"){
-      # grab the predictions dataframe
-      df <- self$predict_grid()
-      # df contains both pdp line and all ice lines
-      pdp.line <- rowMeans(df[,-which(colnames(df)=="feature")])
-      df <- cbind(df ,pdp = pdp.line)
-      df <- setDT(data.frame(df))
-      df.ice <- df[, -"pdp"]
-
-      # for scaling
-      min.val <- min(df[,-"feature"])
-      max.val <- max(df[,-"feature"])
-
-      melt.df <- melt(df, id.vars = "feature")
-      melt.df.ice <- melt(df.ice, id.vars="feature")
-
-      # check to make sure that the method given is valid
-      if (!is.null(self$group)){
-        stop("Will implement this feature later.")
-      }
-      if (!(method %in% c("pdp", "ice", "pdp+ice"))){
-        stop("Method entered is not supported")
-      }
-
-      if (method=="ice"){
-        plot.obj <- ggplot(data=melt.df.ice, aes(x=feature, y=value, group=variable)) +
-          geom_line(color="grey")
-      }
-
-      if (method == "pdp"){
-        plot.obj <- ggplot(data=melt.df[melt.df$variable=="pdp",], aes(x=feature,y=value)) +
-          geom_line()
-      }
-
-      if (method == "pdp+ice"){
-        melt.df.combined <- melt.df
-        melt.df.combined$ispdp <- (melt.df$variable=="pdp")
-        plot.obj <- ggplot(data=melt.df.combined, aes(x=feature, y=value,
-                                                      group=variable, color=ispdp)) +
-          geom_line() + scale_color_manual(values=c("grey", "red"))
-      }
-
-      return(plot.obj+ ylab(self$predictor$y) + xlab(self$feature) )
     }
   )
 )
+
+#' @name predict_grid.Interpretor
+#' @title # prediction function for grid points
+#' @description Gives predictions at each point on the grid.
+#' @param object The Interpretor object to use.
+#' @export
+predict_grid.Interpretor = function(
+  object
+){
+  # get the data for the selected samples
+  data.points <- object$data.points
+  data <- object$predictor$data[data.points, , drop=FALSE]
+  # make a table for results
+  results <- data.frame(sentinel = rep(0, length(data.points)))
+  for (val in object$grid.points){
+    newdata <- data
+    newdata[, object$feature] <- val
+    #return((object$predictor$predict(newdata)))
+    results <- cbind.data.frame(results,
+                                val = (object$predictor$predict(newdata))[,1])
+  }
+  results <- data.frame(results)
+  results <- results[,-1, drop = FALSE]
+  colnames(results) <- object$grid.points
+
+  # subtract out the centered value
+  newdata <- data
+  newdata[,object$feature] <- object$center.at
+  base <- object$predictor$predict(newdata)
+
+  # normalize results
+  results <- results - base[,1]
+  names.row <- rownames(data)
+
+  # return transpose (easier for plotting)
+  results <- (t(results))
+  colnames(results) <- names.row
+  results <- cbind(feature = object$grid.points, results)
+  rownames(results) <- NULL
+
+  return(data.frame(results))
+}
+
+#' @name plot.Interpretor
+#' @title PLotting method for Interpretor model
+#' @description Plots either the PDP plots or ICE plots
+#' @param object Interpretor object to make plots for.
+#' @param method The type of plot to make. Can be one of `ice`,`pdp`,`pdp+ice`.
+#' @export
+plot.Interpretor = function(
+  object,
+  method = "pdp+ice"
+){
+  # grab the predictions dataframe
+  df <- object$predict_grid()
+  # df contains both pdp line and all ice lines
+  pdp.line <- rowMeans(df[,-which(colnames(df)=="feature")])
+  df <- cbind(df ,pdp = pdp.line)
+  df <- setDT(data.frame(df))
+  df.ice <- df[, -"pdp"]
+
+  # for scaling
+  min.val <- min(df[,-"feature"])
+  max.val <- max(df[,-"feature"])
+
+  melt.df <- melt(df, id.vars = "feature")
+  melt.df.ice <- melt(df.ice, id.vars="feature")
+
+  # check to make sure that the method given is valid
+  if (!is.null(object$group)){
+    stop("Will implement this feature later.")
+  }
+  if (!(method %in% c("pdp", "ice", "pdp+ice"))){
+    stop("Method entered is not supported")
+  }
+
+  if (method=="ice"){
+    plot.obj <- ggplot(data=melt.df.ice, aes(x=feature, y=value, group=variable)) +
+      geom_line(color="grey")
+  }
+
+  if (method == "pdp"){
+    plot.obj <- ggplot(data=melt.df[melt.df$variable=="pdp",], aes(x=feature,y=value)) +
+      geom_line()
+  }
+
+  if (method == "pdp+ice"){
+    melt.df.combined <- melt.df
+    melt.df.combined$ispdp <- (melt.df$variable=="pdp")
+    plot.obj <- ggplot(data=melt.df.combined, aes(x=feature, y=value,
+                                                  group=variable, color=ispdp)) +
+      geom_line() + scale_color_manual(values=c("grey", "red"))
+  }
+
+  return(plot.obj+ ylab(object$predictor$y) + xlab(object$feature) )
+}
+
+
+
+
+
+
+
+
+
+

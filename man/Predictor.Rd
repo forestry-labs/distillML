@@ -2,8 +2,12 @@
 % Please edit documentation in R/predictor.R
 \name{Predictor}
 \alias{Predictor}
-\title{Predictor}
+\title{The class that wraps a machine learning model in order to provide a
+ standardized method for predictions for different models.}
 \description{
+Predictor class description
+}
+\details{
 Predictor Object
 }
 \note{
@@ -22,12 +26,52 @@ predictions (ex: predictions that spit out the factor) are not allowed.
 prediction method must be constructed, with optional arguments of
 type and task
 }
+\examples{
+data <- MASS::Boston
+set.seed(491)
+test_ind <- sample(1:nrow(data), nrow(data)\%/\%5)
+train_reg <- data[-test_ind,]
+test_reg <- data[test_ind,]
+
+
+data_class <- MASS::crabs
+test_ind <- sample(1:nrow(data_class), nrow(data_class)\%/\%5)
+train_class <- data_class[-test_ind,]
+test_class <- data_class[test_ind,]
+
+
+linreg <- lm(crim ~., data=train_reg)
+linreg_predictor <- Predictor$new(model = linreg, data = train_reg, y="crim",
+                                  predict = predict, task = "regression")
+actual <- predict(linreg, test_reg)
+method <- linreg_predictor$predict(test_reg)
+sum(actual != method) # all the same values
+
+linreg_predictor$print()
+}
+\section{Public fields}{
+\if{html}{\out{<div class="r6-fields">}}
+\describe{
+\item{\code{data}}{The training data for the model}
+
+\item{\code{model}}{The object model}
+
+\item{\code{task}}{The prediction task the model is trained on}
+
+\item{\code{class}}{The class of the model}
+
+\item{\code{prediction.function}}{The prediction function used by the model.}
+
+\item{\code{batch.size}}{The batch size for the model}
+
+\item{\code{y}}{The name of the outcome feature in `data`}
+}
+\if{html}{\out{</div>}}
+}
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
 \item \href{#method-new}{\code{Predictor$new()}}
-\item \href{#method-predict}{\code{Predictor$predict()}}
-\item \href{#method-print}{\code{Predictor$print()}}
 \item \href{#method-clone}{\code{Predictor$clone()}}
 }
 }
@@ -61,7 +105,7 @@ type and task
 
 \item{\code{task}}{The prediction class, either `classification` or `regression`}
 
-\item{\code{class}}{The name of the outcome variable in data.}
+\item{\code{class}}{The class of predictions done.}
 
 \item{\code{type}}{The type of regression.}
 
@@ -72,31 +116,6 @@ type and task
 \subsection{Returns}{
 A `Predictor` object.
 }
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-predict"></a>}}
-\if{latex}{\out{\hypertarget{method-predict}{}}}
-\subsection{Method \code{predict()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Predictor$predict(newdata)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{newdata}}{The data frame to run predictions on.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-print"></a>}}
-\if{latex}{\out{\hypertarget{method-print}{}}}
-\subsection{Method \code{print()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Predictor$print()}\if{html}{\out{</div>}}
-}
-
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-clone"></a>}}

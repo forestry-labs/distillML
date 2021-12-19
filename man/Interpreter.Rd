@@ -2,19 +2,9 @@
 % Please edit documentation in R/interpret.R
 \name{Interpreter}
 \alias{Interpreter}
-\title{Interpreter}
+\title{The class for different interpretability methods.}
 \description{
-Interpreter
-
-Interpreter
-
-set.gridpoints.Interpreter
-
-set.center.Interpreter
-
-predict_grid.Interpreter
-
-plot.Interpreter
+Interpreter class description
 }
 \note{
 PDP and ICE Implementation
@@ -23,14 +13,59 @@ Needed fixes: set predictions as a one time calculation, allow for specific
 points instead of number of points, add in second variable interpretations,
 add grouping by another variable
 }
+\examples{
+data <- MASS::Boston
+set.seed(491)
+test_ind <- sample(1:nrow(data), nrow(data)\%/\%5)
+train_reg <- data[-test_ind,]
+test_reg <- data[test_ind,]
+
+
+data_class <- MASS::crabs
+test_ind <- sample(1:nrow(data_class), nrow(data_class)\%/\%5)
+train_class <- data_class[-test_ind,]
+test_class <- data_class[test_ind,]
+
+
+linreg <- lm(crim ~., data=train_reg)
+linreg_predictor <- Predictor$new(model = linreg, data = train_reg, y="crim",
+                                  predict = predict, task = "regression")
+actual <- predict(linreg, test_reg)
+method <- linreg_predictor$predict(test_reg)
+sum(actual != method) # all the same values
+
+linreg_predictor$print()
+
+linreginterpret <- Interpreter$new(predictor = linreg_predictor,
+                                   feature = "indus")
+
+linreginterpret$plot()
+}
+\section{Public fields}{
+\if{html}{\out{<div class="r6-fields">}}
+\describe{
+\item{\code{feature}}{Feature to be examined in the model}
+
+\item{\code{n.features}}{Number of features the model was trained on}
+
+\item{\code{predictor}}{The predictor object to use as a standardised wrapper for the model}
+
+\item{\code{grid.points}}{The points at which to run the predictions.}
+
+\item{\code{center.at}}{The place we center the predictions at.}
+
+\item{\code{group}}{A categorical group variable in order to stratify the PDP predictions by.}
+
+\item{\code{data.points}}{Data points to use for the predictions.}
+}
+\if{html}{\out{</div>}}
+}
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
 \item \href{#method-new}{\code{Interpreter$new()}}
 \item \href{#method-set.gridpoints}{\code{Interpreter$set.gridpoints()}}
 \item \href{#method-set.center}{\code{Interpreter$set.center()}}
-\item \href{#method-predict_grid}{\code{Interpreter$predict_grid()}}
-\item \href{#method-plot}{\code{Interpreter$plot()}}
 \item \href{#method-clone}{\code{Interpreter$clone()}}
 }
 }
@@ -103,31 +138,6 @@ An `Interpreter` object.
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{center}}{The value to center the predictions at}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-predict_grid"></a>}}
-\if{latex}{\out{\hypertarget{method-predict_grid}{}}}
-\subsection{Method \code{predict_grid()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Interpreter$predict_grid()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-plot"></a>}}
-\if{latex}{\out{\hypertarget{method-plot}{}}}
-\subsection{Method \code{plot()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Interpreter$plot(method = "pdp+ice")}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{method}}{The type of plot to make. Can be one of `ice`,`pdp`,`pdp+ice`.}
 }
 \if{html}{\out{</div>}}
 }

@@ -1,19 +1,38 @@
 #' Predictor Object
 #' @importFrom R6 R6Class
+
+#' @title The class that wraps a machine learning model in order to provide a
+#'  standardized method for predictions for different models.
+#' @description Predictor class description
+#' @field data The training data for the model
+#' @field model The object model
+#' @field task The prediction task the model is trained on
+#' @field class The class of the model
+#' @field prediction.function The prediction function used by the model.
+#' @field batch.size The batch size for the model
+#' @field y The name of the outcome feature in `data`
+#' @examples
+#' data <- MASS::Boston
+#' set.seed(491)
+#' test_ind <- sample(1:nrow(data), nrow(data)%/%5)
+#' train_reg <- data[-test_ind,]
+#' test_reg <- data[test_ind,]
 #'
 #'
+#' data_class <- MASS::crabs
+#' test_ind <- sample(1:nrow(data_class), nrow(data_class)%/%5)
+#' train_class <- data_class[-test_ind,]
+#' test_class <- data_class[test_ind,]
 #'
 #'
+#' linreg <- lm(crim ~., data=train_reg)
+#' linreg_predictor <- Predictor$new(model = linreg, data = train_reg, y="crim",
+#'                                   predict = predict, task = "regression")
+#' actual <- predict(linreg, test_reg)
+#' method <- linreg_predictor$predict(test_reg)
+#' sum(actual != method) # all the same values
 #'
-#' @title Predictor
-#' @rdname Predictor
-#' @param model A trained model.
-#' @param data A dataframe containing the training data.
-#' @param task A function to run predictions for the model.
-#' @param class The name of the outcome variable in data.
-#' @param prediction.function The prediction class, either `classification` or `regression`.
-#' @param batch.size The size of the batch used to create pdp grids
-#' @param y Vector for outcomes
+#' linreg_predictor$print()
 #' @export
 Predictor <- R6::R6Class("Predictor",
     public = list(
@@ -25,13 +44,12 @@ Predictor <- R6::R6Class("Predictor",
     batch.size = NULL,
     y = NULL,
 
-
-
     #' @param model A trained model.
     #' @param data A dataframe containing the training data.
     #' @param predict.func A function to run predictions for the model.
     #' @param y The name of the outcome variable in data.
     #' @param task The prediction class, either `classification` or `regression`
+    #' @param class The class of predictions done.
     #' @param type The type of regression.
     #' @param batch.size The size of the batch used to create pdp grids
     #' @return A `Predictor` object.
@@ -48,8 +66,13 @@ Predictor <- R6::R6Class("Predictor",
     #' two categories, the output comes out as vectors of probabilities for each
     #' category. Because this is for ML interpretability, other types of
     #' predictions (ex: predictions that spit out the factor) are not allowed.
-    initialize = function(model=NULL, data=NULL, predict.func=NULL,
-                          y=NULL, task = NULL, class=NULL, type=NULL,
+    initialize = function(model=NULL,
+                          data=NULL,
+                          predict.func=NULL,
+                          y=NULL,
+                          task = NULL,
+                          class=NULL,
+                          type=NULL,
                           batch.size = 1000) {
 
       # check that batch size is at least 1 and number
@@ -105,57 +128,66 @@ Predictor <- R6::R6Class("Predictor",
       self$prediction.function <- predict.func.final
       self$batch.size <- batch.size
       self$y <- y
-    },
-
-    #' @rdname predict.Predictor
-    #' @param newdata The data frame to run predictions on.
-    #' @export
-    predict = function(newdata){
-      # check that the new data is a dataframe
-      checkmate::assert_data_frame(newdata)
-      newdata <- as.data.frame(newdata)
-
-      # drop Y variable to make sure that only features are used
-      if (self$y %in% names(newdata)){
-        newdata <- newdata[, -which(names(newdata) == self$y), drop = FALSE]
-      }
-
-      # if we predict 1 target
-      preds <- self$prediction.function(self$model, newdata)
-      preds <- data.frame(preds)
-
-      # check for valid prediction
-      if (private$predictionCheck == FALSE){
-        # number of rows in predictions
-        if (nrow(preds)!= nrow(newdata)){
-          stop("Number of predictions do not match the number of observations.")
-        }
-        # check for missing values
-        if (sum(is.na(preds))!=0){
-          stop("Predictions have missing values.")
-        }
-        private$predictionCheck <- TRUE
-      }
-
-      # Class variable (if classification)
-      if (!is.null(self$class) && ncol(preds) > 1){
-        preds <- preds[, self$class, drop = FALSE]
-      }
-      rownames(preds) <- NULL
-      return(preds)
-    },
-
-    #' @title print.Predictor
-    #' @rdname print.Predictor
-    print = function(){
-      cat("Prediction Task:", self$task, "\n")
-      if (self$task == "classification"){
-        cat("Classes: ", paste(unique(self$data[,which(names(self$data)==self$y)]), collapse=" "))
-      }
     }
+
     ),
     private = list(
       predictionCheck = FALSE
     )
 )
 
+
+#' @name predict.Predictor
+#' @title Predict method for Predictor class
+#' @description Gives predictions for a predictor object
+#' @param object Predictor object to use.
+#' @param newdata The dataframe to use for the predictions.
+#' @export
+predict.Predictor = function(object, newdata){
+  # check that the new data is a dataframe
+  checkmate::assert_data_frame(newdata)
+  newdata <- as.data.frame(newdata)
+
+  # drop Y variable to make sure that only features are used
+  if (self$y %in% names(newdata)){
+    newdata <- newdata[, -which(names(newdata) == self$y), drop = FALSE]
+  }
+
+  # if we predict 1 target
+  preds <- self$prediction.function(self$model, newdata)
+  preds <- data.frame(preds)
+
+  # check for valid prediction
+  if (private$predictionCheck == FALSE){
+    # number of rows in predictions
+    if (nrow(preds)!= nrow(newdata)){
+      stop("Number of predictions do not match the number of observations.")
+    }
+    # check for missing values
+    if (sum(is.na(preds))!=0){
+      stop("Predictions have missing values.")
+    }
+    private$predictionCheck <- TRUE
+  }
+
+  # Class variable (if classification)
+  if (!is.null(self$class) && ncol(preds) > 1){
+    preds <- preds[, self$class, drop = FALSE]
+  }
+  rownames(preds) <- NULL
+  return(preds)
+}
+
+#' @name print.Predictor
+#' @title Printing method for Predictor class
+#' @description Gives information for a predictor object
+#' @param object The Predictor to print
+#' @export
+print.Predictor = function(
+  object
+){
+  cat("Prediction Task:", object$task, "\n")
+  if (object$task == "classification"){
+    cat("Classes: ", paste(unique(object$data[,which(names(object$data)==object$y)]), collapse=" "))
+  }
+}
