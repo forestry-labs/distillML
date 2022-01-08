@@ -136,7 +136,6 @@ Predictor <- R6::R6Class("Predictor",
     )
 )
 
-
 #' @name predict.Predictor
 #' @title Predict method for Predictor class
 #' @description Gives predictions for a predictor object
@@ -149,30 +148,30 @@ predict.Predictor = function(object, newdata){
   newdata <- as.data.frame(newdata)
 
   # drop Y variable to make sure that only features are used
-  if (self$y %in% names(newdata)){
-    newdata <- newdata[, -which(names(newdata) == self$y), drop = FALSE]
+  if (object$y %in% names(newdata)){
+    newdata <- newdata[, -which(names(newdata) == object$y), drop = FALSE]
   }
 
   # if we predict 1 target
-  preds <- self$prediction.function(self$model, newdata)
+  preds <- object$prediction.function(object$model, newdata)
   preds <- data.frame(preds)
 
   # check for valid prediction
-  if (private$predictionCheck == FALSE){
+  #if (private$predictionCheck == FALSE){
     # number of rows in predictions
-    if (nrow(preds)!= nrow(newdata)){
-      stop("Number of predictions do not match the number of observations.")
-    }
-    # check for missing values
-    if (sum(is.na(preds))!=0){
-      stop("Predictions have missing values.")
-    }
-    private$predictionCheck <- TRUE
-  }
+  #  if (nrow(preds)!= nrow(newdata)){
+  #    stop("Number of predictions do not match the number of observations.")
+  #  }
+  #  # check for missing values
+  #  if (sum(is.na(preds))!=0){
+  #    stop("Predictions have missing values.")
+  #  }
+  #  private$predictionCheck <- TRUE
+  #}
 
   # Class variable (if classification)
-  if (!is.null(self$class) && ncol(preds) > 1){
-    preds <- preds[, self$class, drop = FALSE]
+  if (!is.null(object$class) && ncol(preds) > 1){
+    preds <- preds[, object$class, drop = FALSE]
   }
   rownames(preds) <- NULL
   return(preds)
