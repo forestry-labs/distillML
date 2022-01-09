@@ -36,14 +36,14 @@ linreg <- lm(crim ~., data=train_reg)
 linreg_predictor <- Predictor$new(model = linreg, data = train_reg, y="crim",
                                   predict = predict, task = "regression")
 actual <- predict(linreg, test_reg)
-method <- linreg_predictor$predict(test_reg) 
+method <- predict.Predictor(linreg_predictor, test_reg) 
 sum(actual != method) # all the same values
 
-linreg_predictor$print()
+print(linreg_predictor)
 
 linreginterpret <- Interpreter$new(predictor = linreg_predictor,
                                    feature = "indus")
-linreginterpret$plot()
+plot.Interpreter(linreginterpret)
 ```
 
 
@@ -54,10 +54,10 @@ logreg <- glm(sex ~., data=train_class, family=binomial(logit))
 logreg_predictor <- Predictor$new(model=logreg, data=train_class, y="sex",
                                   type = "response", task = "classification")
 actual <- predict(logreg, test_class, type = "response")
-method <- logreg_predictor$predict(test_class)
-sum(actual!= method)
-head(method)
-logreg_predictor$print()
+method <- predict.Predictor(logreg_predictor,test_class)
+sum(actual!= method) # all the same values
+print(logreg_predictor) 
+
 ```
 
 ```{r}
@@ -68,14 +68,14 @@ dectree <- rpart(crim ~., data=train_reg, method="anova")
 dectree_predictor <- Predictor$new(model = dectree, data = train_reg, y="crim",
                                   predict = predict, task = "regression")
 actual <- predict(dectree, test_reg)
-method <- dectree_predictor$predict(test_reg) 
+method <- predict.Predictor(dectree_predictor,test_reg) 
 sum(actual != method) # all the same values
 
-dectree_predictor$print()
+print(dectree_predictor)
 
 dectreeinterp <- Interpreter$new(predictor = dectree_predictor,
                                   feature = "dis")
-dectreeinterp$plot()
+plot.Interpreter(dectreeinterp)
 
 ```
 
@@ -85,12 +85,12 @@ dectree <- rpart(sex ~., data=train_class, method = "class")
 dectree_predictor <- Predictor$new(model = dectree, data = train_class, y="sex",
                                   type = "prob", task = "classification")
 actual <- predict(dectree, test_class, type= "prob")
-method <- dectree_predictor$predict(test_class) 
+method <- predict.Predictor(dectree_predictor,test_class)
 sum(actual != method) # all the same values
 
 head(method)
 
-dectree_predictor$print()
+print(dectree_predictor)
 ```
 
 
@@ -98,12 +98,12 @@ dectree_predictor$print()
 # Showcase class variable
 dectree_predictor <- Predictor$new(model = dectree, data = train_class, y="sex",
                                   type = "prob", task = "classification", class = "F")
-method <- dectree_predictor$predict(test_class) 
+method <- predict.Predictor(dectree_predictor, test_class) 
 head(method) # only shows female probabilites
 
 dectreeinterp <- Interpreter$new(predictor = dectree_predictor,
                                   feature = "RW")
-dectreeinterp$plot()
+plot.Interpreter(dectreeinterp)
 ```
 
 
@@ -115,14 +115,14 @@ forest <- forestry(x=train_reg[,-which(names(train_reg)=="crim")],
 forest_predictor <- Predictor$new(model = forest, data=train_reg, y="crim",
                                   task = "regression")
 actual <- predict(forest, test_reg[,-which(names(test_reg)=="crim")])
-method <- forest_predictor$predict(test_reg)
+method <- predict.Predictor(forest_predictor,test_reg)
 
 head(data.frame(actual,method)) # all the same values
 forest_predictor$print()
 
 forestinterp <- Interpreter$new(predictor = forest_predictor,
                                 feature = "indus")
-forestinterp$plot()
+plot.Interpreter(forestinterp)
 
 ```
 
@@ -145,7 +145,7 @@ xgb_predictor <- Predictor$new(model = xgb_model, data=train_reg,
 
 actual <- predict(xgb_model, xgb.DMatrix(data=as.matrix(
   test_reg[,-which(names(test_reg)=="crim")])))
-method <- xgb_predictor$predict(test_reg)
+method <- predict.Predictor(xgb_predictor,test_reg)
 
 head(cbind(actual, method)) # same values
 
@@ -153,7 +153,7 @@ xgb_predictor$print()
 
 xgbinterp <- Interpreter$new(predictor = xgb_predictor,
                              feature = "indus")
-xgbinterp$plot()
+plot.Interpreter(xgbinterp)
 
 ```
 
