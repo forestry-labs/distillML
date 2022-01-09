@@ -192,21 +192,23 @@ Interpreter <- R6::R6Class("Interpreter",
 #' @description Gives predictions at each point on the grid.
 #' @param object The Interpretor object to use.
 #' @export
-predict_grid.Interpretor = function(
+predict_grid.Interpreter = function(
   object
 ){
   # get the data for the selected samples
   data.points <- object$data.points
   data <- object$predictor$data[data.points, , drop=FALSE]
+
   # make a table for results
   results <- data.frame(sentinel = rep(0, length(data.points)))
+
   for (val in object$grid.points){
     newdata <- data
     newdata[, object$feature] <- val
-    #return((object$predictor$predict(newdata)))
     results <- cbind.data.frame(results,
-                                val = (object$predictor$predict(newdata))[,1])
+                                val = predict(object$predictor, newdata)[,1])
   }
+
   results <- data.frame(results)
   results <- results[,-1, drop = FALSE]
   colnames(results) <- object$grid.points
@@ -214,7 +216,7 @@ predict_grid.Interpretor = function(
   # subtract out the centered value
   newdata <- data
   newdata[,object$feature] <- object$center.at
-  base <- object$predictor$predict(newdata)
+  base <- predict(object$predictor,  newdata)
 
   # normalize results
   results <- results - base[,1]
@@ -235,12 +237,12 @@ predict_grid.Interpretor = function(
 #' @param object Interpretor object to make plots for.
 #' @param method The type of plot to make. Can be one of `ice`,`pdp`,`pdp+ice`.
 #' @export
-plot.Interpretor = function(
+plot.Interpreter = function(
   object,
   method = "pdp+ice"
 ){
   # grab the predictions dataframe
-  df <- object$predict_grid()
+  df <- predict_grid.Interpreter(object)
   # df contains both pdp line and all ice lines
   pdp.line <- rowMeans(df[,-which(colnames(df)=="feature")])
   df <- cbind(df ,pdp = pdp.line)
@@ -282,13 +284,3 @@ plot.Interpretor = function(
 
   return(plot.obj+ ylab(object$predictor$y) + xlab(object$feature) )
 }
-
-
-
-
-
-
-
-
-
-
