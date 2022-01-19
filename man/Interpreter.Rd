@@ -8,55 +8,23 @@ Interpreter class description
 }
 \note{
 PDP and ICE Implementation
-similar methods
-Needed fixes: set predictions as a one time calculation, allow for specific
-points instead of number of points, add in second variable interpretations,
-add grouping by another variable
 }
 \examples{
-data <- MASS::Boston
-set.seed(491)
-test_ind <- sample(1:nrow(data), nrow(data)\%/\%5)
-train_reg <- data[-test_ind,]
-test_reg <- data[test_ind,]
-
-
-data_class <- MASS::crabs
-test_ind <- sample(1:nrow(data_class), nrow(data_class)\%/\%5)
-train_class <- data_class[-test_ind,]
-test_class <- data_class[test_ind,]
-
-
-linreg <- lm(crim ~., data=train_reg)
-linreg_predictor <- Predictor$new(model = linreg, data = train_reg, y="crim",
-                                  predict = predict, task = "regression")
-actual <- predict(linreg, test_reg)
-method <- linreg_predictor$predict(test_reg)
-sum(actual != method) # all the same values
-
-linreg_predictor$print()
-
-linreginterpret <- Interpreter$new(predictor = linreg_predictor,
-                                   feature = "indus")
-
-linreginterpret$plot()
+Needs to be rewritten
 }
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
 \describe{
-\item{\code{feature}}{Feature to be examined in the model}
-
-\item{\code{n.features}}{Number of features the model was trained on}
-
 \item{\code{predictor}}{The predictor object to use as a standardised wrapper for the model}
 
-\item{\code{grid.points}}{The points at which to run the predictions.}
+\item{\code{data.points}}{The indices of the data points used for the PDP/ALE. This
+overwrites the "samples" initialization or the batch size variable from the predictor class.}
 
-\item{\code{center.at}}{The place we center the predictions at.}
+\item{\code{functions.1d}}{Functions giving average value across data.points with a given value and feature}
 
-\item{\code{group}}{A categorical group variable in order to stratify the PDP predictions by.}
+\item{\code{functions.2d}}{Functions giving 2D pdp functions}
 
-\item{\code{data.points}}{Data points to use for the predictions.}
+\item{\code{method}}{The chosen interpretability method for the black-box model.}
 }
 \if{html}{\out{</div>}}
 }
@@ -64,8 +32,6 @@ linreginterpret$plot()
 \subsection{Public methods}{
 \itemize{
 \item \href{#method-new}{\code{Interpreter$new()}}
-\item \href{#method-set.gridpoints}{\code{Interpreter$set.gridpoints()}}
-\item \href{#method-set.center}{\code{Interpreter$set.center()}}
 \item \href{#method-clone}{\code{Interpreter$clone()}}
 }
 }
@@ -75,13 +41,10 @@ linreginterpret$plot()
 \subsection{Method \code{new()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Interpreter$new(
-  predictor,
-  feature,
-  center.at = NULL,
-  grid.size = 20,
-  grid.points = NULL,
-  group = NULL,
-  samples = NULL
+  predictor = NULL,
+  samples = NULL,
+  data.points = NULL,
+  method = "pdp"
 )}\if{html}{\out{</div>}}
 }
 
@@ -91,55 +54,18 @@ linreginterpret$plot()
 \item{\code{predictor}}{The trained predictor object for the model that we want to
 interpret.}
 
-\item{\code{feature}}{The name of the feature that we use for the interpretability model.}
+\item{\code{samples}}{The samples used for the PDP/ALE. Overwrites the batch size
+parameter from the predictor object.}
 
-\item{\code{center.at}}{The location we should use to center the predictions.}
+\item{\code{data.points}}{The indices of the data points used for the PDP/ALE. This
+overwrites the "samples" parameter or the batch size from the predictor.}
 
-\item{\code{grid.size}}{The grid size used for the PDP.}
-
-\item{\code{grid.points}}{Number of grid points used in the PDP.}
-
-\item{\code{group}}{A group variable to classify the observations and give more
-granular predictions.}
-
-\item{\code{samples}}{The samples used for the PDP/ALE.}
+\item{\code{method}}{The chosen interpretability method for the black-box model.}
 }
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
 An `Interpreter` object.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-set.gridpoints"></a>}}
-\if{latex}{\out{\hypertarget{method-set.gridpoints}{}}}
-\subsection{Method \code{set.gridpoints()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Interpreter$set.gridpoints(grid.points)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{grid.points}}{The grid points to be used.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-set.center"></a>}}
-\if{latex}{\out{\hypertarget{method-set.center}{}}}
-\subsection{Method \code{set.center()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Interpreter$set.center(center = NULL)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{center}}{The value to center the predictions at}
-}
-\if{html}{\out{</div>}}
 }
 }
 \if{html}{\out{<hr>}}
