@@ -284,7 +284,9 @@ plot.Plotter = function(object, method = "pdp+ice") {
                    group = variable,
                    color = ispdp
                  )) +
-          geom_line() + scale_color_manual(values = c("grey", "red"))
+          geom_line() +
+          scale_color_manual(labels = c("ICE", "PDP") ,values = c("grey", "red")) +
+          guides(color=guide_legend(title = "Plot Type"))
       }
       plots <- append(plots, list(plot.obj + ylab(object$interpreter$predictor$y) + xlab(feature)))
     }
