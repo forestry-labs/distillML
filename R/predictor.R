@@ -94,6 +94,7 @@ Predictor <- R6::R6Class("Predictor",
         }
       }
 
+
       # checks for valid y input
       if (is.null(y) || !is.character(y) || !(y%in%names(data))){
         stop("Y has not been given, is not a character variable, or is not a variable in the given data.")
@@ -129,12 +130,9 @@ Predictor <- R6::R6Class("Predictor",
       self$batch.size <- batch.size
       self$y <- y
     }
-
-    ),
-    private = list(
-      predictionCheck = FALSE
     )
 )
+
 
 #' @name predict.Predictor
 #' @title Predict method for Predictor class
@@ -190,3 +188,4 @@ print.Predictor = function(
     cat("Classes: ", paste(unique(object$data[,which(names(object$data)==object$y)]), collapse=" "))
   }
 }
+
