@@ -31,6 +31,8 @@ Suggests:
     rmarkdown,
     mvtnorm
 Collate:
+    'helper.R'
     'predictor.R'
     'interpret.R'
+    'plotter.R'
 RoxygenNote: 7.1.2
