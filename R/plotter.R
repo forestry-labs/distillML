@@ -6,6 +6,14 @@
 #' @import ggplot2
 
 #' @title The class for interpretability plots
+#' @description Plotter class description
+#' @field interpreter The interpreter object to use to create the plots.
+#' @field features The set of features for which to create plots for.
+#' @field features.2d Pairs of features to create 2-d plots for.
+#' @field center.at The value to center the plots at
+#' @field grid.points The grid points to use for the predictions.
+#' @examples
+#' Needs to be rewritten
 #' @export
 Plotter <- R6::R6Class(
   "Plotter",

@@ -4,9 +4,25 @@
 \alias{Plotter}
 \title{The class for interpretability plots}
 \description{
-The class for interpretability plots
+Plotter class description
+}
+\examples{
+Needs to be rewritten
+}
+\section{Public fields}{
+\if{html}{\out{<div class="r6-fields">}}
+\describe{
+\item{\code{interpreter}}{The interpreter object to use to create the plots.}
 
-The class for interpretability plots
+\item{\code{features}}{The set of features for which to create plots for.}
+
+\item{\code{features.2d}}{Pairs of features to create 2-d plots for.}
+
+\item{\code{center.at}}{The value to center the plots at}
+
+\item{\code{grid.points}}{The grid points to use for the predictions.}
+}
+\if{html}{\out{</div>}}
 }
 \section{Methods}{
 \subsection{Public methods}{
@@ -24,7 +40,7 @@ The class for interpretability plots
   interpreter = NULL,
   features = NULL,
   features.2d = NULL,
-  grid.size = 20
+  grid.size = 30
 )}\if{html}{\out{</div>}}
 }
 
