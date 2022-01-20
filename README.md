@@ -1,4 +1,4 @@
-# Distillation For ML Models
+# Distillation For Machine Learning Models
 
 This package provides several methods for model distillation and interpretability 
 for general black box machine learning models.
