@@ -1,4 +1,4 @@
-# Interpretability Sandbox
+# Distillation For ML Models
 
 This package provides several methods for model distillation and interpretability 
 for general black box machine learning models.
