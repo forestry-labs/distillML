@@ -6,7 +6,7 @@
 #' @import ggplot2
 
 #' @title The class for interpretability plots
-#'
+#' @export
 Plotter <- R6::R6Class(
   "Plotter",
   public = list(
@@ -22,7 +22,7 @@ Plotter <- R6::R6Class(
     initialize = function(interpreter=NULL,
                           features=NULL,
                           features.2d = NULL,
-                          grid.size = 20){
+                          grid.size = 30){
       # checks for interpreter class
       if (is.null(interpreter)){
         stop("Interpreter for plotting not given.")

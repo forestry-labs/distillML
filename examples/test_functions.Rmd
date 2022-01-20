@@ -1,26 +1,34 @@
 ---
-title: "R Notebook"
+title: "Interpretability Examples"
 output: html_notebook
 editor_options: 
   chunk_output_type: inline
 ---
 
-This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+First we load in the crabs data set.
+This contains physical measurements of several species of crabs collected at Fremantle, West Australia.
 
-Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
-
-```{r}
+```{r, echo = F, message = F}
 library(MASS)
 library(data.table)
 library(ggplot2)
-source("predictor.R")
-source("interpret.R")
-data <- MASS::crabs
+library(interpret)
+library(Rforestry)
+
+# source("predictor.R")
+# source("interpret.R")
+source("~/Dropbox/interpretability_sandbox/R/plotter.R")
 set.seed(491)
-test_ind <- sample(1:nrow(data), nrow(data)%/%5)
-train_reg <- data[-test_ind,]
-test_reg <- data[test_ind,]
+
+data <- MASS::crabs
+levels(data$sex) <- list(Male = "M", Female = "F")
+levels(data$sex) <- list(Orange = "O", Blue = "B")
+colnames(data) <- c("Species","Sex","Index","Frontal Lobe",
+                    "Rear Width", "Carapace Length","Carapace Width","Body Depth")
+
 ```
+
+
 
 ```{r}
 # try with different dataset
@@ -29,52 +37,53 @@ test_ind <- sample(1:nrow(data), nrow(data)%/%5)
 train_reg <- data[-test_ind,]
 test_reg <- data[test_ind,]
 
-forest <- forestry(x=train_reg[,-which(names(train_reg)=="CW")],
-                   y=train_reg[,which(names(train_reg)=="CW")])
-forest_predictor <- Predictor$new(model = forest, data=train_reg, y="CW",
+# Train a random forest on the data set
+forest <- forestry(x=train_reg[,-which(names(train_reg)=="Carapace Width")],
+                   y=train_reg[,which(names(train_reg)=="Carapace Width")])
+
+# Create a predictor wrapper for the forest
+# this allows us to use a standard wrapper for querying any 
+# trained estimator
+forest_predictor <- Predictor$new(model = forest, 
+                                  data=train_reg, 
+                                  y="Carapace Width",
                                   task = "regression")
-
-
-forestinterpret <- Interpreter$new(predictor = forest_predictor)
-
-
-# Methods
-forestinterpret.2 <- set.data.points(forestinterpret, as.integer(1:10))
-forestinterpret.2
-
-# Check to see that the specified functions are behaving
-print(forestinterpret.2$functions.1d$FL(1))
-
-data <- train_reg[1:10,]
-data$FL <- 1
-mean(predict(forest, data[,-which(names(train_reg)=="CW")]))
-
-# check plotter wrapper
-forestplot <- Plotter$new(forestinterpret, features = c("FL", "RW", "CL", "BD"),
-                          features.2d = data.frame(col1 = c("RW", "CL", "BD"),
-                                                   col2 = c("sp", "sex", "FL")))
-forestplot$center.at$FL
-forestplot$grid.points$FL
-plots <- plot.Plotter(forestplot)
-
-
-# test functions
-set.center.at(forestplot, "FL", 2) # for numeric
-forestplot$center.at$indus
-set.grid.points(forestplot, "FL", c(1.2,3.9,1.3, 1.4))
-forestplot$grid.points$indus
-
-
 ```
 
 
 ```{r}
-# 2 variable pdp functions
-data <- train_reg[1:10,]
-data$FL <- 0.5
-data$RW <- 3.9
-mean(predict(forest, data[,-which(names(train_reg)=="CW")]))
+# Now given a predictor object, we can create an interpretor class
+forestinterpret <- Interpreter$new(predictor = forest_predictor)
 
-forestinterpret.2$functions.2d[["FL"]][["RW"]](0.5, 3.9)
+print(forestinterpret)
+# Check to see that the specified functions are behaving
+#print(forestinterpret$functions.1d$`Body Depth`(1))
+
+```
+
+```{r}
+
+# check plotter wrapper
+forestplot <- Plotter$new(forestinterpret, features = c("Frontal Lobe"),
+                          features.2d = data.frame(col1 = c("Frontal Lobe", "Frontal Lobe"),
+                                                   col2 = c("Species", "Sex")))
+
+plots <- plot.Plotter(forestplot)
+plots[[1]]
+plots[[2]]
+plots[[3]]
+```
+
+
+```{r}
+# test functions for the plotter
+forestplot$center.at$`Frontal Lobe`
+forestplot$grid.points$`Frontal Lobe`
+
+set.center.at(forestplot, "Frontal Lobe", 2) # for numeric
+forestplot$center.at$`Frontal Lobe`
+set.grid.points(forestplot, "Frontal Lobe", c(1.2,3.9,1.3, 1.4))
+forestplot$grid.points$`Frontal Lobe`
+
 ```
 
