@@ -4,6 +4,7 @@
 #' @title The class for different interpretability methods.
 #' @description Interpreter class description
 #' @field predictor The predictor object to use as a standardised wrapper for the model
+#' @field features The features to use in the interpretation method.
 #' @field data.points The indices of the data points used for the PDP/ALE. This
 #' overwrites the "samples" initialization or the batch size variable from the predictor class.
 #' @field functions.1d Functions giving average value across data.points with a given value and feature
@@ -173,7 +174,15 @@ Interpreter <- R6::R6Class(
 )
 
 # allows user to set data.points
-set.data.points = function(object, data.points) {
+#' @name set.data.points
+#' @title Sets the data points used for interpretation
+#' @description Gives information for a predictor object
+#' @param object The Interpreter to print
+#' @param data.points The new data points to set for the object
+#' @export
+set.data.points = function(object,
+                           data.points)
+{
   checkmate::assert_numeric(data.points)
   if (!(inherits(object, "Interpreter"))) {
     stop("Object given is not of the Interpreter class.")

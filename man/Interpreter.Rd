@@ -17,6 +17,8 @@ Needs to be rewritten
 \describe{
 \item{\code{predictor}}{The predictor object to use as a standardised wrapper for the model}
 
+\item{\code{features}}{The features to use in the interpretation method.}
+
 \item{\code{data.points}}{The indices of the data points used for the PDP/ALE. This
 overwrites the "samples" initialization or the batch size variable from the predictor class.}
 

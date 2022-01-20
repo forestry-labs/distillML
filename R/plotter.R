@@ -24,9 +24,15 @@ Plotter <- R6::R6Class(
     center.at = NULL,
     grid.points = NULL,
 
-    #initialize a plotter object
-    # features is a simple vector of all features we want to analyze, 1d
-    # features 2d is a matrix with two columns
+
+    #' @description Initialize a plotter object
+    #' @param interpreter Interpreter object to make plots for.
+    #' @param features The features to be used for the interpretor plot
+    #' @param features.2d A matrix or data frame containing two columns of
+    #'  feature names to give pairs of features for the 2-d plots.
+    #' @param grid.size The number of grid points to create for the pdp
+    #'  functions / plots.
+    #' @export
     initialize = function(interpreter=NULL,
                           features=NULL,
                           features.2d = NULL,
@@ -106,8 +112,18 @@ Plotter <- R6::R6Class(
   )
 )
 
-# method for setting center value for a specific feature
-set.center.at = function(object, feature, value){
+
+#' @name set.center.at
+#' @title Sets the center value used for plotting
+#' @description Method for setting center value for a specific feature
+#' @param object The Plotter class to recenter
+#' @param feature The feature to center
+#' @param value The new center value to use for the feature.
+#' @export
+set.center.at = function(object,
+                         feature,
+                         value)
+{
   if (!(inherits(object, "Plotter"))){
     stop("Plotter given is not of the plotter class.")
   }
@@ -131,7 +147,17 @@ set.center.at = function(object, feature, value){
 }
 
 # method for setting grid points for a specific feature
-set.grid.points = function(object, feature, values){
+#' @name set.grid.points
+#' @title Sets the center value used for plotting
+#' @description Method for setting center value for a specific feature
+#' @param object The Plotter class to recenter
+#' @param feature The feature to center
+#' @param values The set of new values to be used as the grid points for the selected feature
+#' @export
+set.grid.points = function(object,
+                           feature,
+                           values)
+{
   if (!(inherits(object, "Plotter"))){
     stop("Plotter given is not of the plotter class.")
   }
@@ -237,7 +263,9 @@ class.definer = function(features.2d, data){
 #' @param object Plotter object to make plots for.
 #' @param method The type of plot to make. Can be one of `ice`,`pdp`,`pdp+ice`.
 #' @export
-plot.Plotter = function(object, method = "pdp+ice") {
+plot.Plotter = function(object,
+                        method = "pdp+ice")
+{
   if (!(inherits(object, "Plotter"))){
     stop("Plotter given is not of the plotter class.")
   }

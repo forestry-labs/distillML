@@ -35,6 +35,7 @@ Needs to be rewritten
 \if{html}{\out{<a id="method-new"></a>}}
 \if{latex}{\out{\hypertarget{method-new}{}}}
 \subsection{Method \code{new()}}{
+Initialize a plotter object
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Plotter$new(
   interpreter = NULL,
@@ -44,6 +45,21 @@ Needs to be rewritten
 )}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{interpreter}}{Interpreter object to make plots for.}
+
+\item{\code{features}}{The features to be used for the interpretor plot}
+
+\item{\code{features.2d}}{A matrix or data frame containing two columns of
+feature names to give pairs of features for the 2-d plots.}
+
+\item{\code{grid.size}}{The number of grid points to create for the pdp
+functions / plots.}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-clone"></a>}}
