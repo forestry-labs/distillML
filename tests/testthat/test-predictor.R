@@ -36,10 +36,19 @@ test_that("Tests that the predictor wrapper is working", {
 
   context("Check the model in predictor")
   expect_equal(all.equal(forest_predictor$model@processed_dta$y[1:10],
-            c(-2.0895765, -1.8855020, -1.7397346, -1.7397346,
-              -1.2732787, -1.0983578, -1.3024322, -0.9525903,
-              -0.9525903, -0.9234368),
-            tolerance = 1e-4), TRUE)
+               c(-2.0895765, -1.8855020, -1.7397346, -1.7397346,
+                 -1.2732787, -1.0983578, -1.3024322, -0.9525903,
+                 -0.9525903, -0.9234368),
+               tolerance = 1e-4),
+               TRUE)
 
+
+  wrapped_preds <- predict(forest_predictor, newdata = test_reg[,-ncol(test_reg)])
+  standard_preds <- predict(forest, newdata = test_reg[,-ncol(test_reg)])
+
+  expect_equal(all.equal(wrapped_preds[,1],
+                         standard_preds,
+                         tolerance = 1e-4),
+               TRUE)
 
 })
