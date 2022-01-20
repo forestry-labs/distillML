@@ -22,7 +22,7 @@ set.seed(491)
 
 data <- MASS::crabs
 levels(data$sex) <- list(Male = "M", Female = "F")
-levels(data$sex) <- list(Orange = "O", Blue = "B")
+levels(data$sp) <- list(Orange = "O", Blue = "B")
 colnames(data) <- c("Species","Sex","Index","Frontal Lobe",
                     "Rear Width", "Carapace Length","Carapace Width","Body Depth")
 
