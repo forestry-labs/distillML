@@ -401,3 +401,130 @@ plot.Plotter = function(object,
   }
   return(plots)
 }
+
+#' @name localSurrogate
+#' @title Given a plotter object with at least one pair of features,
+#'   create a small surrogate model for the two features using the PDP function
+#'   as the output and the two features as the independent variables.
+#' @description Plots and returns a Rforestry object with a single tree explaining
+#'   the PDP surface.
+#' @param object Plotter object to make plots + surrogate for.
+#' @param interact An indicator specifying if the surrogate model should also be
+#'   given the interaction terms to create the surrogate models with.
+#'   Default is FALSE.
+#' @param params.forestry Optional list of parameters to pass to the surrogate
+#'   model. Defaults to the standard Rforestry parameters with ntree = 1
+#'   and maxDepth = 2.
+#' @export
+localSurrogate = function(object,
+                          interact = FALSE,
+                          params.forestry = list())
+{
+
+  if (!(inherits(object, "Plotter"))){
+    stop("Plotter given is not of the plotter class.")
+  }
+
+  if ((is.null(object$features.2d))) {
+    stop("Plotter object must have a set of 2d features to create a surrogate model")
+  }
+
+  # If no forestry params given, default to maxDepth = 2 and ntree = 1
+  if (length(params.forestry) == 0) {
+    params.forestry$maxDepth = 2
+    params.forestry$ntree = 1
+  }
+
+  # list of plots to be filled
+  plots <- list()
+  surrogates <- list()
+
+  features.2d <- object$features.2d
+  feature.classes <- class.definer(features.2d = features.2d,
+                                   data = object$interpreter$predictor$data)
+  # for the names in each function
+  names.2d <- c()
+  for (i in 1:nrow(features.2d)){
+    params.forestry.i <- params.forestry
+    # heatmap for 2 continuous features
+    if (feature.classes[features.2d[i,1]] == "numeric" &&
+        feature.classes[features.2d[i,2]]=="numeric"){
+      feature.1 <- features.2d[i,1]
+      feature.2 <- features.2d[i,2]
+      vals.1 <- object$grid.points[[feature.1]]
+      vals.2 <- object$grid.points[[feature.2]]
+      # create a grid point of values
+      values <- expand.grid(vals.1, vals.2)
+      predictions <- c()
+      for (j in 1:nrow(values)){
+        prediction <- object$interpreter$functions.2d[[feature.1]][[feature.2]](values[j,1], values[j,2])
+        predictions <- c(predictions, prediction)
+      }
+      values <- cbind(values, predictions)
+      values <- data.frame(values)
+      names(values) <- c("Feat.1", "Feat.2", "Val")
+
+      # still need to relabel axis
+      plot.obj <- ggplot(values, aes(x=Feat.1, y=Feat.2, fill = Val)) +
+        geom_tile() + xlab(feature.1) + ylab(feature.2)
+      plot.obj <- plot.obj + guides(fill=guide_legend(title = object$interpreter$predictor$y))
+
+      # Include the interaction term as a feature for the explanatory tree
+      if (interact) {
+        values$Interact <- values$Feat.1 * values$Feat.2
+      }
+
+      # Train the surrogate model
+      params.forestry.i$y <- values$Val
+      params.forestry.i$x <- values[,-which(names(values) == "Val")]
+      surrogate_model <- do.call(Rforestry::forestry, args = c(params.forestry.i))
+      surrogate_model <- Rforestry::make_savable(surrogate_model)
+    } else {
+      # find the categorical feature and continuous feature
+      categorical <- NULL
+      continuous <- NULL
+      if (feature.classes[features.2d[i,1]] == "numeric"){
+        continuous <- features.2d[i,1]
+        categorical <- features.2d[i,2]
+      }
+      else {
+        continuous <- features.2d[i,2]
+        categorical <- features.2d[i,1]
+      }
+      # pull grid values
+      vals.cont <- object$grid.points[[continuous]]
+      vals.cat <- object$grid.points[[categorical]]
+      # generate predictions for each level
+      values <- expand.grid(vals.cont, vals.cat)
+      predictions <- c()
+      for (j in 1:nrow(values)){
+        prediction <- object$interpreter$functions.2d[[continuous]][[categorical]](values[j,1], values[j,2])
+        predictions <- c(predictions, prediction)
+      }
+      values <- cbind(values, predictions)
+      values <- data.frame(values)
+      names(values) <- c("Cont", "Cat", "Val")
+      plot.obj <- ggplot(values, aes(x=Cont, y=Val, group=Cat, color=Cat)) +
+        geom_line() + xlab(continuous) + ylab(object$interpreter$predictor$y)
+      plot.obj <- plot.obj +  guides(color=guide_legend(title = categorical))
+
+      # When doing categorical + continuous interactions need to think
+      # of best way to implement this
+
+      params.forestry.i$y <- values$Val
+      params.forestry.i$x <- values[,-which(names(values) == "Val")]
+      # Train the surrogate model
+      surrogate_model <- do.call(Rforestry::forestry, args = c(params.forestry.i))
+      surrogate_model <- Rforestry::make_savable(surrogate_model)
+    }
+    plots <- append(plots, list(plot.obj))
+    names.2d <- c(names.2d, paste(features.2d[i,1], features.2d[i,2], sep = "."))
+
+    surrogates <- append(surrogates, surrogate_model)
+
+  }
+  names(plots) <- c(object$features, names.2d)
+  names(surrogates) <- c(object$features, names.2d)
+
+  return(list("plots" = plots, "models" = surrogates))
+}

@@ -59,6 +59,4 @@ test_that("Tests that the predictor wrapper is working", {
   set.grid.points(forest_plot, "Frontal Lobe", seq(from  = 7, to = 23, length.out = 100))
   new_pts <- forest_plot$grid.points$`Frontal Lobe`
   expect_gt(length(new_pts), length(old_pts))
-
-
 })
