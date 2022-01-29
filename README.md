@@ -1,173 +1,120 @@
 # Distillation For Machine Learning Models
 
 This package provides several methods for model distillation and interpretability 
-for general black box machine learning models.
+for general black box machine learning models. This page serves as a clear 
+example for using this package, where we use the MASS crabs data set.
 
 ## General Prediction Wrapper
 
-The test data set we use to demonstrate this is the MASS Boston data set for 
-regression tasks, and the crabs data set for classification tasks.
+First we load in the crabs data set. This contains physical measurements of 
+several species of crabs collected at Fremantle, West Australia.
 ```
 library(MASS)
+library(data.table)
+library(ggplot2)
 library(interpret)
+library(Rforestry)
 
-data <- MASS::Boston
+set.seed(491)
+
+data <- MASS::crabs
+levels(data$sex) <- list(Male = "M", Female = "F")
+levels(data$sp) <- list(Orange = "O", Blue = "B")
+colnames(data) <- c("Species","Sex","Index","Frontal Lobe",
+                    "Rear Width", "Carapace Length","Carapace Width","Body Depth")
+
+```
+
+We can train a random forest to estimate the Carapace Width of the crabs based on the
+other features. In order to use the interpretability features, we must create 
+a `Predictor` class for the estimator we want to interpret. This class 
+standardizes the predictions, tracks the outcome feature, and stores the 
+training data.
+
+```
+# Get training data set
 set.seed(491)
 test_ind <- sample(1:nrow(data), nrow(data)%/%5)
 train_reg <- data[-test_ind,]
 test_reg <- data[test_ind,]
 
+# Train a random forest on the data set
+forest <- forestry(x=train_reg[,-which(names(train_reg)=="Carapace Width")],
+                   y=train_reg[,which(names(train_reg)=="Carapace Width")])
 
-data_class <- MASS::crabs
-test_ind <- sample(1:nrow(data_class), nrow(data_class)%/%5)
-train_class <- data_class[-test_ind,]
-test_class <- data_class[test_ind,]
-
-```
-
-Try the same example with linear regression.
-
-```
-# linear regression
-linreg <- lm(crim ~., data=train_reg)
-linreg_predictor <- Predictor$new(model = linreg, data = train_reg, y="crim",
-                                  predict = predict, task = "regression")
-actual <- predict(linreg, test_reg)
-method <- linreg_predictor$predict(test_reg) 
-sum(actual != method) # all the same values
-
-linreg_predictor$print()
-
-linreginterpret <- Interpreter$new(predictor = linreg_predictor,
-                                   feature = "indus")
-linreginterpret$plot()
-```
-
-Try logistic regression.
-
-```
-# logistic regression
-# Interpreter not yet implemented for classification (only for single variable probs)
-logreg <- glm(sex ~., data=train_class, family=binomial(logit))
-logreg_predictor <- Predictor$new(model=logreg, data=train_class, y="sex",
-                                  type = "response", task = "classification")
-actual <- predict(logreg, test_class, type = "response")
-method <- logreg_predictor$predict(test_class)
-sum(actual!= method)
-head(method)
-logreg_predictor$print()
-```
-
-Try decision trees.
-
-```
-# decision tree for regression
-library(rpart)
-dectree <- rpart(crim ~., data=train_reg, method="anova")
-
-dectree_predictor <- Predictor$new(model = dectree, data = train_reg, y="crim",
-                                  predict = predict, task = "regression")
-actual <- predict(dectree, test_reg)
-method <- dectree_predictor$predict(test_reg) 
-sum(actual != method) # all the same values
-
-dectree_predictor$print()
-
-dectreeinterp <- Interpreter$new(predictor = dectree_predictor,
-                                  feature = "dis")
-dectreeinterp$plot()
-
-```
-
-```
-# decision tree for classification
-dectree <- rpart(sex ~., data=train_class, method = "class")
-dectree_predictor <- Predictor$new(model = dectree, data = train_class, y="sex",
-                                  type = "prob", task = "classification")
-actual <- predict(dectree, test_class, type= "prob")
-method <- dectree_predictor$predict(test_class) 
-sum(actual != method) # all the same values
-
-head(method)
-
-dectree_predictor$print()
-```
-
-## Conditional PDP Plots
-
-Given a categorical variable to group the observations by, we can decompose the 
-partial dependence plot by the values of the grouping variable. 
-This allows us to examine the predictions of the model at a level of granularity
-that can be controlled by the chosen categorical variable.
-
-```
-# Showcase class variable
-dectree_predictor <- Predictor$new(model = dectree, data = train_class, y="sex",
-                                  type = "prob", task = "classification", class = "F")
-method <- dectree_predictor$predict(test_class) 
-head(method) # only shows female probabilites
-
-dectreeinterp <- Interpreter$new(predictor = dectree_predictor,
-                                  feature = "RW")
-dectreeinterp$plot()
-```
-
-
-```
-# random forest
-library(Rforestry)
-forest <- forestry(x=train_reg[,-which(names(train_reg)=="crim")],
-                   y=train_reg[,which(names(train_reg)=="crim")])
-forest_predictor <- Predictor$new(model = forest, data=train_reg, y="crim",
+# Create a predictor wrapper for the forest
+# this allows us to use a standard wrapper for querying any 
+# trained estimator
+forest_predictor <- Predictor$new(model = forest, 
+                                  data=train_reg, 
+                                  y="Carapace Width",
                                   task = "regression")
-actual <- predict(forest, test_reg[,-which(names(test_reg)=="crim")])
-method <- forest_predictor$predict(test_reg)
+```
 
-head(data.frame(actual,method)) # all the same values
-forest_predictor$print()
+## Interpretability Wrapper
 
-forestinterp <- Interpreter$new(predictor = forest_predictor,
-                                feature = "indus")
-forestinterp$plot()
+Once we have initialized a `Predictor` object for the forest, we can pass this to the 
+`Interpretor` class. In the future, this will have several methods implemented 
+as different options, but now it defaults to creating PDP functions + plots for 
+the estimator. Examining the `Interpretor`, we can see the current method 
+selected: "pdp", the feature names, the training data indices, and the lists of 
+pdp functions.
+
+```
+forest_interpret <- Interpreter$new(predictor = forest_predictor)
+
+print(forest_interpret)
+```
+
+The pdp functions are stored in two lists, one for 1-d pdp functions and one for 2-d pdp functions.
+For any feature, we can retrieve the pdp function by selecting the entry in the list with
+that feature name
+
+```
+one_feat <- train_reg$`Frontal Lobe`
+preds_pdp <- forest_interpret$functions.1d$`Frontal Lobe`(one_feat)
+print(preds_pdp)
 
 ```
 
+## Plotter Wrapper
+
+In order to use these pdp functions to create plots, we can use the `Plotter` function.
+This allows us to make standard pdp plots as well as conditional pdp plots with two variables.
+Here we show a single variable pdp plot and three conditional pdp plots: two with with second categorical 
+variables, and one with two continuous variables.
 
 ```
-#Xgboost
-library(xgboost)
-# feeding in its own function
-predict_xgboost <- function(model, newdata){
-  return(predict(model, xgb.DMatrix(data=as.matrix(newdata))))
-}
+# check plotter wrapper
+forest_plot <- Plotter$new(forest_interpret, features = c("Frontal Lobe"),
+                          features.2d = data.frame(col1 = c("Frontal Lobe", "Frontal Lobe", "Frontal Lobe"),
+                                                   col2 = c("Species", "Sex", "Rear Width")))
 
-xgb_model <- xgboost(data = xgb.DMatrix(label = train_reg$crim,
-                                        data = as.matrix(train_reg[,-which(names(train_reg)=="crim")])),
-                     verbose = 0, nrounds = 100)
+plots <- plot(forest_plot)
+plots[[1]]
+plots[[2]]
+plots[[3]]
+plots[[4]]
+```
 
-xgb_predictor <- Predictor$new(model = xgb_model, data=train_reg, 
-                               predict.func = predict_xgboost, y="crim",
-                               task = "regression")
-
-actual <- predict(xgb_model, xgb.DMatrix(data=as.matrix(
-  test_reg[,-which(names(test_reg)=="crim")])))
-method <- xgb_predictor$predict(test_reg)
-
-head(cbind(actual, method)) # same values
-
-xgb_predictor$print()
-
-xgbinterp <- Interpreter$new(predictor = xgb_predictor,
-                             feature = "indus")
-xgbinterp$plot()
+We can also adjust where the plots are centered at for each feature, and what
+grid of points are used in the evaluations that create the plots.
 
 ```
+# Set center and grid points for the plots
+forest_plot$center.at$`Frontal Lobe`
+forest_plot$grid.points$`Frontal Lobe`
+
+# We can reset where we center the plot
+set.center.at(forest_plot, "Frontal Lobe", 2) # for numeric
+forest_plot$center.at$`Frontal Lobe`
+```
+
+
 
 ## TODO
 It would be nice to have in the future:
 - ALE Plots
-- PDP Plots
-- PDP functions accessible
 - A PDP surrogate model implemented
 - Some sort of loneliness index implemented
 - When the covariates of the observation are in the support of the training set, 
