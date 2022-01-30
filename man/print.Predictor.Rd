@@ -10,5 +10,5 @@
 \item{object}{The Predictor to print}
 }
 \description{
-Gives information for a predictor object
+Gives the task of the given predictor object.
 }

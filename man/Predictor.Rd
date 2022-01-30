@@ -20,11 +20,10 @@ a prediction function is NOT specified.
 
 The outputs of the algorithm must be the values if it is regression, or
 probabilities if classification. For classification problems with more than
-two categories, the output comes out as vectors of probabilities for each
-category. Because this is for ML interpretability, other types of
-predictions (ex: predictions that spit out the factor) are not allowed.
-prediction method must be constructed, with optional arguments of
-type and task
+two categories, the output comes out as vectors of probabilities for the
+specified "class" category. Because this is for ML interpretability,
+other types of predictions (ex: predictions that spit out the factor) are not allowed.
+prediction method must be constructed, with optional argument of type
 }
 \examples{
 data <- MASS::Boston
@@ -60,12 +59,10 @@ linreg_predictor$print()
 
 \item{\code{class}}{The class for which we get predictions. We specify this to get the predictions
 (such as probabilites) for an observation being in a specific class (e.g. Male or Female).
-This parameter is specifically for classification predictions.}
+This parameter is necessary for classification predictions with more than a single vector
+of predictions.}
 
 \item{\code{prediction.function}}{The prediction function used by the model}
-
-\item{\code{batch.size}}{The number of observations used for future predictions. This is at most the number of
-observations in the training data.}
 
 \item{\code{y}}{The name of the outcome feature in `data`.}
 }
@@ -90,8 +87,7 @@ observations in the training data.}
   y = NULL,
   task = NULL,
   class = NULL,
-  type = NULL,
-  batch.size = 1000
+  type = NULL
 )}\if{html}{\out{</div>}}
 }
 
@@ -108,12 +104,10 @@ observations in the training data.}
 
 \item{\code{task}}{The prediction class, either `classification` or `regression`}
 
-\item{\code{class}}{The class of predictions done.}
+\item{\code{class}}{The class of outcomes we want to see predictions for.}
 
 \item{\code{type}}{The type of predictions done (i.e. 'response' for predicted probabliities for classification).
-This feature is only be used if no specific prediction function is specified.}
-
-\item{\code{batch.size}}{The size of the batch used to create pdp grids}
+This feature should only be used if no predict.funcc is specified.}
 }
 \if{html}{\out{</div>}}
 }

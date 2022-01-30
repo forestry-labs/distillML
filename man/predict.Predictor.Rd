@@ -12,5 +12,5 @@
 \item{newdata}{The dataframe to use for the predictions.}
 }
 \description{
-Gives predictions for a predictor object
+Gives a single column of predictions for a predictor object
 }

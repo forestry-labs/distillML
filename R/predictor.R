@@ -9,10 +9,9 @@
 #' @field task The prediction task the model performs (i.e. classification or regression)
 #' @field class The class for which we get predictions. We specify this to get the predictions
 #'        (such as probabilites) for an observation being in a specific class (e.g. Male or Female).
-#'        This parameter is specifically for classification predictions.
+#'        This parameter is necessary for classification predictions with more than a single vector
+#'        of predictions.
 #' @field prediction.function The prediction function used by the model
-#' @field batch.size The number of observations used for future predictions. This is at most the number of
-#'        observations in the training data.
 #' @field y The name of the outcome feature in `data`.
 #' @examples
 #' data <- MASS::Boston
@@ -44,7 +43,6 @@ Predictor <- R6::R6Class("Predictor",
     task = NULL,
     class = NULL,
     prediction.function = NULL,
-    batch.size = NULL,
     y = NULL,
 
     #' @param model A trained model.
@@ -52,10 +50,9 @@ Predictor <- R6::R6Class("Predictor",
     #' @param predict.func A function to run predictions for the model.
     #' @param y The name of the outcome variable in data.
     #' @param task The prediction class, either `classification` or `regression`
-    #' @param class The class of predictions done.
+    #' @param class The class of outcomes we want to see predictions for.
     #' @param type The type of predictions done (i.e. 'response' for predicted probabliities for classification).
-    #'        This feature is only be used if no specific prediction function is specified.
-    #' @param batch.size The size of the batch used to create pdp grids
+    #'        This feature should only be used if no predict.funcc is specified.
     #' @return A `Predictor` object.
     #' @note
     #' A wrapper to pass an ML algorithm (rpart, etc.) through the
@@ -67,20 +64,16 @@ Predictor <- R6::R6Class("Predictor",
     #'
     #' The outputs of the algorithm must be the values if it is regression, or
     #' probabilities if classification. For classification problems with more than
-    #' two categories, the output comes out as vectors of probabilities for each
-    #' category. Because this is for ML interpretability, other types of
-    #' predictions (ex: predictions that spit out the factor) are not allowed.
+    #' two categories, the output comes out as vectors of probabilities for the
+    #' specified "class" category. Because this is for ML interpretability,
+    #' other types of predictions (ex: predictions that spit out the factor) are not allowed.
     initialize = function(model=NULL,
                           data=NULL,
                           predict.func=NULL,
                           y=NULL,
                           task = NULL,
                           class=NULL,
-                          type=NULL,
-                          batch.size = 1000) {
-
-      # check that batch size is at least 1 and number
-      checkmate::assert_number(batch.size, lower=1)
+                          type=NULL) {
 
       # checks for model input
       if (is.null(model)){
@@ -98,7 +91,6 @@ Predictor <- R6::R6Class("Predictor",
         }
       }
 
-
       # checks for valid y input
       if (is.null(y) || !is.character(y) || !(y%in%names(data))){
         stop("Y has not been given, is not a character variable, or is not a variable in the given data.")
@@ -111,8 +103,7 @@ Predictor <- R6::R6Class("Predictor",
         }
       }
 
-      #' prediction method must be constructed, with optional arguments of
-      #' type and task
+      #' prediction method must be constructed, with optional argument of type
       if (is.null(predict.func)){
         if (is.null(type)){
           predict.func.final <- function(model, newdata) predict(model, newdata)
@@ -131,7 +122,6 @@ Predictor <- R6::R6Class("Predictor",
       self$model <- model
       self$task <- task
       self$prediction.function <- predict.func.final
-      self$batch.size <- batch.size
       self$y <- y
     }
     )
@@ -140,7 +130,7 @@ Predictor <- R6::R6Class("Predictor",
 
 #' @name predict.Predictor
 #' @title Predict method for Predictor class
-#' @description Gives predictions for a predictor object
+#' @description Gives a single column of predictions for a predictor object
 #' @param object Predictor object to use.
 #' @param newdata The dataframe to use for the predictions.
 #' @export
@@ -158,21 +148,12 @@ predict.Predictor = function(object, newdata){
   preds <- object$prediction.function(object$model, newdata)
   preds <- data.frame(preds)
 
-  # check for valid prediction
-  #if (private$predictionCheck == FALSE){
-    # number of rows in predictions
-  #  if (nrow(preds)!= nrow(newdata)){
-  #    stop("Number of predictions do not match the number of observations.")
-  #  }
-  #  # check for missing values
-  #  if (sum(is.na(preds))!=0){
-  #    stop("Predictions have missing values.")
-  #  }
-  #  private$predictionCheck <- TRUE
-  #}
-
-  # Class variable (if classification)
-  if (!is.null(object$class) && ncol(preds) > 1){
+  # if we predict more than 1 class
+  if (ncol(preds)>1){
+    if (is.null(object$class)){
+      stop("The predictions have more than one column. Please give a class variable
+           to specify the column wanted.")
+    }
     preds <- preds[, object$class, drop = FALSE]
   }
   rownames(preds) <- NULL
@@ -181,7 +162,7 @@ predict.Predictor = function(object, newdata){
 
 #' @name print.Predictor
 #' @title Printing method for Predictor class
-#' @description Gives information for a predictor object
+#' @description Gives the task of the given predictor object.
 #' @param object The Predictor to print
 #' @export
 print.Predictor = function(
