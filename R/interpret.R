@@ -3,10 +3,9 @@
 
 #' @title The class for different interpretability methods.
 #' @description Interpreter class description
-#' @field predictor The predictor object to use as a standardised wrapper for the model
-#' @field features The features to use in the interpretation method.
-#' @field data.points The indices of the data points used for the PDP/ALE. This
-#' overwrites the "samples" initialization or the batch size variable from the predictor class.
+#' @field predictor The predictor object to use as a standardized wrapper for the model
+#' @field features All possible features that can be interpreted with respect to the model
+#' @field data.points The indices of the data points in the training data used for the PDP/ALE.
 #' @field functions.1d Functions giving average value across data.points with a given value and feature
 #' @field functions.2d Functions giving 2D pdp functions
 #' @field method The chosen interpretability method for the black-box model.

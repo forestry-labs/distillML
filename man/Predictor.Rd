@@ -2,10 +2,10 @@
 % Please edit documentation in R/predictor.R
 \name{Predictor}
 \alias{Predictor}
-\title{The class that wraps a machine learning model in order to provide a
- standardized method for predictions for different models.}
+\title{Predictor class description}
 \description{
-Predictor class description
+The class that wraps a machine learning model in order to provide a
+ standardized method for predictions for different models.
 }
 \details{
 Predictor Object

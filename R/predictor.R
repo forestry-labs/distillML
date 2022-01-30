@@ -1,9 +1,9 @@
 #' Predictor Object
 #' @importFrom R6 R6Class
 
-#' @title The class that wraps a machine learning model in order to provide a
+#' @title Predictor class description
+#' @description The class that wraps a machine learning model in order to provide a
 #'  standardized method for predictions for different models.
-#' @description Predictor class description
 #' @field data The training data for building the model
 #' @field model The object model
 #' @field task The prediction task the model performs (i.e. classification or regression)

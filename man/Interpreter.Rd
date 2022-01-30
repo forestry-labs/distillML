@@ -15,12 +15,11 @@ Needs to be rewritten
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
 \describe{
-\item{\code{predictor}}{The predictor object to use as a standardised wrapper for the model}
+\item{\code{predictor}}{The predictor object to use as a standardized wrapper for the model}
 
-\item{\code{features}}{The features to use in the interpretation method.}
+\item{\code{features}}{All possible features that can be interpreted with respect to the model}
 
-\item{\code{data.points}}{The indices of the data points used for the PDP/ALE. This
-overwrites the "samples" initialization or the batch size variable from the predictor class.}
+\item{\code{data.points}}{The indices of the data points in the training data used for the PDP/ALE.}
 
 \item{\code{functions.1d}}{Functions giving average value across data.points with a given value and feature}
 
