@@ -2,25 +2,65 @@
 % Please edit documentation in R/plotter.R
 \name{Plotter}
 \alias{Plotter}
-\title{The class for interpretability plots}
+\title{Plotter class description}
 \description{
-Plotter class description
+The class for interpretability plots and groups
+}
+\note{
+A wrapper to pass an interpreter object (see: interpret.R) for visualizing
+the interpretation methods used in the interpreter object. This creates
+plots for both 1-d and 2-d plots. For 2-d plots of one continuous and
+one categorical variable, we use linear plots with different shades representing
+the categorical variable. For 2-d plots of two continuous variables, there
+exists multiple options, including heatmap methods.
+
+The necessary variables are the interpreter object and either the vector/list of
+features for 1-d plots or the matrix / dataframe for 2-d plots.
+
+For the output, this model returns a plotter object that can then be plotted to
+get the visualizations of the data using the 'plot()' function.
 }
 \examples{
-Needs to be rewritten
+library(interpret)
+set.seed(491)
+data <- MASS::crabs
+
+levels(data$sex) <- list(Male = "M", Female = "F")
+levels(data$sp) <- list(Orange = "O", Blue = "B")
+colnames(data) <- c("Species","Sex","Index","Frontal Lobe",
+"Rear Width", "Carapace Length","Carapace Width","Body Depth")
+
+test_ind <- sample(1:nrow(data), nrow(data)\%/\%5)
+train_reg <- data[-test_ind,]
+test_reg <- data[test_ind,]
+
+
+forest <- forestry(x=train_reg[,-which(names(train_reg)=="Carapace Width")],
+y=train_reg[,which(names(train_reg)=="Carapace Width")])
+
+forest_predictor <- Predictor$new(model = forest, data=train_reg,
+y="Carapace Width", task = "regression")
+
+forest_interpret <- Interpreter$new(predictor = forest_predictor)
+
+forest_plot <- Plotter$new(forest_interpret, features = c("Frontal Lobe"),
+                          features.2d = data.frame(col1 = c("Frontal Lobe", "Frontal Lobe", "Frontal Lobe"),
+                                                   col2 = c("Species", "Sex", "Rear Width")))
+plots <- plot(forest_plot)
 }
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
 \describe{
 \item{\code{interpreter}}{The interpreter object to use to create the plots.}
 
-\item{\code{features}}{The set of features for which to create plots for.}
+\item{\code{features}}{The set of features to create 1-d plots for.}
 
 \item{\code{features.2d}}{Pairs of features to create 2-d plots for.}
 
-\item{\code{center.at}}{The value to center the plots at}
+\item{\code{center.at}}{The value(s) to center the feature plots}
 
-\item{\code{grid.points}}{The grid points to use for the predictions.}
+\item{\code{grid.points}}{A list of vectors containing the grid points to use for
+the predictions.}
 }
 \if{html}{\out{</div>}}
 }
@@ -50,15 +90,18 @@ Initialize a plotter object
 \describe{
 \item{\code{interpreter}}{Interpreter object to make plots for.}
 
-\item{\code{features}}{The features to be used for the interpretor plot}
+\item{\code{features}}{A vector of features used to make 1-d plots.}
 
 \item{\code{features.2d}}{A matrix or data frame containing two columns of
 feature names to give pairs of features for the 2-d plots.}
 
 \item{\code{grid.size}}{The number of grid points to create for the pdp
-functions / plots.}
+functions / plots for each feature.}
 }
 \if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A 'Plotter' object
 }
 }
 \if{html}{\out{<hr>}}

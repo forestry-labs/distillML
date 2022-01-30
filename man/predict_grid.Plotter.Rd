@@ -2,7 +2,7 @@
 % Please edit documentation in R/plotter.R
 \name{predict_grid.Plotter}
 \alias{predict_grid.Plotter}
-\title{# prediction function for grid points}
+\title{Prediction Function for ICE Plots}
 \usage{
 predict_grid.Plotter(object)
 }
