@@ -6,11 +6,32 @@
 #' @field predictor The predictor object to use as a standardized wrapper for the model
 #' @field features All possible features that can be interpreted with respect to the model
 #' @field data.points The indices of the data points in the training data used for the PDP/ALE.
-#' @field functions.1d Functions giving single feature interpretation of the model
-#' @field functions.2d Functions giving two-feature interpretation of the model
-#' @field method The chosen interpretability method for the black-box model (PDP or ALE).
+#' @field functions.1d List of functions giving single feature interpretations of the model.
+#' @field functions.2d List of functions giving two-feature interpretations of the model
+#' @field method The chosen interpretability method for the black-box model ("pdp" or "ale").
 #' @examples
-#' Needs to be rewritten
+#' library(interpret)
+#' set.seed(491)
+#' data <- MASS::crabs
+#'
+#' levels(data$sex) <- list(Male = "M", Female = "F")
+#' levels(data$sp) <- list(Orange = "O", Blue = "B")
+#' colnames(data) <- c("Species","Sex","Index","Frontal Lobe",
+#' "Rear Width", "Carapace Length","Carapace Width","Body Depth")
+#'
+#' test_ind <- sample(1:nrow(data), nrow(data)%/%5)
+#' train_reg <- data[-test_ind,]
+#' test_reg <- data[test_ind,]
+#'
+#'
+#' forest <- forestry(x=train_reg[,-which(names(train_reg)=="Carapace Width")],
+#' y=train_reg[,which(names(train_reg)=="Carapace Width")])
+#'
+#' forest_predictor <- Predictor$new(model = forest, data=train_reg,
+#' y="Carapace Width", task = "regression")
+#'
+#' forest_interpret <- Interpreter$new(predictor = forest_predictor)
+#'
 #' @export
 Interpreter <- R6::R6Class(
   "Interpreter",
@@ -25,17 +46,39 @@ Interpreter <- R6::R6Class(
 
     # initialize an interpreter object
     #' @param predictor The trained predictor object for the model that we want to
-    #'  interpret.
-    #' @param samples The samples used for the PDP/ALE. Overwrites the batch size
-    #' parameter from the predictor object.
+    #'                  interpret.
+    #' @param samples The number of observations used for the interpretability
+    #'                method. If no number is given, the default set is the
+    #'                minimum between 1000 and the number of rows in the
+    #'                training data set.
     #' @param data.points The indices of the data points used for the PDP/ALE. This
-    #' overwrites the "samples" parameter or the batch size from the predictor.
+    #'                    overwrites the "samples" parameter above.
     #' @param method The chosen interpretability method for the black-box model.
+    #'               By default, this method is set to partial dependence plots
+    #'               ("pdp"). This can either be set to "pdp" or "ale".
     #' @return An `Interpreter` object.
     #' @note
-    #' PDP and ICE Implementation
+    #' A wrapper to pass a predictor object (see: predictor.R) for interpreting
+    #' its predictions with respect to one or two features. The two methods
+    #' for interpreting a model based on one or two features are partial
+    #' dependence plots (PDP), which averages over the marginal distribution, and
+    #' accumulated local effects (ALE), which averages over the conditional
+    #' distribution.
+    #'
+    #' The necessary variable is the predictor object. The other variables are
+    #' optional, but it may be useful to specify the number of samples or the
+    #' data.points if the training data is very large (reduces time for computations).
+    #'
+    #' For the output, the model returns an interpreter object with two lists of
+    #' functions: one for interpreting a single feature's role in the black-box
+    #' model, and the other for intepreting a pair of features' role in the
+    #' black-box model. These interpretability functions are built for each
+    #' possible feature (or pair of features). Each of these functions return
+    #' a vector of averaged predictions equal in length to the number of
+    #' values (or number of rows) input into the function.
+    #'
     initialize = function(predictor = NULL,
-                          samples = NULL,
+                          samples = 1000,
                           data.points = NULL,
                           method = "pdp") {
       # check to see if predictor is a valid predictor object
@@ -66,19 +109,12 @@ Interpreter <- R6::R6Class(
       # if data.points is not specified
       data <- predictor$data
       if (is.null(data.points)) {
-        if (is.null(samples)) {
-          # set samples to either batch size or whole dataset
-          N <- predictor$batch.size
-          N <- min(N, nrow(data))
-          samples <- N
-        } else {
-          # get number of datapoints equal to samples
-          checkmate::assert_numeric(samples)
-          samples <- as.integer(samples)
-          if (samples > nrow(samples) | samples < 1) {
-            stop("Invalid sample number.")
-          }
+        checkmate::assert_numeric(samples) # check that sample is numeric
+        samples <- min(samples, nrow(data))
+        if (samples > nrow(data) | samples < 1) {
+          stop("Invalid sample number.")
         }
+        samples <- as.integer(samples)
         # set data.points to be worked with (# of datapoints = sample number)
         data.points <- sample(1:nrow(data), samples)
       }
@@ -102,20 +138,13 @@ Interpreter <- R6::R6Class(
         pdp.function <- function(feature) {
           force(feature)
           pdp.function.2 <- function(val) {
-            if (length(val) == 1){
-              data <- predictor$data[data.points, , drop = FALSE]
-              data[, feature] <- val
-              mean(predict(predictor, data)[, 1])
+            return.vals <- c()
+            for (v in val){
+              data <- predictor$data[data.points, ,drop = FALSE]
+              data[, feature] <- v
+              return.vals <- c(return.vals, mean(predict(predictor, data)[, 1]))
             }
-            else{
-              return.vals <- c()
-              for (v in val){
-                data <- predictor$data[data.points, ,drop = FALSE]
-                data[, feature] <- v
-                return.vals <- c(return.vals, mean(predict(predictor, data)[, 1]))
-              }
-              return.vals
-            }
+            return.vals
           }
           return(pdp.function.2)
         }
@@ -128,14 +157,19 @@ Interpreter <- R6::R6Class(
         names(functions.pdp) <- features
 
         # for 2d features
+        # requires a matrix/dataframe with two columns for predictions
         pdp.function.2d <- function(feature.1, feature.2){
           force(feature.1)
           force(feature.2)
-          pdp.function.2d.2 <- function(val.1, val.2){
+          pdp.function.2d.2 <- function(values){
+            results <- c()
             data <- predictor$data[data.points, , drop = FALSE]
-            data[, feature.1] <- val.1
-            data[, feature.2] <- val.2
-            mean(predict(predictor, data)[,1])
+            for (i in 1:nrow(values)){
+              data[, feature.1] <- values[i,1]
+              data[, feature.2] <- values[i,2]
+              results <- c(results, mean(predict(predictor, data)[,1]))
+            }
+            results
           }
           return(pdp.function.2d.2)
         }
@@ -174,10 +208,11 @@ Interpreter <- R6::R6Class(
 
 # allows user to set data.points
 #' @name set.data.points
-#' @title Sets the data points used for interpretation
-#' @description Gives information for a predictor object
-#' @param object The Interpreter to print
-#' @param data.points The new data points to set for the object
+#' @title Modify the Training Data Used for Interpretability
+#' @description Sets the data points used for interpretation
+#' @param object The Interpreter object
+#' @param data.points The training data indices used to set which observations
+#'                    are used for interpretability
 #' @export
 set.data.points = function(object,
                            data.points)
@@ -195,7 +230,13 @@ set.data.points = function(object,
                                 object$method))
 }
 
-# allows user to set type of interpretability method
+# allows user to set data.points
+#' @name set.method
+#' @title Modify the Method Used for Interpretability
+#' @description Sets a new method used for interpertability
+#' @param object The Interpreter object
+#' @param data.points The new method to generate the interpretability functions
+#' @export
 set.method = function(object, method){
   checkmate::assert_character(method)
   if (!(inherits(object, "Interpreter"))) {

@@ -7,10 +7,48 @@
 The class for different interpretability methods.
 }
 \note{
-PDP and ICE Implementation
+A wrapper to pass a predictor object (see: predictor.R) for interpreting
+its predictions with respect to one or two features. The two methods
+for interpreting a model based on one or two features are partial
+dependence plots (PDP), which averages over the marginal distribution, and
+accumulated local effects (ALE), which averages over the conditional
+distribution.
+
+The necessary variable is the predictor object. The other variables are
+optional, but it may be useful to specify the number of samples or the
+data.points if the training data is very large (reduces time for computations).
+
+For the output, the model returns an interpreter object with two lists of
+functions: one for interpreting a single feature's role in the black-box
+model, and the other for intepreting a pair of features' role in the
+black-box model. These interpretability functions are built for each
+possible feature (or pair of features). Each of these functions return
+a vector of averaged predictions equal in length to the number of
+values (or number of rows) input into the function.
 }
 \examples{
-Needs to be rewritten
+library(interpret)
+set.seed(491)
+data <- MASS::crabs
+
+levels(data$sex) <- list(Male = "M", Female = "F")
+levels(data$sp) <- list(Orange = "O", Blue = "B")
+colnames(data) <- c("Species","Sex","Index","Frontal Lobe",
+"Rear Width", "Carapace Length","Carapace Width","Body Depth")
+
+test_ind <- sample(1:nrow(data), nrow(data)\%/\%5)
+train_reg <- data[-test_ind,]
+test_reg <- data[test_ind,]
+
+
+forest <- forestry(x=train_reg[,-which(names(train_reg)=="Carapace Width")],
+y=train_reg[,which(names(train_reg)=="Carapace Width")])
+
+forest_predictor <- Predictor$new(model = forest, data=train_reg,
+y="Carapace Width", task = "regression")
+
+forest_interpret <- Interpreter$new(predictor = forest_predictor)
+
 }
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
@@ -21,11 +59,11 @@ Needs to be rewritten
 
 \item{\code{data.points}}{The indices of the data points in the training data used for the PDP/ALE.}
 
-\item{\code{functions.1d}}{Functions giving single feature interpretation of the model}
+\item{\code{functions.1d}}{List of functions giving single feature interpretations of the model.}
 
-\item{\code{functions.2d}}{Functions giving two-feature interpretation of the model}
+\item{\code{functions.2d}}{List of functions giving two-feature interpretations of the model}
 
-\item{\code{method}}{The chosen interpretability method for the black-box model (PDP or ALE).}
+\item{\code{method}}{The chosen interpretability method for the black-box model ("pdp" or "ale").}
 }
 \if{html}{\out{</div>}}
 }
@@ -43,7 +81,7 @@ Needs to be rewritten
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Interpreter$new(
   predictor = NULL,
-  samples = NULL,
+  samples = 1000,
   data.points = NULL,
   method = "pdp"
 )}\if{html}{\out{</div>}}
@@ -55,13 +93,17 @@ Needs to be rewritten
 \item{\code{predictor}}{The trained predictor object for the model that we want to
 interpret.}
 
-\item{\code{samples}}{The samples used for the PDP/ALE. Overwrites the batch size
-parameter from the predictor object.}
+\item{\code{samples}}{The number of observations used for the interpretability
+method. If no number is given, the default set is the
+minimum between 1000 and the number of rows in the
+training data set.}
 
 \item{\code{data.points}}{The indices of the data points used for the PDP/ALE. This
-overwrites the "samples" parameter or the batch size from the predictor.}
+overwrites the "samples" parameter above.}
 
-\item{\code{method}}{The chosen interpretability method for the black-box model.}
+\item{\code{method}}{The chosen interpretability method for the black-box model.
+By default, this method is set to partial dependence plots
+("pdp"). This can either be set to "pdp" or "ale".}
 }
 \if{html}{\out{</div>}}
 }

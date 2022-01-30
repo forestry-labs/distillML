@@ -2,15 +2,16 @@
 % Please edit documentation in R/interpret.R
 \name{set.data.points}
 \alias{set.data.points}
-\title{Sets the data points used for interpretation}
+\title{Modify the Training Data Used for Interpretability}
 \usage{
 set.data.points(object, data.points)
 }
 \arguments{
-\item{object}{The Interpreter to print}
+\item{object}{The Interpreter object}
 
-\item{data.points}{The new data points to set for the object}
+\item{data.points}{The training data indices used to set which observations
+are used for interpretability}
 }
 \description{
-Gives information for a predictor object
+Sets the data points used for interpretation
 }
