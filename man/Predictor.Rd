@@ -11,7 +11,7 @@ Predictor class description
 Predictor Object
 }
 \note{
-A wrapper to pass through an ML algorithm (rpart, etc.) through the
+A wrapper to pass an ML algorithm (rpart, etc.) through the
 interpretability functions, the data used to create the algorithm
 
 The necessary variables are model, data, y. The other variables are
@@ -52,19 +52,22 @@ linreg_predictor$print()
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
 \describe{
-\item{\code{data}}{The training data for the model}
+\item{\code{data}}{The training data for building the model}
 
 \item{\code{model}}{The object model}
 
-\item{\code{task}}{The prediction task the model is trained on}
+\item{\code{task}}{The prediction task the model performs (i.e. classification or regression)}
 
-\item{\code{class}}{The class of the model}
+\item{\code{class}}{The class for which we get predictions. We specify this to get the predictions
+(such as probabilites) for an observation being in a specific class (e.g. Male or Female).
+This parameter is specifically for classification predictions.}
 
-\item{\code{prediction.function}}{The prediction function used by the model.}
+\item{\code{prediction.function}}{The prediction function used by the model}
 
-\item{\code{batch.size}}{The batch size for the model}
+\item{\code{batch.size}}{The number of observations used for future predictions. This is at most the number of
+observations in the training data.}
 
-\item{\code{y}}{The name of the outcome feature in `data`}
+\item{\code{y}}{The name of the outcome feature in `data`.}
 }
 \if{html}{\out{</div>}}
 }
@@ -107,7 +110,8 @@ linreg_predictor$print()
 
 \item{\code{class}}{The class of predictions done.}
 
-\item{\code{type}}{The type of regression.}
+\item{\code{type}}{The type of predictions done (i.e. 'response' for predicted probabliities for classification).
+This feature is only be used if no specific prediction function is specified.}
 
 \item{\code{batch.size}}{The size of the batch used to create pdp grids}
 }

@@ -17,9 +17,6 @@ library(ggplot2)
 library(interpret)
 library(Rforestry)
 
-# source("predictor.R")
-# source("interpret.R")
-#source("~/Dropbox/interpretability_sandbox/R/plotter.R")
 set.seed(491)
 
 data <- MASS::crabs
@@ -38,7 +35,7 @@ This class standardizes the predictions, tracks the outcome feature, and stores 
 training data.
 
 ```{r}
-# try with different dataset
+# Get training data set
 set.seed(491)
 test_ind <- sample(1:nrow(data), nrow(data)%/%5)
 train_reg <- data[-test_ind,]
@@ -65,13 +62,9 @@ Examining the `Interpretor`, we can see the current method selected: "pdp", the 
 the training data indices, and the lists of pdp functions.
 
 ```{r}
-# Now given a predictor object, we can create an interpretor class
 forest_interpret <- Interpreter$new(predictor = forest_predictor)
 
 print(forest_interpret)
-# Check to see that the specified functions are behaving
-#print(forestinterpret$functions.1d$`Body Depth`(1))
-
 ```
 
 The pdp functions are stored in two lists, one for 1-d pdp functions and one for 2-d pdp functions.
@@ -92,23 +85,23 @@ This allows us to make standard pdp plots as well as conditional pdp plots with 
 Here we show a single variable pdp plot and two conditional pdp plots with second categorical variables.
 
 ```{r}
-
 # check plotter wrapper
 forest_plot <- Plotter$new(forest_interpret, features = c("Frontal Lobe"),
-                          features.2d = data.frame(col1 = c("Frontal Lobe", "Frontal Lobe"),
-                                                   col2 = c("Species", "Sex")))
+                          features.2d = data.frame(col1 = c("Frontal Lobe", "Frontal Lobe", "Frontal Lobe"),
+                                                   col2 = c("Species", "Sex", "Rear Width")))
 
 plots <- plot(forest_plot)
 plots[[1]]
 plots[[2]]
 plots[[3]]
+plots[[4]]
 ```
 
 We can also adjust where the plots are centered at for each feature, and what
 grid of points are used in the evaluations that create the plots.
 
 ```{r}
-# test functions for the plotter
+# Set center and grid points for the plots
 forest_plot$center.at$`Frontal Lobe`
 forest_plot$grid.points$`Frontal Lobe`
 

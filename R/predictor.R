@@ -4,13 +4,16 @@
 #' @title The class that wraps a machine learning model in order to provide a
 #'  standardized method for predictions for different models.
 #' @description Predictor class description
-#' @field data The training data for the model
+#' @field data The training data for building the model
 #' @field model The object model
-#' @field task The prediction task the model is trained on
-#' @field class The class of the model
-#' @field prediction.function The prediction function used by the model.
-#' @field batch.size The batch size for the model
-#' @field y The name of the outcome feature in `data`
+#' @field task The prediction task the model performs (i.e. classification or regression)
+#' @field class The class for which we get predictions. We specify this to get the predictions
+#'        (such as probabilites) for an observation being in a specific class (e.g. Male or Female).
+#'        This parameter is specifically for classification predictions.
+#' @field prediction.function The prediction function used by the model
+#' @field batch.size The number of observations used for future predictions. This is at most the number of
+#'        observations in the training data.
+#' @field y The name of the outcome feature in `data`.
 #' @examples
 #' data <- MASS::Boston
 #' set.seed(491)
@@ -50,11 +53,12 @@ Predictor <- R6::R6Class("Predictor",
     #' @param y The name of the outcome variable in data.
     #' @param task The prediction class, either `classification` or `regression`
     #' @param class The class of predictions done.
-    #' @param type The type of regression.
+    #' @param type The type of predictions done (i.e. 'response' for predicted probabliities for classification).
+    #'        This feature is only be used if no specific prediction function is specified.
     #' @param batch.size The size of the batch used to create pdp grids
     #' @return A `Predictor` object.
     #' @note
-    #' A wrapper to pass through an ML algorithm (rpart, etc.) through the
+    #' A wrapper to pass an ML algorithm (rpart, etc.) through the
     #' interpretability functions, the data used to create the algorithm
     #'
     #' The necessary variables are model, data, y. The other variables are
