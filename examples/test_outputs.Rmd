@@ -13,8 +13,7 @@ The test dataset we use to demonstrate this is the MASS Boston dataset for
 regression tasks, and the crabs dataset for classification tasks.
 ```{r}
 library(MASS)
-source("predictor.R")
-source("interpret.R")
+library(interpret)
 data <- MASS::Boston
 set.seed(491)
 test_ind <- sample(1:nrow(data), nrow(data)%/%5)
@@ -31,33 +30,16 @@ test_class <- data_class[test_ind,]
 
 
 ```{r}
-# linear regression
-linreg <- lm(crim ~., data=train_reg)
-linreg_predictor <- Predictor$new(model = linreg, data = train_reg, y="crim",
-                                  predict = predict, task = "regression")
-actual <- predict(linreg, test_reg)
-method <- linreg_predictor$predict(test_reg) 
-sum(actual != method) # all the same values
-
-linreg_predictor$print()
-
-linreginterpret <- Interpreter$new(predictor = linreg_predictor,
-                                   feature = "indus")
-linreginterpret$plot()
-```
-
-
-```{r}
 # logistic regression
 # Interpreter not yet implemented for classification (only for single variable probs)
 logreg <- glm(sex ~., data=train_class, family=binomial(logit))
 logreg_predictor <- Predictor$new(model=logreg, data=train_class, y="sex",
                                   type = "response", task = "classification")
 actual <- predict(logreg, test_class, type = "response")
-method <- logreg_predictor$predict(test_class)
+method <- predict(logreg_predictor,test_class)
 sum(actual!= method)
 head(method)
-logreg_predictor$print()
+print(logreg_predictor)
 ```
 
 ```{r}
@@ -83,14 +65,13 @@ dectreeinterp$plot()
 # decision tree for classification
 dectree <- rpart(sex ~., data=train_class, method = "class")
 dectree_predictor <- Predictor$new(model = dectree, data = train_class, y="sex",
-                                  type = "prob", task = "classification")
+                                  type = "prob", task = "classification", 
+                                  class = "F")
 actual <- predict(dectree, test_class, type= "prob")
-method <- dectree_predictor$predict(test_class) 
+method <- predict(dectree_predictor,test_class) 
 sum(actual != method) # all the same values
 
 head(method)
-
-dectree_predictor$print()
 ```
 
 
@@ -104,26 +85,6 @@ head(method) # only shows female probabilites
 dectreeinterp <- Interpreter$new(predictor = dectree_predictor,
                                   feature = "RW")
 dectreeinterp$plot()
-```
-
-
-```{r}
-# random forest
-library(Rforestry)
-forest <- forestry(x=train_reg[,-which(names(train_reg)=="crim")],
-                   y=train_reg[,which(names(train_reg)=="crim")])
-forest_predictor <- Predictor$new(model = forest, data=train_reg, y="crim",
-                                  task = "regression")
-actual <- predict(forest, test_reg[,-which(names(test_reg)=="crim")])
-method <- forest_predictor$predict(test_reg)
-
-head(data.frame(actual,method)) # all the same values
-forest_predictor$print()
-
-forestinterp <- Interpreter$new(predictor = forest_predictor,
-                                feature = "indus")
-forestinterp$plot()
-
 ```
 
 
