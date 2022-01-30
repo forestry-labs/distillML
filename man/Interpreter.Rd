@@ -2,9 +2,9 @@
 % Please edit documentation in R/interpret.R
 \name{Interpreter}
 \alias{Interpreter}
-\title{The class for different interpretability methods.}
+\title{Interpreter class description}
 \description{
-Interpreter class description
+The class for different interpretability methods.
 }
 \note{
 PDP and ICE Implementation
@@ -21,11 +21,11 @@ Needs to be rewritten
 
 \item{\code{data.points}}{The indices of the data points in the training data used for the PDP/ALE.}
 
-\item{\code{functions.1d}}{Functions giving average value across data.points with a given value and feature}
+\item{\code{functions.1d}}{Functions giving single feature interpretation of the model}
 
-\item{\code{functions.2d}}{Functions giving 2D pdp functions}
+\item{\code{functions.2d}}{Functions giving two-feature interpretation of the model}
 
-\item{\code{method}}{The chosen interpretability method for the black-box model.}
+\item{\code{method}}{The chosen interpretability method for the black-box model (PDP or ALE).}
 }
 \if{html}{\out{</div>}}
 }

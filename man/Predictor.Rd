@@ -26,27 +26,27 @@ other types of predictions (ex: predictions that spit out the factor) are not al
 prediction method must be constructed, with optional argument of type
 }
 \examples{
-data <- MASS::Boston
+library(interpret)
 set.seed(491)
+data <- MASS::crabs
+
+levels(data$sex) <- list(Male = "M", Female = "F")
+levels(data$sp) <- list(Orange = "O", Blue = "B")
+colnames(data) <- c("Species","Sex","Index","Frontal Lobe",
+"Rear Width", "Carapace Length","Carapace Width","Body Depth")
+
 test_ind <- sample(1:nrow(data), nrow(data)\%/\%5)
 train_reg <- data[-test_ind,]
 test_reg <- data[test_ind,]
 
 
-data_class <- MASS::crabs
-test_ind <- sample(1:nrow(data_class), nrow(data_class)\%/\%5)
-train_class <- data_class[-test_ind,]
-test_class <- data_class[test_ind,]
+forest <- forestry(x=train_reg[,-which(names(train_reg)=="Carapace Width")],
+y=train_reg[,which(names(train_reg)=="Carapace Width")])
+
+forest_predictor <- Predictor$new(model = forest, data=train_reg,
+y="Carapace Width", task = "regression")
 
 
-linreg <- lm(crim ~., data=train_reg)
-linreg_predictor <- Predictor$new(model = linreg, data = train_reg, y="crim",
-                                  predict = predict, task = "regression")
-actual <- predict(linreg, test_reg)
-method <- linreg_predictor$predict(test_reg)
-sum(actual != method) # all the same values
-
-linreg_predictor$print()
 }
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}

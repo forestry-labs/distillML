@@ -1,14 +1,14 @@
 #' @include predictor.R
 #' @importFrom R6 R6Class
 
-#' @title The class for different interpretability methods.
-#' @description Interpreter class description
+#' @title Interpreter class description
+#' @description The class for different interpretability methods.
 #' @field predictor The predictor object to use as a standardized wrapper for the model
 #' @field features All possible features that can be interpreted with respect to the model
 #' @field data.points The indices of the data points in the training data used for the PDP/ALE.
-#' @field functions.1d Functions giving average value across data.points with a given value and feature
-#' @field functions.2d Functions giving 2D pdp functions
-#' @field method The chosen interpretability method for the black-box model.
+#' @field functions.1d Functions giving single feature interpretation of the model
+#' @field functions.2d Functions giving two-feature interpretation of the model
+#' @field method The chosen interpretability method for the black-box model (PDP or ALE).
 #' @examples
 #' Needs to be rewritten
 #' @export
