@@ -707,11 +707,11 @@ localSurrogate = function(object,
       vals.2 <- object$grid.points[[feature.2]]
       # create a grid point of values
       values <- expand.grid(vals.1, vals.2)
-      predictions <- c()
-      for (j in 1:nrow(values)){
-        prediction <- object$interpreter$functions.2d[[feature.1]][[feature.2]](values[j,1], values[j,2])
-        predictions <- c(predictions, prediction)
-      }
+      predictions <- object$interpreter$functions.2d[[feature.1]][[feature.2]](values)
+      #for (j in 1:nrow(values)){
+      #  prediction <- object$interpreter$functions.2d[[feature.1]][[feature.2]](values[j,1], values[j,2])
+      #  predictions <- c(predictions, prediction)
+      #}
       values <- cbind(values, predictions)
       values <- data.frame(values)
       names(values) <- c("Feat.1", "Feat.2", "Val")
@@ -748,11 +748,12 @@ localSurrogate = function(object,
       vals.cat <- object$grid.points[[categorical]]
       # generate predictions for each level
       values <- expand.grid(vals.cont, vals.cat)
-      predictions <- c()
-      for (j in 1:nrow(values)){
-        prediction <- object$interpreter$functions.2d[[continuous]][[categorical]](values[j,1], values[j,2])
-        predictions <- c(predictions, prediction)
-      }
+      predictions <- object$interpreter$functions.2d[[continuous]][[categorical]](values)
+      #predictions <- c()
+      #for (j in 1:nrow(values)){
+      #  prediction <- object$interpreter$functions.2d[[continuous]][[categorical]](values[j,1], values[j,2])
+      #  predictions <- c(predictions, prediction)
+      #}
       values <- cbind(values, predictions)
       values <- data.frame(values)
       names(values) <- c("Cont", "Cat", "Val")
