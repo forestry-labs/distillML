@@ -18,7 +18,8 @@ The necessary variables are the interpreter object and either the vector/list of
 features for 1-d plots or the matrix / dataframe for 2-d plots.
 
 For the output, this model returns a plotter object that can then be plotted to
-get the visualizations of the data using the 'plot()' function.
+get the visualizations of the data using the 'plot()' function, grid predictions
+using different predict methods, and centered predictions.
 }
 \examples{
 library(interpret)
@@ -61,6 +62,9 @@ plots <- plot(forest_plot)
 
 \item{\code{grid.points}}{A list of vectors containing the grid points to use for
 the predictions.}
+
+\item{\code{saved}}{A list that saves the previous calculations for the 1-d ICE plots,
+1-d PDP plots, and 2-d PDP plots. This saves the uncentered calculations.}
 }
 \if{html}{\out{</div>}}
 }

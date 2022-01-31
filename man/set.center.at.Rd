@@ -16,3 +16,8 @@ set.center.at(object, feature, value)
 \description{
 Method for setting center value for a specific feature
 }
+\note{
+Unlike the grid predictions, the center.at values do not modify any of the
+previous saved calculations. Therefore, it does not change or remove any of the
+previously calculated, saved data.
+}

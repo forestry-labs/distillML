@@ -11,6 +11,13 @@
 
 \item{method}{The type of plot to make. Can be one of `ice`,`pdp`,`pdp+ice`.}
 }
+\value{
+A list of plots with 1-d features and 2-d features. For 2-d features with
+        one continuous and one categorical feature, the plot is a linear plot of the
+        continuous feature with group colors representing the categorical feature.
+        For two continuous features, the plot is a heatmap with the shade representing
+        the value of the outcome.
+}
 \description{
 Plots either the PDP plots or ICE plots
 }

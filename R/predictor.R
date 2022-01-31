@@ -133,6 +133,7 @@ Predictor <- R6::R6Class("Predictor",
 #' @description Gives a single column of predictions for a predictor object
 #' @param object Predictor object to use.
 #' @param newdata The dataframe to use for the predictions.
+#' @return A single column dataframe containing the predictions for all values
 #' @export
 predict.Predictor = function(object, newdata){
   # check that the new data is a dataframe

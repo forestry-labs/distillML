@@ -11,6 +11,9 @@
 
 \item{newdata}{The dataframe to use for the predictions.}
 }
+\value{
+A single column dataframe containing the predictions for all values
+}
 \description{
 Gives a single column of predictions for a predictor object
 }

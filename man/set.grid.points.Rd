@@ -16,3 +16,9 @@ set.grid.points(object, feature, values)
 \description{
 Method for setting center value for a specific feature
 }
+\note{
+Because the grid points determine what calculations are performed, changing the grid points
+will remove any of the previously calculated values in the 'Plotter' object. For any 1-d ICE
+or PDP plot, it will remove the previous calculations for the given feature. For any 2-d PDP
+calcuations, it will remove plots that include the given feature as any of its features.
+}

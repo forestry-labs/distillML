@@ -13,6 +13,8 @@
 #' @field center.at The value(s) to center the feature plots
 #' @field grid.points A list of vectors containing the grid points to use for
 #'                    the predictions.
+#' @field saved A list that saves the previous calculations for the 1-d ICE plots,
+#'              1-d PDP plots, and 2-d PDP plots. This saves the uncentered calculations.
 #' @examples
 #' library(interpret)
 #' set.seed(491)
@@ -49,7 +51,7 @@ Plotter <- R6::R6Class(
     features.2d = NULL,
     center.at = NULL,
     grid.points = NULL,
-
+    saved = NULL,
 
     #' @description Initialize a plotter object
     #' @param interpreter Interpreter object to make plots for.
@@ -71,7 +73,9 @@ Plotter <- R6::R6Class(
     #' features for 1-d plots or the matrix / dataframe for 2-d plots.
     #'
     #' For the output, this model returns a plotter object that can then be plotted to
-    #' get the visualizations of the data using the 'plot()' function.
+    #' get the visualizations of the data using the 'plot()' function, grid predictions
+    #' using different predict methods, and centered predictions.
+    #'
     #' @export
     initialize = function(interpreter=NULL,
                           features=NULL,
@@ -142,16 +146,28 @@ Plotter <- R6::R6Class(
       }
       names(center.at) <- total.features
 
+      # Generate Empty Lists for Future Calculations
+      ICE.list <- as.list(rep(NA, length(features)))
+      names(ICE.list) <- features
+      PDP.1D.list <- as.list(rep(NA, length(features)))
+      names(PDP.1D.list) <- features
+
+      PDP.2D.list <- as.list(rep(NA, nrow(features.2d)))
+      all_names <- c(features.2d, sep = ", ")
+      names(PDP.2D.list) <- do.call(paste, all_names)
+
       # intialize all variables
       self$interpreter <- interpreter
       self$features <- features
       self$features.2d <- features.2d
       self$center.at <- center.at
       self$grid.points <- grid.points
+      self$saved <- list(ICE = ICE.list,
+                         PDP.1D = PDP.1D.list,
+                         PDP.2D = PDP.2D.list)
     }
   )
 )
-
 
 #' @name set.center.at
 #' @title Sets the center value used for plotting
@@ -159,6 +175,10 @@ Plotter <- R6::R6Class(
 #' @param object The Plotter class to recenter
 #' @param feature The feature to center
 #' @param value The new center value to use for the feature.
+#' @note
+#' Unlike the grid predictions, the center.at values do not modify any of the
+#' previous saved calculations. Therefore, it does not change or remove any of the
+#' previously calculated, saved data.
 #' @export
 set.center.at = function(object,
                          feature,
@@ -167,7 +187,7 @@ set.center.at = function(object,
   if (!(inherits(object, "Plotter"))){
     stop("Plotter given is not of the plotter class.")
   }
-  if (!(feature %in% object$features)){
+  if (!(feature %in% unique(c((as.vector(t(object$features.2d))), object$features)))){
     stop("Feature given is not in the feature list.")
   }
   # valid feature index
@@ -193,6 +213,11 @@ set.center.at = function(object,
 #' @param object The Plotter class to recenter
 #' @param feature The feature to center
 #' @param values The set of new values to be used as the grid points for the selected feature
+#' @note
+#' Because the grid points determine what calculations are performed, changing the grid points
+#' will remove any of the previously calculated values in the 'Plotter' object. For any 1-d ICE
+#' or PDP plot, it will remove the previous calculations for the given feature. For any 2-d PDP
+#' calcuations, it will remove plots that include the given feature as any of its features.
 #' @export
 set.grid.points = function(object,
                            feature,
@@ -201,7 +226,7 @@ set.grid.points = function(object,
   if (!(inherits(object, "Plotter"))){
     stop("Plotter given is not of the plotter class.")
   }
-  if (!(feature %in% object$features)){
+  if (!(feature %in% unique(c((as.vector(t(object$features.2d))), object$features)))){
     stop("Feature given is not in the feature list.")
   }
   # valid feature index
@@ -232,57 +257,258 @@ set.grid.points = function(object,
     }
   }
   object$grid.points[[index]] <- values
+
+  # clear saved values because calculations have changed
+  object$saved[["ICE"]][[feature]] <- NA
+  object$saved[["PDP.1D"]][[feature]] <- NA
+
+  index_rm <- which(rowSums(object$features.2d == feature) > 0)
+  for (i in index_rm){
+    object$saved[["PDP.2D"]][[i]] <- NA
+  }
 }
 
-
-#' @name predict_grid.Plotter
+#' @name predict_ICE.Plotter
 #' @title Prediction Function for ICE Plots
 #' @description Gives predictions at each point on the grid.
 #' @param object The Plotter object to use.
+#' @param save A binary variable to determine whether the calculations should be
+#'             saved in the plotter object
+#' @return A list of dataframes for each feature. In each dataframe, the first
+#'         column contains the grid values for the feature, and each subsequent
+#'         column has a single observation with the modified feature set to that
+#'         row's grid point.
 #'
-#' Needed fixes: set predictions as a one time calculation,
-#' add in second variable interpretations,
+#' Needed fixes: add in second variable interpretations,
 #' add grouping by another variable
 #' @export
-predict_grid.Plotter = function(object) {
+predict_ICE.Plotter = function(object, save = TRUE) {
+
+  if (!(inherits(object, "Plotter"))){
+    stop("Plotter given is not of the plotter class.")
+  }
+
+  # if all grid predictions are filled
+  if (sum(is.na(object$saved$ICE)) == 0){
+    return(object$saved$ICE)
+  }
+
   grid.predictions <- list()
+  needs.update <- names(which(is.na(object$saved$ICE)))
 
-  # get the data for the selected samples
-  data <- object$interpreter$predictor$data[object$interpreter$data.points,]
-
-  # make grid predictions for each variable listed
+  # make grid predictions for each variable listed if not saved
   for (feature in object$features){
-    results <- data.frame(sentinel = rep(0, length(object$interpreter$data.points)))
-    index <- which(names(object$grid.points) == feature)
-    for (val in object$grid.points[[index]]) {
-      newdata <- data
-      newdata[, feature] <- val
-      results <- cbind.data.frame(results,
-                                  val = predict(object$interpreter$predictor, newdata)[, 1])
+    results <- NULL
+    if (feature %in% needs.update){
+      results <- data.frame(sentinel = rep(0, length(object$interpreter$data.points)))
+      index <- which(names(object$grid.points) == feature)
+      for (val in object$grid.points[[index]]) {
+        newdata <- object$interpreter$predictor$data[object$interpreter$data.points,]
+        newdata[, feature] <- val
+        results <- cbind.data.frame(results,
+                                    val = predict(object$interpreter$predictor, newdata)[, 1])
+      }
+      results <- data.frame(results)
+      results <- results[, -1, drop = FALSE]
+      colnames(results) <- object$grid.points[[index]]
+
+      # return transpose (easier for plotting)
+      results <- (t(results))
+      colnames(results) <- object$interpreter$data.points
+      results <- cbind(feature = object$grid.points[[index]], results)
+      rownames(results) <- NULL
     }
-    results <- data.frame(results)
-    results <- results[, -1, drop = FALSE]
-    colnames(results) <- object$grid.points[[index]]
-
-    # subtract out the centered value
-    newdata <- data
-    newdata[, feature] <- object$center.at[[index]]
-    base <- predict(object$interpreter$predictor, newdata)
-
-    # normalize results
-    results <- results - base[, 1]
-    names.row <- rownames(data)
-
-    # return transpose (easier for plotting)
-    results <- (t(results))
-    colnames(results) <- names.row
-    results <- cbind(feature = object$grid.points[[index]], results)
-    rownames(results) <- NULL
-
+    else{
+      results <- object$saved[["ICE"]][[feature]]
+    }
     grid.predictions <- append(grid.predictions, list(data.frame(results)))
   }
   names(grid.predictions) <- object$features
-  return(grid.predictions) # returns a list of grid predictions for plotting
+
+  if (save == TRUE){
+    object$saved[["ICE"]] <- grid.predictions
+  }
+  else{
+    return(grid.predictions) # returns a list of grid predictions for plotting
+  }
+
+  return(object$saved[["ICE"]])
+}
+
+#' predict_PDP.1D.Plotter
+#' @name predict_PDP.1D.Plotter
+#' @title Prediction Function for PDP Plots
+#' @description Gives prediction curve for all specified features in the
+#'              plotter object
+#' @param object The Plotter object to use.
+#' @param save A binary variable to determine whether the calculations should be
+#'             saved in the plotter object
+#' @return A list of dataframes with the grid points and PDP prediction curves
+#'         for each feature in object
+#' @export
+predict_PDP.1D.Plotter = function(object, save = TRUE){
+
+  if (!(inherits(object, "Plotter"))){
+    stop("Plotter given is not of the plotter class.")
+  }
+
+  # if all grid predictions are filled
+  if (sum(is.na(object$saved$PDP.1D)) == 0){
+    return(object$saved$PDP.1D)
+  }
+
+  # find all features that need updating
+  needs.update <- names(which(is.na(object$saved$PDP.1D)))
+
+  PDP.preds <- list()
+  for (feat in object$features){
+    results <- NULL
+    if (feat %in% needs.update){
+      feature <- object$grid.points[[feat]]
+      PDP <- object$interpreter$functions.1d[[feat]](feature)
+      results <- cbind(feature, PDP)
+      results <- data.frame(results)
+      colnames(results) <- c("feature", "PDP")
+    }
+    else{
+      results <- object$saved[["PDP.1D"]][[feat]]
+    }
+    PDP.preds <- append(PDP.preds, list(results))
+  }
+    names(PDP.preds) <- object$features
+
+  if (save == TRUE){
+    object$saved[["PDP.1D"]] <- PDP.preds
+  }
+  else{
+    return(PDP.preds)
+  }
+
+  return(object$saved[["PDP.1D"]])
+}
+
+#' predict_PDP.2D.Plotter
+#' @name predict_PDP.2D.Plotter
+#' @title Two Dimensional Prediction Curve for PDP Plots
+#' @description Gives prediction surface for all specified feature pairs in the
+#'              plotter object (features.2d)
+#' @param object The Plotter object to use.
+#' @param save A binary variable to determine whether the calculations should be
+#'             saved in the plotter object
+#' @return A list of dataframes for each pair of features.2d
+#' @export
+predict_PDP.2D.Plotter = function(object, save = TRUE){
+  if (!(inherits(object, "Plotter"))){
+    stop("Plotter given is not of the plotter class.")
+  }
+
+  # if all grid predictions are filled
+  if (sum(is.na(object$saved$PDP.2D)) == 0){
+    return(object$saved$PDP.2D)
+  }
+
+  # find all features that need updating
+  needs.update <- which(is.na(object$saved$PDP.2D))
+
+  PDP.2D.preds <- list()
+  for (i in 1:nrow(object$features.2d)){
+    if (i %in% needs.update){
+      feat.1 <- object$features.2d[i,1]
+      feat.2 <- object$features.2d[i,2]
+
+      grid.values <- expand.grid(object$grid.points[[feat.1]],
+                                 object$grid.points[[feat.2]])
+      preds <- object$interpreter$functions.2d[[feat.1]][[feat.2]](grid.values)
+
+      results <- cbind(grid.values, preds)
+      results <- data.frame(results)
+      colnames(results) <- c(feat.1, feat.2, "preds")
+    }
+    else{
+      result <- object$saved[["PDP.2D"]][[i]]
+    }
+    PDP.2D.preds <- append(PDP.2D.preds, list(results))
+    }
+  all_names <- c(object$features.2d, sep = ", ")
+  names(PDP.2D.preds) <- do.call(paste, all_names)
+
+  if (save == TRUE){
+    object$saved[["PDP.2D"]] <- PDP.2D.preds
+  }
+  else{
+    return(PDP.2D.preds)
+  }
+
+  return(object$saved[["PDP.2D"]])
+}
+
+
+
+#' center.preds
+#' @name center.preds
+#' @title Centers the predicted values for 1-d ICE and PDP plots, 2-d PDP plots
+#' @description Given the specified 'center.at' values of the plotter object, this
+#'              function centers the speccified type of plot.
+#' @param object The Plotter object to use
+#' @param plot.type The type of plot which the user wants to center
+#' @return centered dataframe/matrix of values for the given plot
+#' @export
+center.preds = function(object, plot.type){
+
+  if (!(inherits(object, "Plotter"))){
+    stop("Plotter given is not of the plotter class.")
+  }
+
+  if (!(plot.type %in% c("ICE", "PDP.1D", "PDP.2D"))){
+    stop("Please give a valid plot type to center.")
+  }
+
+  if (plot.type == "ICE"){
+    # For the ICE plots
+    hold <- object$saved[["ICE"]]
+    for (feature in names(hold)){
+      # get the center value for this feature
+      newdata <- object$interpreter$predictor$data[object$interpreter$data.points,]
+      newdata[, feature] <- object$center.at[[feature]]
+      base <- predict(object$interpreter$predictor, newdata)[,1]
+      center_row <- c(0, base) # to not subtract the first value in each row (feature)
+
+      # subtract this from each row of the data
+      center_df <- rbind(center_row)[rep(1,nrow(hold[[feature]])),]
+      hold[[feature]] <- (hold[[feature]] - center_df)
+    }
+    return(hold)
+  }
+
+  if (plot.type == "PDP.1D"){
+    hold <- object$saved[["PDP.1D"]]
+    for (feature in names(hold)){
+      base <- object$interpreter$functions.1d[[feature]](object$center.at[[feature]])
+      center_row <- c(0, base)
+      center_df <- rbind(center_row)[rep(1,nrow(hold[[feature]])),]
+
+      hold[[feature]] <- hold[[feature]] - center_df
+    }
+    return(hold)
+  }
+
+  else {
+    hold <- object$saved[["PDP.2D"]]
+    for (i in 1:length(hold)){
+      feat.1 <- names(hold[[i]])[1]
+      feat.2 <- names(hold[[i]])[2]
+
+      center.1 <- object$center.at[[feat.1]]
+      center.2 <- object$center.at[[feat.2]]
+      dat <- data.frame(Var1=center.1, Var2 = center.2)
+      base <- object$interpreter$functions.2d[[feat.1]][[feat.2]](dat)
+      print(base)
+
+      hold[[i]][,"preds"] <- hold[[i]][,"preds"] - base
+    }
+    return(hold)
+  }
+
 }
 
 # helper function for plotter (defines class for each feature)
@@ -302,6 +528,11 @@ class.definer = function(features.2d, data){
 #' @description Plots either the PDP plots or ICE plots
 #' @param object Plotter object to make plots for.
 #' @param method The type of plot to make. Can be one of `ice`,`pdp`,`pdp+ice`.
+#' @return A list of plots with 1-d features and 2-d features. For 2-d features with
+#'         one continuous and one categorical feature, the plot is a linear plot of the
+#'         continuous feature with group colors representing the categorical feature.
+#'         For two continuous features, the plot is a heatmap with the shade representing
+#'         the value of the outcome.
 #' @export
 plot.Plotter = function(object,
                         method = "pdp+ice")
@@ -309,17 +540,23 @@ plot.Plotter = function(object,
   if (!(inherits(object, "Plotter"))){
     stop("Plotter given is not of the plotter class.")
   }
+
+  if (!(method %in% c("pdp", "ice", "pdp+ice"))) {
+    stop("Method entered is not supported")
+  }
+
   # list of plots to be filled
   plots <- list()
   # for 1-D plots
   if (!(is.null(object$features))){
-    # get object for plotting
-    df_all <- predict_grid.Plotter(object)
+
+    df_all <- predict_ICE.Plotter(object)
+    df_all <- center.preds(object, plot.type = "ICE")
+
     for (feature in object$features){
-      index <- which(object$features == feature)
-      df <- df_all[[index]]
+      df <- df_all[[feature]]
       # df contains both pdp line and all ice lines
-      pdp.line <- rowMeans(df[, -which(colnames(df) == "feature")])
+      pdp.line <- rowMeans(df[, -which(colnames(df) == "feature")]) # same as pdp functions
       df <- cbind(df , pdp = pdp.line)
       df <- setDT(data.frame(df))
       df.ice <- df[,-"pdp"]
@@ -330,11 +567,6 @@ plot.Plotter = function(object,
 
       melt.df <- melt(df, id.vars = "feature")
       melt.df.ice <- melt(df.ice, id.vars = "feature")
-
-      # check to make sure that the method given is valid
-      if (!(method %in% c("pdp", "ice", "pdp+ice"))) {
-        stop("Method entered is not supported")
-      }
 
       if (method == "ice") {
         plot.obj <-
@@ -374,65 +606,43 @@ plot.Plotter = function(object,
     features.2d <- object$features.2d
     feature.classes <- class.definer(features.2d = features.2d,
                                      data = object$interpreter$predictor$data)
+
+    # get all necessary values
+    vals <- predict_PDP.2D.Plotter(object)
+    vals <- center.preds(object, plot.type = "PDP.2D")
+
     # for the names in each function
     names.2d <- c()
     for (i in 1:nrow(features.2d)){
       # heatmap for 2 continuous features
       if (feature.classes[features.2d[i,1]] == "numeric" &&
           feature.classes[features.2d[i,2]]=="numeric"){
-        feature.1 <- features.2d[i,1]
-        feature.2 <- features.2d[i,2]
 
-        vals.1 <- object$grid.points[[feature.1]]
-        vals.2 <- object$grid.points[[feature.2]]
-
-        # create a grid point of values
-        values <- expand.grid(vals.1, vals.2)
-        predictions <- c()
-        for (j in 1:nrow(values)){
-          prediction <- object$interpreter$functions.2d[[feature.1]][[feature.2]](values[j,1], values[j,2])
-          predictions <- c(predictions, prediction)
-        }
-        values <- cbind(values, predictions)
-        values <- data.frame(values)
+        values <- vals[[i]]
         names(values) <- c("Feat.1", "Feat.2", "Val")
 
-        # still need to relabel axis
         plot.obj <- ggplot(values, aes(x=Feat.1, y=Feat.2, fill = Val)) +
-          geom_tile() + xlab(feature.1) + ylab(feature.2)
+          geom_tile() + xlab(features.2d[i,1]) + ylab(features.2d[i,2])
         plot.obj <- plot.obj + guides(fill=guide_legend(title = object$interpreter$predictor$y))
       }
       else {
-        # find the categorical feature and continuous feature
-        categorical <- NULL
-        continuous <- NULL
+        # find the continuous feature among the two features
+        continuous <- 2
+        categorical <- 1
         if (feature.classes[features.2d[i,1]] == "numeric"){
-          continuous <- features.2d[i,1]
-          categorical <- features.2d[i,2]
+          continuous <- 1
+          categorical <- 2
         }
-        else {
-          continuous <- features.2d[i,2]
-          categorical <- features.2d[i,1]
+        values <- vals[[i]]
+        if (continuous ==1){
+          names(values) <- c("Cont", "Cat", "Val")
         }
-
-        # pull grid values
-        vals.cont <- object$grid.points[[continuous]]
-        vals.cat <- object$grid.points[[categorical]]
-
-        # generate predictions for each level
-        values <- expand.grid(vals.cont, vals.cat)
-        predictions <- c()
-        for (j in 1:nrow(values)){
-          prediction <- object$interpreter$functions.2d[[continuous]][[categorical]](values[j,1], values[j,2])
-          predictions <- c(predictions, prediction)
+        else{
+          names(values) <- c("Cat", "Cont", "Val")
         }
-        values <- cbind(values, predictions)
-        values <- data.frame(values)
-        names(values) <- c("Cont", "Cat", "Val")
-
         plot.obj <- ggplot(values, aes(x=Cont, y=Val, group=Cat, color=Cat)) +
-          geom_line() + xlab(continuous) + ylab(object$interpreter$predictor$y)
-        plot.obj <- plot.obj +  guides(color=guide_legend(title = categorical))
+          geom_line() + xlab(features.2d[i,continuous]) + ylab(object$interpreter$predictor$y)
+        plot.obj <- plot.obj +  guides(color=guide_legend(title = features.2d[i,categorical]))
       }
       plots <- append(plots, list(plot.obj))
       names.2d <- c(names.2d, paste(features.2d[i,1], features.2d[i,2], sep = "."))
@@ -441,6 +651,8 @@ plot.Plotter = function(object,
   }
   return(plots)
 }
+
+
 
 #' @name localSurrogate
 #' @title Given a plotter object with at least one pair of features,
