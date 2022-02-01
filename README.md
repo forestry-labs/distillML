@@ -1,3 +1,5 @@
+[![R-CMD-check](https://github.com/forestry-labs/interpretability_sandbox/actions/workflows/check-noncontainerized.yaml/badge.svg)](https://github.com/forestry-labs/interpretability_sandbox/actions/workflows/check-noncontainerized.yaml)
+
 # Distillation For Machine Learning Models
 
 This package provides several methods for model distillation and interpretability 
