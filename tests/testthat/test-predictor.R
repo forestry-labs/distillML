@@ -29,22 +29,17 @@ test_that("Tests that the predictor wrapper is working", {
   context("Check class attributes")
   expect_equal(forest_predictor$task,"regression")
 
-  expect_equal(forest_predictor$batch.size, 1000)
-
-
   expect_equal(forest_predictor$model@ntree, 500)
 
   context("Check the model in predictor")
   expect_equal(all.equal(forest_predictor$model@processed_dta$y[1:10],
-               c(-2.0895765, -1.8855020, -1.7397346, -1.7397346,
-                 -1.2732787, -1.0983578, -1.3024322, -0.9525903,
-                 -0.9525903, -0.9234368),
-               tolerance = 1e-4),
+                         c(7.0, 7.7, 8.2, 8.2, 9.8, 10.4, 9.7, 10.9, 10.9, 11.0),
+                         tolerance = 1e-4),
                TRUE)
 
 
-  wrapped_preds <- predict(forest_predictor, newdata = test_reg[,-ncol(test_reg)])
-  standard_preds <- predict(forest, newdata = test_reg[,-ncol(test_reg)])
+  wrapped_preds <- predict(forest_predictor, test_reg[,-ncol(test_reg)])
+  standard_preds <- predict(forest, test_reg[,-ncol(test_reg)])
 
   expect_equal(all.equal(wrapped_preds[,1],
                          standard_preds,

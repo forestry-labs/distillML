@@ -36,7 +36,7 @@ test_that("Tests that the predictor wrapper is working", {
   context("Try pdp predictions")
   pred_pdp <- forest_interpret$functions.1d$`Rear Width`(c(10,11,12))
 
-  pred_pdp_2 <- forest_interpret$functions.2d$`Rear Width`$`Frontal Lobe`(10, 20)
+  pred_pdp_2 <- forest_interpret$functions.2d$`Rear Width`$`Frontal Lobe`(matrix(c(10, 20), nrow=1))
 
   expect_equal(length(pred_pdp), 3)
 
