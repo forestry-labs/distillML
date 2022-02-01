@@ -17,6 +17,7 @@
 #'              1-d PDP plots, and 2-d PDP plots. This saves the uncentered calculations.
 #' @examples
 #' library(interpret)
+#' library(Rforestry)
 #' set.seed(491)
 #' data <- MASS::crabs
 #'
@@ -39,8 +40,9 @@
 #' forest_interpret <- Interpreter$new(predictor = forest_predictor)
 #'
 #' forest_plot <- Plotter$new(forest_interpret, features = c("Frontal Lobe"),
-#'                           features.2d = data.frame(col1 = c("Frontal Lobe", "Frontal Lobe", "Frontal Lobe"),
-#'                                                    col2 = c("Species", "Sex", "Rear Width")))
+#'                           features.2d = data.frame(col1 = c("Frontal Lobe",
+#'                           "Frontal Lobe", "Frontal Lobe"),
+#'                           col2 = c("Species", "Sex", "Rear Width")))
 #' plots <- plot(forest_plot)
 #' @export
 Plotter <- R6::R6Class(

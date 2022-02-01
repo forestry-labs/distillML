@@ -23,6 +23,7 @@ using different predict methods, and centered predictions.
 }
 \examples{
 library(interpret)
+library(Rforestry)
 set.seed(491)
 data <- MASS::crabs
 
@@ -45,8 +46,9 @@ y="Carapace Width", task = "regression")
 forest_interpret <- Interpreter$new(predictor = forest_predictor)
 
 forest_plot <- Plotter$new(forest_interpret, features = c("Frontal Lobe"),
-                          features.2d = data.frame(col1 = c("Frontal Lobe", "Frontal Lobe", "Frontal Lobe"),
-                                                   col2 = c("Species", "Sex", "Rear Width")))
+                          features.2d = data.frame(col1 = c("Frontal Lobe",
+                          "Frontal Lobe", "Frontal Lobe"),
+                          col2 = c("Species", "Sex", "Rear Width")))
 plots <- plot(forest_plot)
 }
 \section{Public fields}{

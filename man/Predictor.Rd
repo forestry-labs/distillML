@@ -27,6 +27,7 @@ prediction method must be constructed, with optional argument of type
 }
 \examples{
 library(interpret)
+library(Rforestry)
 set.seed(491)
 data <- MASS::crabs
 

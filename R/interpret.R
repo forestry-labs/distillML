@@ -11,6 +11,7 @@
 #' @field method The chosen interpretability method for the black-box model ("pdp" or "ale").
 #' @examples
 #' library(interpret)
+#' library(Rforestry)
 #' set.seed(491)
 #' data <- MASS::crabs
 #'

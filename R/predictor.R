@@ -15,6 +15,7 @@
 #' @field y The name of the outcome feature in `data`.
 #' @examples
 #' library(interpret)
+#' library(Rforestry)
 #' set.seed(491)
 #' data <- MASS::crabs
 #'

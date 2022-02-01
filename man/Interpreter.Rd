@@ -28,6 +28,7 @@ values (or number of rows) input into the function.
 }
 \examples{
 library(interpret)
+library(Rforestry)
 set.seed(491)
 data <- MASS::crabs
 
