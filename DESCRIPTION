@@ -25,7 +25,8 @@ Imports:
     onehot,
     dplyr,
     R6 (>= 2.0),
-    data.table
+    data.table,
+    checkmate
 Suggests:
     testthat,
     knitr,
