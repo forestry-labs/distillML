@@ -708,10 +708,7 @@ localSurrogate = function(object,
       # create a grid point of values
       values <- expand.grid(vals.1, vals.2)
       predictions <- object$interpreter$functions.2d[[feature.1]][[feature.2]](values)
-      #for (j in 1:nrow(values)){
-      #  prediction <- object$interpreter$functions.2d[[feature.1]][[feature.2]](values[j,1], values[j,2])
-      #  predictions <- c(predictions, prediction)
-      #}
+
       values <- cbind(values, predictions)
       values <- data.frame(values)
       names(values) <- c("Feat.1", "Feat.2", "Val")
@@ -724,6 +721,9 @@ localSurrogate = function(object,
       # Include the interaction term as a feature for the explanatory tree
       if (interact) {
         values$Interact <- values$Feat.1 * values$Feat.2
+        names(values) <- c(paste(feature.1), paste(feature.2), "Val","Interact")
+      } else {
+        names(values) <- c(paste(feature.1), paste(feature.2), "Val")
       }
 
       # Train the surrogate model
@@ -762,8 +762,9 @@ localSurrogate = function(object,
       plot.obj <- plot.obj +  guides(color=guide_legend(title = categorical))
 
       # When doing categorical + continuous interactions need to think
-      # of best way to implement this
+      # of best way to implement interactions
 
+      names(values) <- c(paste(continuous), paste(categorical), "Val")
       params.forestry.i$y <- values$Val
       params.forestry.i$x <- values[,-which(names(values) == "Val")]
       # Train the surrogate model
