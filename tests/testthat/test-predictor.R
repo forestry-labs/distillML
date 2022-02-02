@@ -33,7 +33,7 @@ test_that("Tests that the predictor wrapper is working", {
 
   context("Check the model in predictor")
   expect_equal(all.equal(forest_predictor$model@processed_dta$y[1:10],
-                         forest$model@processed_dta$y[1:10],
+                         forest@processed_dta$y[1:10],
                          tolerance = 1e-4),
                TRUE)
 
