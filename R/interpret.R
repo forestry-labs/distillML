@@ -236,7 +236,7 @@ set.data.points = function(object,
 #' @title Modify the Method Used for Interpretability
 #' @description Sets a new method used for interpertability
 #' @param object The Interpreter object
-#' @param data.points The new method to generate the interpretability functions
+#' @param method The new method to generate the interpretability functions
 #' @export
 set.method = function(object, method){
   checkmate::assert_character(method)

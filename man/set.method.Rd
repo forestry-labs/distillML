@@ -9,7 +9,7 @@ set.method(object, method)
 \arguments{
 \item{object}{The Interpreter object}
 
-\item{data.points}{The new method to generate the interpretability functions}
+\item{method}{The new method to generate the interpretability functions}
 }
 \description{
 Sets a new method used for interpertability
