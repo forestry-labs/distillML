@@ -525,21 +525,25 @@ class.definer = function(features.2d, data){
   return(classes)
 }
 
-#' @name plot.Plotter
+#' @name plot-Plotter
+#' @rdname plot-Plotter
 #' @title PLotting method for Interpretor model
 #' @description Plots either the PDP plots or ICE plots
-#' @param object Plotter object to make plots for.
-#' @param method The type of plot to make. Can be one of `ice`,`pdp`,`pdp+ice`.
+#' @param x Plotter object to make plots for.
+#' @param method A method for the plot. Must be one of "ice", "pdp+ice", or "pdp"
+#' @param ... Additional arguments
 #' @return A list of plots with 1-d features and 2-d features. For 2-d features with
 #'         one continuous and one categorical feature, the plot is a linear plot of the
 #'         continuous feature with group colors representing the categorical feature.
 #'         For two continuous features, the plot is a heatmap with the shade representing
 #'         the value of the outcome.
 #' @export
-plot.Plotter = function(object,
-                        method = "pdp+ice")
+plot.Plotter = function(x,
+                        method = "pdp+ice",
+                        ...)
 {
-  if (!(inherits(object, "Plotter"))){
+
+  if (!(inherits(x, "Plotter"))){
     stop("Plotter given is not of the plotter class.")
   }
 
@@ -547,15 +551,16 @@ plot.Plotter = function(object,
     stop("Method entered is not supported")
   }
 
+
   # list of plots to be filled
   plots <- list()
   # for 1-D plots
-  if (!(is.null(object$features))){
+  if (!(is.null(x$features))){
 
-    df_all <- predict_ICE.Plotter(object)
-    df_all <- center.preds(object, plot.type = "ICE")
+    df_all <- predict_ICE.Plotter(x)
+    df_all <- center.preds(x, plot.type = "ICE")
 
-    for (feature in object$features){
+    for (feature in x$features){
       df <- df_all[[feature]]
       # df contains both pdp line and all ice lines
       pdp.line <- rowMeans(df[, -which(colnames(df) == "feature")]) # same as pdp functions
@@ -598,20 +603,20 @@ plot.Plotter = function(object,
           scale_color_manual(labels = c("ICE", "PDP") ,values = c("grey", "red")) +
           guides(color=guide_legend(title = "Plot Type"))
       }
-      plots <- append(plots, list(plot.obj + ylab(object$interpreter$predictor$y) + xlab(feature)))
+      plots <- append(plots, list(plot.obj + ylab(x$interpreter$predictor$y) + xlab(feature)))
     }
-    names(plots) <- object$features
+    names(plots) <- x$features
   }
 
   # for 2-D plots (some is redundant, quick fix)
-  if (!(is.null(object$features.2d))){
-    features.2d <- object$features.2d
+  if (!(is.null(x$features.2d))){
+    features.2d <- x$features.2d
     feature.classes <- class.definer(features.2d = features.2d,
-                                     data = object$interpreter$predictor$data)
+                                     data = x$interpreter$predictor$data)
 
     # get all necessary values
-    vals <- predict_PDP.2D.Plotter(object)
-    vals <- center.preds(object, plot.type = "PDP.2D")
+    vals <- predict_PDP.2D.Plotter(x)
+    vals <- center.preds(x, plot.type = "PDP.2D")
 
     # for the names in each function
     names.2d <- c()
@@ -625,7 +630,7 @@ plot.Plotter = function(object,
 
         plot.obj <- ggplot(values, aes(x=Feat.1, y=Feat.2, fill = Val)) +
           geom_tile() + xlab(features.2d[i,1]) + ylab(features.2d[i,2])
-        plot.obj <- plot.obj + guides(fill=guide_legend(title = object$interpreter$predictor$y))
+        plot.obj <- plot.obj + guides(fill=guide_legend(title = x$interpreter$predictor$y))
       }
       else {
         # find the continuous feature among the two features
@@ -643,13 +648,13 @@ plot.Plotter = function(object,
           names(values) <- c("Cat", "Cont", "Val")
         }
         plot.obj <- ggplot(values, aes(x=Cont, y=Val, group=Cat, color=Cat)) +
-          geom_line() + xlab(features.2d[i,continuous]) + ylab(object$interpreter$predictor$y)
+          geom_line() + xlab(features.2d[i,continuous]) + ylab(x$interpreter$predictor$y)
         plot.obj <- plot.obj +  guides(color=guide_legend(title = features.2d[i,categorical]))
       }
       plots <- append(plots, list(plot.obj))
       names.2d <- c(names.2d, paste(features.2d[i,1], features.2d[i,2], sep = "."))
     }
-    names(plots) <- c(object$features, names.2d)
+    names(plots) <- c(x$features, names.2d)
   }
   return(plots)
 }

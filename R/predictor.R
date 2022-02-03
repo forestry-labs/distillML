@@ -129,14 +129,18 @@ Predictor <- R6::R6Class("Predictor",
 )
 
 
-#' @name predict.Predictor
+#' @name predict-Predictor
+#' @rdname predict-Predictor
 #' @title Predict method for Predictor class
 #' @description Gives a single column of predictions for a predictor object
 #' @param object Predictor object to use.
 #' @param newdata The dataframe to use for the predictions.
+#' @param ... Additional arguments
 #' @return A single column dataframe containing the predictions for all values
 #' @export
-predict.Predictor = function(object, newdata){
+predict.Predictor = function(object,
+                             newdata,
+                             ...){
   # check that the new data is a dataframe
   checkmate::assert_data_frame(newdata)
   newdata <- as.data.frame(newdata)
@@ -162,17 +166,20 @@ predict.Predictor = function(object, newdata){
   return(preds)
 }
 
-#' @name print.Predictor
+#' @name print-Predictor
+#' @rdname print-Predictor
 #' @title Printing method for Predictor class
-#' @description Gives the task of the given predictor object.
-#' @param object The Predictor to print
+#' @description Gives the task of the given predictor x
+#' @param x The Predictor to print
+#' @param ... Additional arguments
 #' @export
 print.Predictor = function(
-  object
+  x,
+  ...
 ){
-  cat("Prediction Task:", object$task, "\n")
-  if (object$task == "classification"){
-    cat("Classes: ", paste(unique(object$data[,which(names(object$data)==object$y)]), collapse=" "))
+  cat("Prediction Task:", x$task, "\n")
+  if (x$task == "classification"){
+    cat("Classes: ", paste(unique(x$data[,which(names(x$data)==x$y)]), collapse=" "))
   }
 }
 
