@@ -2,8 +2,10 @@
 #' @include interpret.R
 #' @include helper.R
 #' @importFrom R6 R6Class
+#' @importFrom stats predict
 #' @import data.table
 #' @import ggplot2
+
 
 #' @title Plotter class description
 #' @description The class for interpretability plots and groups
