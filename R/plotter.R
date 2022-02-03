@@ -45,7 +45,7 @@
 #'                           features.2d = data.frame(col1 = c("Frontal Lobe",
 #'                           "Frontal Lobe", "Frontal Lobe"),
 #'                           col2 = c("Species", "Sex", "Rear Width")))
-#' plots <- plot(forest_plot)
+#'
 #' @export
 Plotter <- R6::R6Class(
   "Plotter",
@@ -552,7 +552,8 @@ plot.Plotter = function(x,
   if (!(method %in% c("pdp", "ice", "pdp+ice"))) {
     stop("Method entered is not supported")
   }
-
+  # Quash R CMD CHeck notes
+  Feat.1 = Feat.2 = Val = Cont = Cat = value = variable = ispdp = NULL
 
   # list of plots to be filled
   plots <- list()
@@ -695,6 +696,9 @@ localSurrogate = function(object,
     params.forestry$maxDepth = 2
     params.forestry$ntree = 1
   }
+
+  # quash R CMD Check notes
+  Feat.1 = Feat.2 = Val = Cont = Cat = NULL
 
   # list of plots to be filled
   plots <- list()

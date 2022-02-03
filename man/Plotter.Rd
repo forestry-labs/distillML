@@ -49,7 +49,7 @@ forest_plot <- Plotter$new(forest_interpret, features = c("Frontal Lobe"),
                           features.2d = data.frame(col1 = c("Frontal Lobe",
                           "Frontal Lobe", "Frontal Lobe"),
                           col2 = c("Species", "Sex", "Rear Width")))
-plots <- plot(forest_plot)
+
 }
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
