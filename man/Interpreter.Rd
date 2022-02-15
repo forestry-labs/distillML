@@ -58,6 +58,8 @@ forest_interpret <- Interpreter$new(predictor = forest_predictor)
 
 \item{\code{features}}{All possible features that can be interpreted with respect to the model}
 
+\item{\code{features.2d}}{All possible features combinations of length 2}
+
 \item{\code{data.points}}{The indices of the data points in the training data used for the PDP/ALE.}
 
 \item{\code{functions.1d}}{List of functions giving single feature interpretations of the model.}
@@ -65,6 +67,15 @@ forest_interpret <- Interpreter$new(predictor = forest_predictor)
 \item{\code{functions.2d}}{List of functions giving two-feature interpretations of the model}
 
 \item{\code{method}}{The chosen interpretability method for the black-box model ("pdp" or "ale").}
+
+\item{\code{center.at}}{The value(s) to center the feature plots}
+
+\item{\code{grid.points}}{A list of vectors containing the grid points to use for
+the predictions.}
+
+\item{\code{saved}}{A list that saves the previous calculations for the 1-d ICE plots,
+1-d PDP plots, 2-d PDP plots, and grid points for building the distillery model.
+This saves the uncentered calculations.}
 }
 \if{html}{\out{</div>}}
 }
@@ -84,7 +95,8 @@ forest_interpret <- Interpreter$new(predictor = forest_predictor)
   predictor = NULL,
   samples = 1000,
   data.points = NULL,
-  method = "pdp"
+  method = "pdp",
+  grid.size = 50
 )}\if{html}{\out{</div>}}
 }
 
@@ -105,6 +117,9 @@ overwrites the "samples" parameter above.}
 \item{\code{method}}{The chosen interpretability method for the black-box model.
 By default, this method is set to partial dependence plots
 ("pdp"). This can either be set to "pdp" or "ale".}
+
+\item{\code{grid.size}}{The number of grid points to create for the pdp
+functions / plots for each feature.}
 }
 \if{html}{\out{</div>}}
 }

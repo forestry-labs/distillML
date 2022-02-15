@@ -7,7 +7,7 @@
 set.center.at(object, feature, value)
 }
 \arguments{
-\item{object}{The Plotter class to recenter}
+\item{object}{The Interpreter class to recenter}
 
 \item{feature}{The feature to center}
 

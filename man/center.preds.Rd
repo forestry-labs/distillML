@@ -7,7 +7,7 @@
 center.preds(object, plot.type)
 }
 \arguments{
-\item{object}{The Plotter object to use}
+\item{object}{The Interpreter object to use}
 
 \item{plot.type}{The type of plot which the user wants to center}
 }
@@ -15,7 +15,7 @@ center.preds(object, plot.type)
 centered dataframe/matrix of values for the given plot
 }
 \description{
-Given the specified 'center.at' values of the plotter object, this
+Given the specified 'center.at' values of the interpreter object, this
              function centers the speccified type of plot.
 }
 \details{

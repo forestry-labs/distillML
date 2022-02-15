@@ -5,10 +5,17 @@
 #' @description The class for different interpretability methods.
 #' @field predictor The predictor object to use as a standardized wrapper for the model
 #' @field features All possible features that can be interpreted with respect to the model
+#' @field features.2d All possible features combinations of length 2
 #' @field data.points The indices of the data points in the training data used for the PDP/ALE.
 #' @field functions.1d List of functions giving single feature interpretations of the model.
 #' @field functions.2d List of functions giving two-feature interpretations of the model
 #' @field method The chosen interpretability method for the black-box model ("pdp" or "ale").
+#' @field center.at The value(s) to center the feature plots
+#' @field grid.points A list of vectors containing the grid points to use for
+#'                    the predictions.
+#' @field saved A list that saves the previous calculations for the 1-d ICE plots,
+#'              1-d PDP plots, 2-d PDP plots, and grid points for building the distillery model.
+#'              This saves the uncentered calculations.
 #' @examples
 #' library(interpret)
 #' library(Rforestry)
@@ -39,10 +46,15 @@ Interpreter <- R6::R6Class(
   public = list(
     predictor = NULL,
     features = NULL,
+    features.2d = NULL,
     data.points = NULL,
     functions.1d = NULL,
     functions.2d = NULL,
     method = NULL,
+    # new features added from plotter function
+    center.at = NULL,
+    grid.points = NULL,
+    saved = NULL,
     # functions.ale = to come later
 
     # initialize an interpreter object
@@ -57,6 +69,9 @@ Interpreter <- R6::R6Class(
     #' @param method The chosen interpretability method for the black-box model.
     #'               By default, this method is set to partial dependence plots
     #'               ("pdp"). This can either be set to "pdp" or "ale".
+    #' @param grid.size The number of grid points to create for the pdp
+    #'                  functions / plots for each feature.
+    #'
     #' @return An `Interpreter` object.
     #' @note
     #' A wrapper to pass a predictor object (see: predictor.R) for interpreting
@@ -81,7 +96,9 @@ Interpreter <- R6::R6Class(
     initialize = function(predictor = NULL,
                           samples = 1000,
                           data.points = NULL,
-                          method = "pdp") {
+                          method = "pdp",
+                          # New parameters
+                          grid.size = 50) {
       # check to see if predictor is a valid predictor object
       if (is.null(predictor)) {
         stop("Predictor not given.")
@@ -196,59 +213,76 @@ Interpreter <- R6::R6Class(
         stop("Other methods have not been implemented yet for general functions.")
       }
 
+      # check to see if valid grid.size
+      checkmate::assert_numeric(grid.size)
+      grid.size <- as.integer(grid.size)
+      if (grid.size < 2){
+        stop("Please enter a valid grid size (>=2) to generate the grid.")
+      }
+
+      # generate grid.points
+      data <- predictor$data[data.points,]
+      grid.points <- list()
+      for (feature in features){
+        if (class(data[,feature]) == "numeric"){
+          temp.list <- list(seq(min(data[,feature]),max(data[,feature]),length.out = grid.size))
+        }
+        else{
+          temp.list <- list(unique(data[,feature]))
+        }
+        grid.points <- append(grid.points, temp.list)
+      }
+      names(grid.points) <- features
+
+      # center.at is a list of centers for each variable, initialized to the min
+      center.at <- list()
+      for (i in 1:length(features)){
+        if (class(data[,features[i]]) %in% c("numeric", "integer")){
+          temp.list <- list(min(grid.points[[i]]))
+        }
+        else{
+          temp.list <- list(grid.points[[i]][1])
+        }
+        center.at <- append(center.at, temp.list)
+      }
+      names(center.at) <- features
+
+      # Generate Empty Lists for Future Calculations
+      ICE.list <- as.list(rep(NA, length(features)))
+      names(ICE.list) <- features
+      PDP.1D.list <- as.list(rep(NA, length(features)))
+      names(PDP.1D.list) <- features
+
+      features.2d <- data.frame(feat.1 = 0, feat.2 =0)
+      for (i in 1:(length(features)-1)){
+        for (j in (i+1):length(features)){
+          row <- c(features[i], features[j])
+          features.2d <- rbind(features.2d, row)
+        }
+      }
+      features.2d <- features.2d[-1, ,drop = F]
+
+      PDP.2D.list <- as.list(rep(NA, nrow(features.2d)))
+      all_names <- c(features.2d, sep = ", ")
+      names(PDP.2D.list) <- do.call(paste, all_names)
+
       # initialize all variables belonging to this class
       self$features <- features
+      self$features.2d <- features.2d
       self$predictor <- predictor
       self$data.points <- data.points
       self$functions.1d <- functions.pdp
       self$functions.2d <- functions.pdp.2d
       self$method <- method
+      # added features from plotter object
+      self$grid.points <- grid.points
+      self$center.at <- center.at
+      self$saved <- list(ICE = ICE.list,
+                         PDP.1D = PDP.1D.list,
+                         PDP.2D = PDP.2D.list,
+                         build.grid = NA)
     }
   )
 )
 
-# allows user to set data.points
-#' @name set.data.points
-#' @title Modify the Training Data Used for Interpretability
-#' @description Sets the data points used for interpretation
-#' @param object The Interpreter object
-#' @param data.points The training data indices used to set which observations
-#'                    are used for interpretability
-#' @export
-set.data.points = function(object,
-                           data.points)
-{
-  checkmate::assert_numeric(data.points)
-  if (!(inherits(object, "Interpreter"))) {
-    stop("Object given is not of the Interpreter class.")
-  }
-  if (any(!(data.points %in% 1:nrow(object$predictor$data)))) {
-    stop("The data points are not in the data.")
-  }
-  return(Interpreter$new(object$predictor,
-                                object$features,
-                                data.points = data.points,
-                                object$method))
-}
-
-# allows user to set data.points
-#' @name set.method
-#' @title Modify the Method Used for Interpretability
-#' @description Sets a new method used for interpertability
-#' @param object The Interpreter object
-#' @param method The new method to generate the interpretability functions
-#' @export
-set.method = function(object, method){
-  checkmate::assert_character(method)
-  if (!(inherits(object, "Interpreter"))) {
-    stop("Object given is not of the Interpreter class.")
-  }
-  if (!(method %in% c("pdp", "ale"))){
-    stop("This method is not supported by the function.")
-  }
-  return(Interpreter$new(object$predictor,
-                                object$features,
-                                object$data.points,
-                                method = method))
-}
 

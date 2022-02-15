@@ -7,10 +7,10 @@
 predict_ICE.Plotter(object, save = TRUE)
 }
 \arguments{
-\item{object}{The Plotter object to use.}
+\item{object}{The Interpeter object to use.}
 
 \item{save}{A binary variable to determine whether the calculations should be
-saved in the plotter object}
+saved in the interpreter object}
 }
 \value{
 A list of dataframes for each feature. In each dataframe, the first

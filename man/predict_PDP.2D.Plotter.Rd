@@ -7,17 +7,17 @@
 predict_PDP.2D.Plotter(object, save = TRUE)
 }
 \arguments{
-\item{object}{The Plotter object to use.}
+\item{object}{The Interpreter object to use.}
 
 \item{save}{A binary variable to determine whether the calculations should be
-saved in the plotter object}
+saved in the interpreter object}
 }
 \value{
 A list of dataframes for each pair of features.2d
 }
 \description{
 Gives prediction surface for all specified feature pairs in the
-             plotter object (features.2d)
+             interpreter object (features.2d)
 }
 \details{
 predict_PDP.2D.Plotter
