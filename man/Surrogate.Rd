@@ -18,6 +18,8 @@ Do not initalize this class on its own. It is automatically created by the disti
 
 \item{\code{intercept}}{The intercept term we use for our predictions}
 
+\item{\code{feature.centers}}{The center value for the features determined in the model}
+
 \item{\code{center.mean}}{Boolean value that determines whether we use the mean-centered
 data for our predictions}
 
@@ -39,7 +41,15 @@ data for our predictions}
 \if{latex}{\out{\hypertarget{method-new}{}}}
 \subsection{Method \code{new()}}{
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Surrogate$new(interpreter, weights, intercept, center.mean, grid, snap.grid)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Surrogate$new(
+  interpreter,
+  weights,
+  intercept,
+  feature.centers,
+  center.mean,
+  grid,
+  snap.grid
+)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -51,6 +61,8 @@ data for our predictions}
 
 \item{\code{intercept}}{The baseline value. If uncentered, this is 0, and if centered, this will be the mean of the predictions
 of the original model based on the grid points set.}
+
+\item{\code{feature.centers}}{The baseline value for the effect of each feature. If uncentered, this is 0.}
 
 \item{\code{center.mean}}{A boolean value that shows whether this model is a centered or uncentered model}
 

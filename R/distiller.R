@@ -95,16 +95,24 @@ distill = function(object, include.2d = F, center.mean = T, snap.grid = T, fit.t
   # get data for grid
   data <- build.grid(object, include.2d = include.2d, fit.train = fit.train, save = T)
 
+  # if centered, then
+
+
+
   # if centered, then remove col means and store original mean of predictions
   if (center.mean){
+    feature.centers <- colMeans(data)[-ncol(data)]
     center <- mean(data$preds)
     for (i in 1:ncol(data)){
-      data[,i] <- data[,i]-mean(data[,i]) # subtract each column by its mean
+      data[,i] <- data[,i]-mean(data[,i]) # subtract each column by the mean
     }
   }
   else{
     center <- 0
+    feature.centers <- rep(0, ncol(data)-1)
+    names(feature.centers) <- names(data)[-ncol(data)]
   }
+
 
   # build parameter list for fitting with glmnet
   params.glmnet$x <- as.matrix(data[, -which(names(data)=="preds"), drop=F])
@@ -128,6 +136,7 @@ distill = function(object, include.2d = F, center.mean = T, snap.grid = T, fit.t
   return(Surrogate$new(interpreter = object,
                        weights = coeffs,
                        intercept = center,
+                       feature.centers = feature.centers,
                        center.mean = center.mean,
                        grid = predict_PDP.1D.Plotter(object),
                        snap.grid = snap.grid))

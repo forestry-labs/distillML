@@ -13,6 +13,7 @@
 #' @field interpreter The interpreter object to use as a standardized wrapper for the model
 #' @field weights The weights used to recombine the PDPs into a surrogate for the original model
 #' @field intercept The intercept term we use for our predictions
+#' @field feature.centers The center value for the features determined in the model
 #' @field center.mean Boolean value that determines whether we use the mean-centered
 #'                    data for our predictions
 #' @field grid A list of PDPS that determine our prediction.
@@ -27,6 +28,7 @@ Surrogate <- R6::R6Class(
    interpreter = NULL,
    weights = NULL,
    intercept = NULL,
+   feature.centers = NULL,
    center.mean = NULL,
    grid = NULL,
    snap.grid = NULL,
@@ -36,6 +38,7 @@ Surrogate <- R6::R6Class(
    #' @param weights The weights for each given feature
    #' @param intercept The baseline value. If uncentered, this is 0, and if centered, this will be the mean of the predictions
    #'                  of the original model based on the grid points set.
+   #' @param feature.centers The baseline value for the effect of each feature. If uncentered, this is 0.
    #' @param center.mean A boolean value that shows whether this model is a centered or uncentered model
    #' @param grid The values that we snap to if have snap.grid turned on
    #' @param snap.grid Boolean that determines if we use previously calculated values or re-predict using the functions.
@@ -44,6 +47,7 @@ Surrogate <- R6::R6Class(
    initialize = function(interpreter,
                          weights,
                          intercept,
+                         feature.centers,
                          center.mean,
                          grid,
                          snap.grid){
@@ -68,6 +72,15 @@ Surrogate <- R6::R6Class(
        stop("Non-centered predictions should have no intercept term.")
      }
 
+     # checks for feature.centers
+     if (any(!(names(feature.centers) %in% interpreter$features))){
+       stop("Feature centers are not the same as the features in the interpreter.")
+     }
+
+     if (center.mean == 0 & any(feature.centers != 0)){
+       stop("Uncentered predictions should have no feature centers.")
+     }
+
      # check grid
      if (any(names(grid)!=interpreter$features)){
        stop("Grid does not have the same features as the interpreter.")
@@ -76,6 +89,7 @@ Surrogate <- R6::R6Class(
      self$interpreter <- interpreter
      self$weights <- weights
      self$intercept <- intercept
+     self$feature.centers <- feature.centers
      self$center.mean <- center.mean
      self$grid <- grid
      self$snap.grid <- snap.grid
@@ -129,13 +143,9 @@ predict.Surrogate = function(object,
       pred <- object$interpreter$functions.1d[[feature]](newdata[,feature])
     }
 
-    if (object$center.mean){
-      pred <- pred - mean(ref[,2]) # subtract mean of grid points
-    }
+    pred <- pred - object$feature.centers[[feature]] # subtract mean of grid points
     preds <- preds + object$weights[[feature]]*pred
-
   }
-
   return(preds)
 }
 
