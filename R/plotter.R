@@ -555,14 +555,16 @@ plot.Interpreter = function(x,
         if (method == "ice") {
           plot.obj <-
             ggplot(data = melt.df.ice, aes(x = feature, y = value, group = variable)) +
-            geom_line(color = "grey")
+            geom_line(color = "grey")+
+            theme_classic()
         }
 
         if (method == "pdp") {
           plot.obj <-
             ggplot(data = melt.df[melt.df$variable == "pdp", ], aes(x = feature, y =
                                                                       value)) +
-            geom_line()
+            geom_line()+
+            theme_classic()
         }
 
         if (method == "pdp+ice") {
@@ -578,7 +580,8 @@ plot.Interpreter = function(x,
                    )) +
             geom_line() +
             scale_color_manual(labels = c("ICE", "PDP") ,values = c("grey", "red")) +
-            guides(color=guide_legend(title = "Plot Type"))
+            guides(color=guide_legend(title = "Plot Type"))+
+            theme_classic()
         }
         plots <- append(plots, list(plot.obj + ylab(x$predictor$y) + xlab(feature)))
       }
