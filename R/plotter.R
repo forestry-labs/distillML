@@ -472,7 +472,8 @@ ale <- function(predict_function,
                 variable_names,
                 center = "zero",
                 grid_points,
-                window_size) {
+                window_size
+                ) {
   library(purrr)
 
   if(missing(variable_names))
@@ -653,11 +654,11 @@ plot.Interpreter = function(x,
 
       # Turn output of ale into a plot
       rugplot_data <-
-        ale$training_data %>%
+        feat_ale$training_data %>%
         tidyr::gather(key = "variable", value = "x") %>%
         mutate(ale = NA, grp = "rug")
       plot_data <-
-        bind_rows(rugplot_data, ale$ale %>% mutate(grp = "ale"))
+        bind_rows(rugplot_data, feat_ale$ale %>% mutate(grp = "ale"))
 
       ggplot(plot_data) + geom_line(data = filter)
       plt <-
@@ -668,7 +669,7 @@ plot.Interpreter = function(x,
 
       plots <- append(plots, list(plt))
     }
-    names(plots) <- c(x$features, names.2d)
+    names(plots) <- features
 
     return(plots)
   }
