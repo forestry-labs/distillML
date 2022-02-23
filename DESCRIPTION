@@ -1,7 +1,7 @@
 Package: interpret
 Type: Package
 Title: Model distillation and interpretability methods for machine learning models
-Version: 0.0.0.4
+Version: 0.0.0.5
 Authors@R: c(
     person("Brian", "Cho", role = "aut"),
     person("Theo", "Saarinen", role = c("aut","cre"), email = "theo_s@berkeley.edu"),
@@ -27,7 +27,10 @@ Imports:
     dplyr,
     R6 (>= 2.0),
     data.table,
-    checkmate
+    checkmate,
+    tidyverse,
+    magrittr,
+    purrr
 Suggests:
     testthat,
     knitr,

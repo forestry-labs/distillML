@@ -5,6 +5,7 @@
 #' @importFrom stats predict
 #' @import data.table
 #' @import ggplot2
+#' @import dplyr
 
 #' @name set.method
 #' @title Modify the Method Used for Interpretability
@@ -379,13 +380,124 @@ class.definer = function(features.2d, data){
   return(classes)
 }
 
+# Helper functions for the ALE plots ===========================================
+local_effect <- function(variable_name, lower_limit, upper_limit,
+                         set_value, window_size,
+                         training_data, predict_function) {
+  library(dplyr)
+  # Setup
+  n <- nrow(training_data)
+  selected_variable <- training_data %>% dplyr::pull(!!as.name(variable_name))
+
+  # Calculating threshold for ALE neighborhood
+  if(!missing(window_size)) {
+    if(missing(set_value)) {
+      set_value <- (upper_limit + lower_limit)/2
+    }
+    upper_set <- selected_variable[selected_variable >= set_value]
+    lower_set <- selected_variable[selected_variable <= set_value]
+    half_window_size <- ceiling(n * window_size/2)
+    upper_limit <- quantile(upper_set, probs = min(half_window_size/length(upper_set), 1))
+    lower_limit <- quantile(lower_set, probs = 1 - min(half_window_size/length(lower_set), 1))
+  }
+
+  # Subsetting to neighborhood
+  neighborhood_training_data <- training_data %>%
+    dplyr::filter(!!as.name(variable_name) <= upper_limit &
+                    !!as.name(variable_name) >=  lower_limit)
+
+  # Replacing values and predicting
+  mutate_and_predict <- function(new_value) {
+    neighborhood_training_data %>% dplyr::mutate(!!as.name(variable_name) := new_value) %>%
+      predict_function()
+  }
+
+  # Computing single point ALE.
+  (mutate_and_predict(upper_limit) - mutate_and_predict(lower_limit)) %>% mean
+}
+
+accumulated_local_effects <- function(predict_function, num_grid_points,
+                                      variable_name, training_data,
+                                      grid_points, center, window_size) {
+  library(dplyr)
+  if(!missing(num_grid_points) && !missing(grid_points)) {
+    stop("Only one of num_grid_points and grid_points can be specified")
+  }
+  if(missing(grid_points)) {
+    grid_points  <- training_data %>% dplyr::pull(!!as.name(variable_name)) %>%
+      quantile(probs = seq(0,1, length.out = num_grid_points + 1)) %>% unname %>% unique
+  }
+  if(center == "zero") {
+    grid_point_closest_zero <- grid_points[which.min(abs(grid_points))]
+    grid_points <- c(grid_points, - grid_point_closest_zero)
+    grid_points <- sort(grid_points)
+  }
+  local_effects <- map2_dbl(head(grid_points, -1), grid_points[-1], local_effect,
+                            variable_name = variable_name,
+                            training_data = training_data, predict_function = predict_function, window_size = window_size)
+
+  accumulated_local_effects <- cumsum(local_effects)
+  midpoints <- (head(grid_points, -1) +  grid_points[-1])/2
+  if(center == "mean") accumulated_local_effects <- accumulated_local_effects - mean(accumulated_local_effects)
+  if(center == "zero") {
+    center_point <- accumulated_local_effects[which(midpoints == 0)]
+    accumulated_local_effects <- accumulated_local_effects - center_point
+  }
+  out <- tibble(x = midpoints, ale = accumulated_local_effects, variable = variable_name)
+  out <- na.omit(out)
+  return(out)
+}
+
+#' Constructs an ALE for a model.
+#' @param predict_function a function taking a single tibble argument and returning the model
+#' predictions corresponding to that tibble.
+#' @param num_grid_points the number of grid_points at which to construct the ALE
+#' @param training_data the training data used to fit the model
+#' @param variable_names a character vector of column names in training_data for which an ALE is required.
+#' @param center one of "uncentered" meaning the plots are not centered, "mean"
+#'   meaning the plots are centered at their mean and "zero" meaning the ALE
+#'   passes through the origin. When using center == "zero" we recommend setting
+#'   window_size because otherwise a smaller and possibly empty set will be used
+#'   to compute the ALE at zero.
+#' @param window_size the fraction of the data (between zero and one) used to compute each ALE point.
+#' @examples model <- lm(mpg ~ drat + disp, data = mtcars)
+#' predict_function <- function(newdata) {
+#'   predict.lm(model, newdata = newdata)
+#' }
+#' mtcars_ale <- ale(predict_function, 20, mtcars, c("drat", "disp"))
+#' plot(mtcars_ale)
+ale <- function(predict_function,
+                num_grid_points,
+                training_data,
+                variable_names,
+                center = "zero",
+                grid_points,
+                window_size) {
+  library(purrr)
+
+  if(missing(variable_names))
+    variable_names <- names(training_data)
+  if (!center %in% c("uncentered", "mean", "zero"))
+    stop('The "center" argument must be one of "uncentered", "mean", or "zero"')
+  out_data <- map(.x = variable_names, .f = accumulated_local_effects,
+                  predict_function = predict_function,
+                  num_grid_points = num_grid_points,
+                  training_data = training_data,
+                  center = center,
+                  grid_points = grid_points,
+                  window_size = window_size) %>% bind_rows
+  out_data
+  return(list(ale = out_data, training_data = training_data %>% select(all_of(variable_names))))
+}
+
 #' @name plot-Interpreter
 #' @rdname plot-Interpreter
 #' @title PLotting method for Interpretor model
 #' @description Plots either the PDP plots or ICE plots
 #' @param x Interpreter object to make plots for.
-#' @param method A method for the plot. Must be one of "ice", "pdp+ice", or "pdp"
-#' @param features 1-D PDP/ICE curves to plot.
+#' @param method A method for the plot. Must be one of "ice",
+#' "pdp+ice", "pdp", or "ale"
+#' @param features 1-D PDP/ICE/ALE curves to plot.
 #' @param features.2d 2-D PDP curves to plot.
 #' @param ... Additional arguments
 #' @return A list of plots with 1-d features and 2-d features. For 2-d features with
@@ -405,119 +517,161 @@ plot.Interpreter = function(x,
     stop("x given is not of the interpreter class.")
   }
 
-  if (!(method %in% c("pdp", "ice", "pdp+ice"))) {
+  if (!(method %in% c("pdp", "ice", "pdp+ice","ale"))) {
     stop("Method entered is not supported")
   }
-
+  library(dplyr)
 
   # Quash R CMD CHeck notes
   Feat.1 = Feat.2 = Val = Cont = Cat = value = variable = ispdp = NULL
 
   # list of plots to be filled
   plots <- list()
-  # for 1-D plots
-  if (!(is.null(x$features))){
 
-    df_all <- predict_ICE.Plotter(x)
-    df_all <- center.preds(x, plot.type = "ICE")
+  if (method %in% c("pdp", "ice", "pdp+ice")) {
+    # for 1-D plots
+    if (!(is.null(x$features))){
+
+      df_all <- predict_ICE.Plotter(x)
+      df_all <- center.preds(x, plot.type = "ICE")
+
+      for (feature in features){
+        df <- df_all[[feature]]
+        # df contains both pdp line and all ice lines
+        pdps <- predict_PDP.1D.Plotter(x)
+        pdp.line <- center.preds(x, plot.type = "PDP.1D")[[feature]][,2]
+        df <- cbind(df , pdp = pdp.line)
+        df <- setDT(data.frame(df))
+        df.ice <- df[,-"pdp"]
+
+        # for scaling
+        min.val <- min(df[, -"feature"])
+        max.val <- max(df[, -"feature"])
+
+        melt.df <- melt(df, id.vars = "feature")
+        melt.df.ice <- melt(df.ice, id.vars = "feature")
+
+        if (method == "ice") {
+          plot.obj <-
+            ggplot(data = melt.df.ice, aes(x = feature, y = value, group = variable)) +
+            geom_line(color = "grey")
+        }
+
+        if (method == "pdp") {
+          plot.obj <-
+            ggplot(data = melt.df[melt.df$variable == "pdp", ], aes(x = feature, y =
+                                                                      value)) +
+            geom_line()
+        }
+
+        if (method == "pdp+ice") {
+          melt.df.combined <- melt.df
+          melt.df.combined$ispdp <- (melt.df$variable == "pdp")
+          plot.obj <-
+            ggplot(data = melt.df.combined,
+                   aes(
+                     x = feature,
+                     y = value,
+                     group = variable,
+                     color = ispdp
+                   )) +
+            geom_line() +
+            scale_color_manual(labels = c("ICE", "PDP") ,values = c("grey", "red")) +
+            guides(color=guide_legend(title = "Plot Type"))
+        }
+        plots <- append(plots, list(plot.obj + ylab(x$predictor$y) + xlab(feature)))
+      }
+      names(plots) <- features
+    }
+
+    # for 2-D plots
+    if (!(is.null(features.2d))){
+      feature.classes <- class.definer(features.2d = features.2d,
+                                       data = x$predictor$data)
+
+      # get all necessary values
+      vals <- predict_PDP.2D.Plotter(x)
+      vals <- center.preds(x, plot.type = "PDP.2D")
+
+      # for the names in each function
+      names.2d <- c()
+      for (i in 1:nrow(features.2d)){
+        # heatmap for 2 continuous features
+        if (feature.classes[features.2d[i,1]] == "numeric" &&
+            feature.classes[features.2d[i,2]]=="numeric"){
+
+          values <- vals[[i]]
+          names(values) <- c("Feat.1", "Feat.2", "Val")
+
+          plot.obj <- ggplot(values, aes(x=Feat.1, y=Feat.2, fill = Val)) +
+            geom_tile() + xlab(features.2d[i,1]) + ylab(features.2d[i,2])
+          plot.obj <- plot.obj + guides(fill=guide_legend(title = x$predictor$y))
+        }
+        else {
+          # find the continuous feature among the two features
+          continuous <- 2
+          categorical <- 1
+          if (feature.classes[features.2d[i,1]] == "numeric"){
+            continuous <- 1
+            categorical <- 2
+          }
+          values <- vals[[i]]
+          if (continuous ==1){
+            names(values) <- c("Cont", "Cat", "Val")
+          }
+          else{
+            names(values) <- c("Cat", "Cont", "Val")
+          }
+          plot.obj <- ggplot(values, aes(x=Cont, y=Val, group=Cat, color=Cat)) +
+            geom_line() + xlab(features.2d[i,continuous]) + ylab(x$predictor$y)
+          plot.obj <- plot.obj +  guides(color=guide_legend(title = features.2d[i,categorical]))
+        }
+        plots <- append(plots, list(plot.obj))
+        names.2d <- c(names.2d, paste(features.2d[i,1], features.2d[i,2], sep = "."))
+      }
+      names(plots) <- c(x$features, names.2d)
+    }
+    return(plots)
+
+  } else if (method == "ale") {
+    # Implement the ale plots for an interpreter class.
+
+    # Create prediction function
+    predict_function <- function(newdata) {
+      x$predictor$prediction.function(x$predictor$model, newdata = newdata)
+    }
+
+    # Pull the training data
+    training_data <- x$predictor$data %>% dplyr::select(-x$predictor$y)
 
     for (feature in features){
-      df <- df_all[[feature]]
-      # df contains both pdp line and all ice lines
-      pdps <- predict_PDP.1D.Plotter(x)
-      pdp.line <- center.preds(x, plot.type = "PDP.1D")[[feature]][,2]
-      df <- cbind(df , pdp = pdp.line)
-      df <- setDT(data.frame(df))
-      df.ice <- df[,-"pdp"]
+      # Calculate the accumulated local effects using ale function
+      feat_ale = ale(predict_function,
+                     num_grid_points = 50,
+                     training_data = training_data,
+                     variable_names = feature, center = "mean")
 
-      # for scaling
-      min.val <- min(df[, -"feature"])
-      max.val <- max(df[, -"feature"])
+      # Turn output of ale into a plot
+      rugplot_data <-
+        ale$training_data %>%
+        tidyr::gather(key = "variable", value = "x") %>%
+        mutate(ale = NA, grp = "rug")
+      plot_data <-
+        bind_rows(rugplot_data, ale$ale %>% mutate(grp = "ale"))
 
-      melt.df <- melt(df, id.vars = "feature")
-      melt.df.ice <- melt(df.ice, id.vars = "feature")
+      ggplot(plot_data) + geom_line(data = filter)
+      plt <-
+        ggplot(plot_data) +
+        geom_line(data = plot_data %>% filter(grp == "ale"), aes(x = x, y = ale)) +
+        geom_rug(data = plot_data %>% filter(grp == "rug"), aes(x = x)) +
+        facet_wrap( ~ variable, scale = "free") + theme_bw() + xlab("")
 
-      if (method == "ice") {
-        plot.obj <-
-          ggplot(data = melt.df.ice, aes(x = feature, y = value, group = variable)) +
-          geom_line(color = "grey")
-      }
-
-      if (method == "pdp") {
-        plot.obj <-
-          ggplot(data = melt.df[melt.df$variable == "pdp", ], aes(x = feature, y =
-                                                                    value)) +
-          geom_line()
-      }
-
-      if (method == "pdp+ice") {
-        melt.df.combined <- melt.df
-        melt.df.combined$ispdp <- (melt.df$variable == "pdp")
-        plot.obj <-
-          ggplot(data = melt.df.combined,
-                 aes(
-                   x = feature,
-                   y = value,
-                   group = variable,
-                   color = ispdp
-                 )) +
-          geom_line() +
-          scale_color_manual(labels = c("ICE", "PDP") ,values = c("grey", "red")) +
-          guides(color=guide_legend(title = "Plot Type"))
-      }
-      plots <- append(plots, list(plot.obj + ylab(x$predictor$y) + xlab(feature)))
-    }
-    names(plots) <- features
-  }
-
-  # for 2-D plots
-  if (!(is.null(features.2d))){
-    feature.classes <- class.definer(features.2d = features.2d,
-                                     data = x$predictor$data)
-
-    # get all necessary values
-    vals <- predict_PDP.2D.Plotter(x)
-    vals <- center.preds(x, plot.type = "PDP.2D")
-
-    # for the names in each function
-    names.2d <- c()
-    for (i in 1:nrow(features.2d)){
-      # heatmap for 2 continuous features
-      if (feature.classes[features.2d[i,1]] == "numeric" &&
-          feature.classes[features.2d[i,2]]=="numeric"){
-
-        values <- vals[[i]]
-        names(values) <- c("Feat.1", "Feat.2", "Val")
-
-        plot.obj <- ggplot(values, aes(x=Feat.1, y=Feat.2, fill = Val)) +
-          geom_tile() + xlab(features.2d[i,1]) + ylab(features.2d[i,2])
-        plot.obj <- plot.obj + guides(fill=guide_legend(title = x$predictor$y))
-      }
-      else {
-        # find the continuous feature among the two features
-        continuous <- 2
-        categorical <- 1
-        if (feature.classes[features.2d[i,1]] == "numeric"){
-          continuous <- 1
-          categorical <- 2
-        }
-        values <- vals[[i]]
-        if (continuous ==1){
-          names(values) <- c("Cont", "Cat", "Val")
-        }
-        else{
-          names(values) <- c("Cat", "Cont", "Val")
-        }
-        plot.obj <- ggplot(values, aes(x=Cont, y=Val, group=Cat, color=Cat)) +
-          geom_line() + xlab(features.2d[i,continuous]) + ylab(x$predictor$y)
-        plot.obj <- plot.obj +  guides(color=guide_legend(title = features.2d[i,categorical]))
-      }
-      plots <- append(plots, list(plot.obj))
-      names.2d <- c(names.2d, paste(features.2d[i,1], features.2d[i,2], sep = "."))
+      plots <- append(plots, list(plt))
     }
     names(plots) <- c(x$features, names.2d)
+
+    return(plots)
   }
-  return(plots)
 }
 
 
