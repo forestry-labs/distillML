@@ -10,9 +10,10 @@
 \arguments{
 \item{x}{Interpreter object to make plots for.}
 
-\item{method}{A method for the plot. Must be one of "ice", "pdp+ice", or "pdp"}
+\item{method}{A method for the plot. Must be one of "ice",
+"pdp+ice", "pdp", or "ale"}
 
-\item{features}{1-D PDP/ICE curves to plot.}
+\item{features}{1-D PDP/ICE/ALE curves to plot.}
 
 \item{features.2d}{2-D PDP curves to plot.}
 
