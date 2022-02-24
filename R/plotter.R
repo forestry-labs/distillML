@@ -471,12 +471,6 @@ accumulated_local_effects <- function(predict_function, num_grid_points,
 #'   window_size because otherwise a smaller and possibly empty set will be used
 #'   to compute the ALE at zero.
 #' @param window_size the fraction of the data (between zero and one) used to compute each ALE point.
-#' @examples model <- lm(mpg ~ drat + disp, data = mtcars)
-#' predict_function <- function(newdata) {
-#'   predict.lm(model, newdata = newdata)
-#' }
-#' mtcars_ale <- ale(predict_function, 20, mtcars, c("drat", "disp"))
-#' plot(mtcars_ale)
 ale <- function(predict_function,
                 num_grid_points,
                 training_data,

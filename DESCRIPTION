@@ -30,7 +30,8 @@ Imports:
     checkmate,
     tidyverse,
     magrittr,
-    purrr
+    purrr,
+    tidyr
 Suggests:
     testthat,
     knitr,

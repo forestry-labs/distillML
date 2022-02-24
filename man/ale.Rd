@@ -35,11 +35,3 @@ to compute the ALE at zero.}
 \description{
 Constructs an ALE for a model.
 }
-\examples{
-model <- lm(mpg ~ drat + disp, data = mtcars)
-predict_function <- function(newdata) {
-  predict.lm(model, newdata = newdata)
-}
-mtcars_ale <- ale(predict_function, 20, mtcars, c("drat", "disp"))
-plot(mtcars_ale)
-}
