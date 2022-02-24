@@ -95,8 +95,6 @@ distill = function(object, include.2d = F, center.mean = T, snap.grid = T, fit.t
   # get data for grid
   data <- build.grid(object, include.2d = include.2d, fit.train = fit.train, save = T)
 
-  # if centered, then
-
 
 
   # if centered, then remove col means and store original mean of predictions

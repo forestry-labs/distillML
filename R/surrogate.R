@@ -133,9 +133,24 @@ predict.Surrogate = function(object,
       # if snap.grid is T, then find the closest point in our existing grid points
       pred <- c()
       for (i in 1:length(newdata[,feature])){
+
         # find closest grid point for each i
-        index <- which.min(abs(ref[,1]-newdata[i,feature])) # find the index of the closest grid point
-        pred <- c(pred, ref[index,2]) # add grid point's value in PDP
+        if (class(newdata[,feature])=="factor"){
+
+          # if we have seen the factor before
+          if (newdata[i,feature] %in% levels(object$interpreter$grid.points[[feature]])){
+            index <- which(newdata[i, feature] == levels(object$interpreter$grid.points[[feature]]))
+            pred <- c(pred, ref[index,2])
+          }
+          else{
+            # factor we have not seen before
+            pred <-  c(pred, object$feature.centers[[feature]])
+          }
+        }
+        else{
+          index <- which.min(abs(ref[,1]-newdata[i,feature]))
+          pred <- c(pred, ref[index,2]) # add grid point's value in PDP
+        }
       }
     }
     else{

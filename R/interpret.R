@@ -159,7 +159,13 @@ Interpreter <- R6::R6Class(
             return.vals <- c()
             for (v in val){
               data <- predictor$data[data.points, ,drop = FALSE]
-              data[, feature] <- v
+              if (class(v) == "character"){
+                data[, feature] <- factor(rep(v, nrow(data),
+                                              levels = levels(predictor$data[, feature])))
+              }
+              else{
+                data[, feature] <- v
+              }
               return.vals <- c(return.vals, mean(predict(predictor, data)[, 1]))
             }
             return.vals
