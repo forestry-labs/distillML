@@ -1,7 +1,7 @@
 Package: interpret
 Type: Package
 Title: Model distillation and interpretability methods for machine learning models
-Version: 0.0.0.7
+Version: 0.0.0.8
 Authors@R: c(
     person("Brian", "Cho", role = "aut"),
     person("Theo", "Saarinen", role = c("aut","cre"), email = "theo_s@berkeley.edu"),
