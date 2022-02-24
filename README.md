@@ -81,16 +81,16 @@ print(preds_pdp)
 
 ## Plotter Wrapper
 
-In order to use these pdp functions to create plots, we can use the `Plotter` function.
-This allows us to make standard pdp plots as well as conditional pdp plots with two variables.
-Here we show a single variable pdp plot and three conditional pdp plots: two with with second categorical 
-variables, and one with two continuous variables.
+In order to use these pdp functions to create plots, we can use the `plot` method
+for the Interpreter class.
 
 ```
 # check plotter wrapper
-forest_plot <- Plotter$new(forest_interpret, features = c("Frontal Lobe"),
-                          features.2d = data.frame(col1 = c("Frontal Lobe", "Frontal Lobe", "Frontal Lobe"),
-                                                   col2 = c("Species", "Sex", "Rear Width")))
+forest_plot <- plot(forest_interpret, 
+                    method = "pdp+ice",
+                    features = c("Frontal Lobe"),
+                    features.2d = data.frame(col1 = c("Frontal Lobe", "Frontal Lobe", "Frontal Lobe"),
+                                             col2 = c("Species", "Sex", "Rear Width")))
 
 plots <- plot(forest_plot)
 plots[[1]]
@@ -99,25 +99,28 @@ plots[[3]]
 plots[[4]]
 ```
 
-We can also adjust where the plots are centered at for each feature, and what
-grid of points are used in the evaluations that create the plots.
+## PDP Distillation
+
+We can also distill a model using the `distill` method for an interpreter object.
 
 ```
-# Set center and grid points for the plots
-forest_plot$center.at$`Frontal Lobe`
-forest_plot$grid.points$`Frontal Lobe`
 
-# We can reset where we center the plot
-set.center.at(forest_plot, "Frontal Lobe", 2) # for numeric
-forest_plot$center.at$`Frontal Lobe`
+forest_surrogate <- distill(forest_interpret)
+
+predictions_forest <- predict(forest,
+                              newdata = test_reg[,-ncol(test_reg)])
+predictions_surrogate <- predict(forest_surrogate,
+                                 test_reg[,-ncol(test_reg)])
+                                 
+plot(predictions_forest, predictions_surrogate)
+
 ```
-
 
 
 ## TODO
 It would be nice to have in the future:
-- ALE Plots
-- A PDP surrogate model implemented
+- ICE plot clustering
+- Lookup table embeddings from the PDP surrogate
 - Some sort of loneliness index implemented
 - When the covariates of the observation are in the support of the training set, 
   create bootstrap confidence bands for the PDP predictions.
