@@ -159,8 +159,19 @@ predict_ICE.Plotter = function(object, save = TRUE) {
       results <- data.frame(sentinel = rep(0, length(object$data.points)))
       index <- which(names(object$grid.points) == feature)
       for (val in object$grid.points[[index]]) {
+        # Get subsampled data, remove y column, set feature
         newdata <- object$predictor$data[object$data.points,]
-        newdata[, feature] <- val
+        newdata <- newdata[,-which(names(newdata)==object$predictor$y)]
+
+        # necessary fix for factor variables
+        if (class(val) == "character"){
+          newdata[,feature] <- factor(rep(val, nrow(newdata)),
+                                      levels = levels(object$grid.points[[index]]))
+        }
+        else{
+          newdata[, feature] <- val
+        }
+
         results <- cbind.data.frame(results,
                                     val = predict(object$predictor, newdata)[, 1])
       }
