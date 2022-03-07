@@ -124,4 +124,5 @@ It would be nice to have in the future:
 - Some sort of loneliness index implemented
 - When the covariates of the observation are in the support of the training set, 
   create bootstrap confidence bands for the PDP predictions.
+- Fix 2-D PDP plots
 
