@@ -66,6 +66,8 @@ forest_interpret <- Interpreter$new(predictor = forest_predictor)
 
 \item{\code{functions.2d}}{List of functions giving two-feature interpretations of the model}
 
+\item{\code{feat.class}}{A vector that contains the class for each feature}
+
 \item{\code{method}}{The chosen interpretability method for the black-box model ("pdp" or "ale").}
 
 \item{\code{center.at}}{The value(s) to center the feature plots}

@@ -9,7 +9,7 @@ center.preds(object, plot.type)
 \arguments{
 \item{object}{The Interpreter object to use}
 
-\item{plot.type}{The type of plot which the user wants to center}
+\item{plot.type}{The type of a which the user wants to center}
 }
 \value{
 centered dataframe/matrix of values for the given plot

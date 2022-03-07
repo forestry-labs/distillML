@@ -6,6 +6,7 @@
 #' @import data.table
 #' @import ggplot2
 #' @import dplyr
+#' @import gridExtra
 
 #' @name set.method
 #' @title Modify the Method Used for Interpretability
@@ -318,7 +319,7 @@ predict_PDP.2D.Plotter = function(object, save = TRUE){
 #' @description Given the specified 'center.at' values of the interpreter object, this
 #'              function centers the speccified type of plot.
 #' @param object The Interpreter object to use
-#' @param plot.type The type of plot which the user wants to center
+  #' @param plot.type The type of a which the user wants to center
 #' @return centered dataframe/matrix of values for the given plot
 #' @export
 center.preds = function(object, plot.type){
@@ -341,7 +342,7 @@ center.preds = function(object, plot.type){
       base <- predict(object$predictor, newdata)[,1]
       center_row <- c(0, base) # to not subtract the first value in each row (feature)
 
-      # subtract this from each row of the data
+        # subtract this from each row of the data
       center_df <- rbind(center_row)[rep(1,nrow(hold[[feature]])),]
       hold[[feature]] <- (hold[[feature]] - center_df)
     }
@@ -361,6 +362,7 @@ center.preds = function(object, plot.type){
   }
 
   else {
+    # NEEDS WORK ON CENTERING
     hold <- object$saved[["PDP.2D"]]
     for (i in 1:length(hold)){
       feat.1 <- names(hold[[i]])[1]
@@ -370,25 +372,12 @@ center.preds = function(object, plot.type){
       center.2 <- object$center.at[[feat.2]]
       dat <- data.frame(Var1=center.1, Var2 = center.2)
       base <- object$functions.2d[[feat.1]][[feat.2]](dat)
-      print(base)
 
       hold[[i]][,"preds"] <- hold[[i]][,"preds"] - base
     }
     return(hold)
   }
 
-}
-
-# helper function for interpreter (defines class for each feature)
-class.definer = function(features.2d, data){
-  # every feature that appears
-  names.features <- unique(as.vector(t(features.2d)))
-  classes <- c()
-  for (feature in names.features){
-    classes <- c(classes, class(data[,feature]))
-  }
-  names(classes) <- names.features
-  return(classes)
 }
 
 # Helper functions for the ALE plots ===========================================
@@ -537,66 +526,110 @@ plot.Interpreter = function(x,
   if (method %in% c("pdp", "ice", "pdp+ice")) {
     # for 1-D plots
     if (!(is.null(x$features))){
-
-      df_all <- predict_ICE.Plotter(x)
-      df_all <- center.preds(x, plot.type = "ICE")
-
       for (feature in features){
-        df <- df_all[[feature]]
-        # df contains both pdp line and all ice lines
-        pdps <- predict_PDP.1D.Plotter(x)
-        pdp.line <- center.preds(x, plot.type = "PDP.1D")[[feature]][,2]
-        df <- cbind(df , pdp = pdp.line)
-        df <- setDT(data.frame(df))
-        df.ice <- df[,-"pdp"]
+        df_all <- predict_ICE.Plotter(x)
+        if (x$feat.class[[feature]]!="numeric"){
+          # Process Data
+          data.factor <- t(df_all[[feature]])[-1,]
+          if (is.null(levels(x$predictor$data[[feature]]))){
+            vals <- df_all[[feature]][,1]
+          }
+          else{
+            vals <- levels(x$predictor$data[[feature]])[df_all[[feature]][,1]]
+          }
 
-        # for scaling
-        min.val <- min(df[, -"feature"])
-        max.val <- max(df[, -"feature"])
+          sds <- apply(data.factor, 2, sd)
+          means <- apply(data.factor, 2, mean)
+          mins <- means-sds
+          maxs <- means+sds
+          # get counts
+          counts <- c()
+          for (val in vals){
+            counts <- c(counts, sum(x$predictor$data[x$data.points, feature] == val))
+          }
 
-        melt.df <- melt(df, id.vars = "feature")
-        melt.df.ice <- melt(df.ice, id.vars = "feature")
+          temp.data <- data.frame(vals, means, mins, maxs, counts)
 
-        if (method == "ice") {
           plot.obj <-
-            ggplot(data = melt.df.ice, aes(x = feature, y = value, group = variable)) +
-            geom_line(color = "grey")+
+            ggplot(data = temp.data,
+                   aes(x = vals, y = means)) +
+            geom_bar(stat = "identity", position = position_dodge()) +
+            ylab(x$predictor$y) + xlab(feature) +
+            geom_errorbar(aes(ymin = mins, ymax = maxs))
             theme_classic()
+
+          # make frequency plot
+          frequency <- ggplot(temp.data, aes(x=vals, y=counts)) +
+            geom_bar(stat = "identity") + xlab(feature) + ylab("Counts")
+        }
+        else{
+          df_all <- center.preds(x, plot.type = "ICE")
+          df <- df_all[[feature]]
+          # df contains both pdp line and all ice lines
+          pdps <- predict_PDP.1D.Plotter(x)
+          pdp.line <- center.preds(x, plot.type = "PDP.1D")[[feature]][,2]
+          df <- cbind(df , pdp = pdp.line)
+          df <- setDT(data.frame(df))
+          df.ice <- df[,-"pdp"]
+
+          # for scaling
+          min.val <- min(df[, -"feature"])
+          max.val <- max(df[, -"feature"])
+
+          melt.df <- melt(df, id.vars = "feature")
+          melt.df.ice <- melt(df.ice, id.vars = "feature")
+
+          if (method == "ice") {
+            plot.obj <-
+              ggplot(data = melt.df.ice, aes(x = feature, y = value, group = variable)) +
+              geom_line(color = "grey")+
+              ylab(x$predictor$y) + xlab(feature) +
+              theme_classic()
+          }
+
+          if (method == "pdp") {
+            plot.obj <-
+              ggplot(data = melt.df[melt.df$variable == "pdp", ], aes(x = feature, y =
+                                                                        value)) +
+              geom_line()+
+              ylab(x$predictor$y) + xlab(feature) +
+              theme_classic()
+          }
+
+          if (method == "pdp+ice") {
+            melt.df.combined <- melt.df
+            melt.df.combined$ispdp <- (melt.df$variable == "pdp")
+            plot.obj <-
+              ggplot(data = melt.df.combined,
+                     aes(
+                       x = feature,
+                       y = value,
+                       group = variable,
+                       color = ispdp
+                     )) +
+              geom_line() +
+              scale_color_manual(labels = c("ICE", "PDP") ,values = c("grey", "red")) +
+              guides(color=guide_legend(title = "Plot Type"))+
+              theme_classic() + ylab(x$predictor$y) + xlab(feature)
+          }
+          # create a histogram for the distribution of the data
+          hold_feat <- x$predictor$data[x$data.points, feature, drop=F]
+          names(hold_feat) <- c("feature")
+          frequency <- ggplot(hold_feat, aes(x = feature)) +
+            geom_histogram(bins = (length(x$grid.points[[feature]]))) +
+            xlab(feature)
         }
 
-        if (method == "pdp") {
-          plot.obj <-
-            ggplot(data = melt.df[melt.df$variable == "pdp", ], aes(x = feature, y =
-                                                                      value)) +
-            geom_line()+
-            theme_classic()
-        }
 
-        if (method == "pdp+ice") {
-          melt.df.combined <- melt.df
-          melt.df.combined$ispdp <- (melt.df$variable == "pdp")
-          plot.obj <-
-            ggplot(data = melt.df.combined,
-                   aes(
-                     x = feature,
-                     y = value,
-                     group = variable,
-                     color = ispdp
-                   )) +
-            geom_line() +
-            scale_color_manual(labels = c("ICE", "PDP") ,values = c("grey", "red")) +
-            guides(color=guide_legend(title = "Plot Type"))+
-            theme_classic()
-        }
-        plots <- append(plots, list(plot.obj + ylab(x$predictor$y) + xlab(feature)))
+        plots <- append(plots, list(grid.arrange(plot.obj, frequency, heights = c(2,1))))
       }
+
       names(plots) <- features
     }
 
     # for 2-D plots
     if (!(is.null(features.2d))){
-      feature.classes <- class.definer(features.2d = features.2d,
-                                       data = x$predictor$data)
+      feature.classes <- x$feat.class
 
       # get all necessary values
       vals <- predict_PDP.2D.Plotter(x)
@@ -726,8 +759,7 @@ localSurrogate = function(object,
   surrogates <- list()
 
   features.2d <- object$features.2d
-  feature.classes <- class.definer(features.2d = features.2d,
-                                   data = object$interpreter$predictor$data)
+  feature.classes <- object$feat.class
   # for the names in each function
   names.2d <- c()
   for (i in 1:nrow(features.2d)){

@@ -6,6 +6,7 @@
 #' @import data.table
 #' @import ggplot2
 #' @import glmnet
+#' @import mltools
 
 
 #' @title Surrogate class description
@@ -18,7 +19,6 @@
 #'                    data for our predictions
 #' @field grid A list of PDPS that determine our prediction.
 #' @field snap.grid Boolean that determines whether we use grid.points
-#'
 #'
 #' @export
 
@@ -57,12 +57,6 @@ Surrogate <- R6::R6Class(
      }
 
      # check to see if valid weights (nonnegaative)
-     if (any(length(weights)!= length(interpreter$features))){
-       stop("Number of weights do not match number of features.")
-     }
-     if (any(names(weights)!= interpreter$features)){
-       stop("Mismatch between feature names of weights.")
-     }
      if (any(weights < 0)){
        stop("Weights cannot be negative.")
      }
@@ -73,17 +67,8 @@ Surrogate <- R6::R6Class(
      }
 
      # checks for feature.centers
-     if (any(!(names(feature.centers) %in% interpreter$features))){
-       stop("Feature centers are not the same as the features in the interpreter.")
-     }
-
      if (center.mean == 0 & any(feature.centers != 0)){
        stop("Uncentered predictions should have no feature centers.")
-     }
-
-     # check grid
-     if (any(names(grid)!=interpreter$features)){
-       stop("Grid does not have the same features as the interpreter.")
      }
 
      self$interpreter <- interpreter
@@ -114,19 +99,16 @@ predict.Surrogate = function(object,
   # check that this is a valid dataframe
   checkmate::assert_data_frame(newdata)
   newdata <- as.data.frame(newdata)
-  if (any(!(names(object$weights) %in% names(newdata)))){
+  if (any(!(names(object$grid) %in% names(newdata)))){
     stop("Given data is missing at least one feature.")
   }
-
-  # look at the subset of the data for which we have weights
-  newdata <- newdata[, names(object$weights)]
 
   # two forms: centered and uncentered
   # if centered, then we need to center the current grid predictions
   # if uncentered, then we need not do anything
   preds <- data.frame(surrogate.preds = rep(object$intercept, nrow(newdata)))
 
-  for (feature in names(object$weights)){
+  for (feature in names(object$grid)){
     # grid points for this specific feature
     ref <- object$grid[[feature]]
     if (object$snap.grid){
@@ -159,7 +141,15 @@ predict.Surrogate = function(object,
     }
 
     pred <- pred - object$feature.centers[[feature]] # subtract mean of grid points
-    preds <- preds + object$weights[[feature]]*pred
+    if (object$interpreter$feat.class[[feature]] != "factor"){
+      preds <- preds + object$weights[[feature]]*pred
+    }
+    else{
+      hold <- paste(feature, newdata[, feature], sep = "_")
+      coeffs <- object$weights[hold]
+      hold[is.na(hold)] <-  0 # nothing done if grid does not have this value
+      preds <- preds + coeffs * pred
+    }
   }
   return(preds)
 }

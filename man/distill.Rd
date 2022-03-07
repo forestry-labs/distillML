@@ -6,7 +6,6 @@
 \usage{
 distill(
   object,
-  include.2d = F,
   center.mean = T,
   snap.grid = T,
   fit.train = T,
@@ -15,9 +14,6 @@ distill(
 }
 \arguments{
 \item{object}{The Interpreter object}
-
-\item{include.2d}{Boolean value that determines whether to include the 2-d PDP
-functions in the grid. Default is FALSE.}
 
 \item{center.mean}{Boolean value that determines whether to center each column
 of predictions by their respective means. Default is TRUE}

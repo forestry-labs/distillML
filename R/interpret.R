@@ -9,6 +9,7 @@
 #' @field data.points The indices of the data points in the training data used for the PDP/ALE.
 #' @field functions.1d List of functions giving single feature interpretations of the model.
 #' @field functions.2d List of functions giving two-feature interpretations of the model
+#' @field feat.class A vector that contains the class for each feature
 #' @field method The chosen interpretability method for the black-box model ("pdp" or "ale").
 #' @field center.at The value(s) to center the feature plots
 #' @field grid.points A list of vectors containing the grid points to use for
@@ -50,6 +51,7 @@ Interpreter <- R6::R6Class(
     data.points = NULL,
     functions.1d = NULL,
     functions.2d = NULL,
+    feat.class = NULL,
     method = NULL,
     # new features added from plotter function
     center.at = NULL,
@@ -111,17 +113,24 @@ Interpreter <- R6::R6Class(
       # remove y variable from consideration
       possible <-
         names(predictor$data)[names(predictor$data) != predictor$y]
+
       # find valid features in the data: more than 1 value
       possible <-
-        names(which(sapply(
-          sapply(predictor$data[, possible], unique), length
-        ) > 1))
+        names(which(apply(predictor$data[, possible], 2,
+                          function(x) length(unique(x))) >1))
+
       # one of the following: int, factor, numeric
       possible <-
         possible[which(sapply(predictor$data[, possible], class) %in%
                          c("numeric", "factor", "integer"))]
       features <- possible
 
+      # Define feature classes
+      classes <- c()
+      for (feature in features){
+        classes <- c(classes, class(data[,feature]))
+      }
+      names(classes) <- features
 
       # check to see if valid sample number
       # if data.points is not specified
@@ -279,6 +288,7 @@ Interpreter <- R6::R6Class(
       self$data.points <- data.points
       self$functions.1d <- functions.pdp
       self$functions.2d <- functions.pdp.2d
+      self$feat.class <- classes
       self$method <- method
       # added features from plotter object
       self$grid.points <- grid.points

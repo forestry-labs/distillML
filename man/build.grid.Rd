@@ -4,22 +4,20 @@
 \alias{build.grid}
 \title{Build grid used for weights in distilled surrogate model}
 \usage{
-build.grid(object, include.2d = F, save = T, fit.train = T)
+build.grid(object, save = T, fit.train = T)
 }
 \arguments{
 \item{object}{The Interpreter object}
-
-\item{include.2d}{Boolean value that determines whether to include the 2-d PDP
-functions in the grid. Default is FALSE.}
 
 \item{save}{Boolean for saving the results in the interpreter object. Default is TRUE.}
 
 \item{fit.train}{Boolean for indicating whether we fit to the subsampled training
 data or to all possible combinations of the grid.points. Default
-is TRUE.}
+is TRUE, which means that we use the subsampled training data.}
 }
 \value{
-A dataframe used to find weights in regression
+A dataframe used to find weights in regression (one-hot encoding for
+        categorical features)
 }
 \description{
 A dataframe storing the true predictions and the PDP predictions
