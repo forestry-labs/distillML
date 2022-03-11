@@ -45,5 +45,5 @@ test_that("Tests that the predictor wrapper is working", {
                          standard_preds,
                          tolerance = 1e-4),
                TRUE)
-
+  rm(list=ls())
 })

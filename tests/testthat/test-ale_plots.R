@@ -30,4 +30,5 @@ test_that("Tests that the ale plots function is working", {
 
   p <- plot(forest_interpret, method = "ale", features = c("FrontalLobe"))
   expect_equal(names(p),"FrontalLobe")
+  rm(list=ls())
 })

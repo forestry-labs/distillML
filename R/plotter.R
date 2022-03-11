@@ -4,7 +4,8 @@
 #' @importFrom stats predict
 #' @import ggplot2
 #' @import dplyr
-#' @importFrom data.table setDT
+#' @importFrom data.table setDT melt
+#' @importFrom pdp grid.arrange
 
 #' @name set.method
 #' @title Modify the Method Used for Interpretability

@@ -6,8 +6,8 @@ test_that("Tests that the predictor wrapper is working", {
   data <- MASS::crabs
   levels(data$sex) <- list(Male = "M", Female = "F")
   levels(data$sp) <- list(Orange = "O", Blue = "B")
-  colnames(data) <- c("Species","Sex","Index","Frontal Lobe",
-                      "Rear Width", "Carapace Length","Carapace Width","Body Depth")
+  colnames(data) <- c("Species","Sex","Index","FrontalLobe",
+                      "RearWidth", "CarapaceLength","CarapaceWidth","BodyDepth")
 
 
   test_ind <- sample(1:nrow(data), nrow(data)%/%5)
@@ -21,7 +21,7 @@ test_that("Tests that the predictor wrapper is working", {
   # Create a predictor wrapper for the forest
   forest_predictor <- Predictor$new(model = forest,
                                     data=train_reg,
-                                    y="Body Depth",
+                                    y="BodyDepth",
                                     task = "regression")
 
   # Initialize an interpreter
@@ -34,13 +34,13 @@ test_that("Tests that the predictor wrapper is working", {
                7)
   # Get predictions from a pdp function
   context("Try pdp predictions")
-  pred_pdp <- forest_interpret$functions.1d$`Rear Width`(c(10,11,12))
+  pred_pdp <- forest_interpret$functions.1d$`RearWidth`(c(10,11,12))
 
-  pred_pdp_2 <- forest_interpret$functions.2d$`Rear Width`$`Frontal Lobe`(matrix(c(10, 20), nrow=1))
+  pred_pdp_2 <- forest_interpret$functions.2d$`RearWidth`$`FrontalLobe`(matrix(c(10, 20), nrow=1))
 
   expect_equal(length(pred_pdp), 3)
 
   expect_equal(length(pred_pdp_2), 1)
 
-
+  rm(list=ls())
 })

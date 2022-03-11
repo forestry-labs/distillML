@@ -31,8 +31,5 @@ test_that("Tests that the predictor wrapper is working", {
   forest_plot <- plot(forest_interpret, method = "pdp+ice",features = "FrontalLobe")
 
   expect_equal(names(forest_plot), "FrontalLobe")
-
-  expect_equal(ncol(forest_plot[[1]]$data), 4)
-  expect_equal(nrow(forest_plot[[1]]$data), 8050)
-
+  rm(list=ls())
 })
