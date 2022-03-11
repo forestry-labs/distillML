@@ -4,6 +4,7 @@
 #' @importFrom stats predict
 #' @import ggplot2
 #' @import dplyr
+#' @importFrom data.table setDT
 
 #' @name set.method
 #' @title Modify the Method Used for Interpretability
