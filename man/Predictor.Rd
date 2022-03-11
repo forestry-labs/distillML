@@ -26,7 +26,7 @@ other types of predictions (ex: predictions that spit out the factor) are not al
 prediction method must be constructed, with optional argument of type
 }
 \examples{
-library(interpret)
+library(Distillery)
 library(Rforestry)
 set.seed(491)
 data <- MASS::crabs

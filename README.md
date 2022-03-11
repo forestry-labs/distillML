@@ -14,7 +14,7 @@ several species of crabs collected at Fremantle, West Australia.
 library(MASS)
 library(data.table)
 library(ggplot2)
-library(interpret)
+library(Distillery)
 library(Rforestry)
 
 set.seed(491)

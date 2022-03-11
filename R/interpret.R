@@ -18,7 +18,7 @@
 #'              1-d PDP plots, 2-d PDP plots, and grid points for building the distillery model.
 #'              This saves the uncentered calculations.
 #' @examples
-#' library(interpret)
+#' library(Distillery)
 #' library(Rforestry)
 #' set.seed(491)
 #' data <- MASS::crabs

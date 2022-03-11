@@ -14,7 +14,7 @@
 #' @field prediction.function The prediction function used by the model
 #' @field y The name of the outcome feature in `data`.
 #' @examples
-#' library(interpret)
+#' library(Distillery)
 #' library(Rforestry)
 #' set.seed(491)
 #' data <- MASS::crabs

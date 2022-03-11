@@ -27,7 +27,7 @@ a vector of averaged predictions equal in length to the number of
 values (or number of rows) input into the function.
 }
 \examples{
-library(interpret)
+library(Distillery)
 library(Rforestry)
 set.seed(491)
 data <- MASS::crabs

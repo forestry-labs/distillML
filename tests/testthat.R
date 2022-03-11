@@ -1,4 +1,4 @@
 library(testthat)
-library(interpret)
+library(Distillery)
 
-test_check("interpret")
+test_check("Distillery")
