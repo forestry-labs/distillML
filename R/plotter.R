@@ -4,8 +4,10 @@
 #' @importFrom stats predict
 #' @import ggplot2
 #' @import dplyr
-#' @importFrom data.table setDT melt
+#' @importFrom data.table setDT melt :=
 #' @importFrom pdp grid.arrange
+#' @importFrom stats coef na.omit quantile sd
+#' @importFrom utils head
 
 #' @name set.method
 #' @title Modify the Method Used for Interpretability
@@ -383,7 +385,7 @@ center.preds = function(object, plot.type){
 local_effect <- function(variable_name, lower_limit, upper_limit,
                          set_value, window_size,
                          training_data, predict_function) {
-  library(dplyr)
+
   # Setup
   n <- nrow(training_data)
   selected_variable <- training_data %>% dplyr::pull(!!as.name(variable_name))
@@ -418,7 +420,7 @@ local_effect <- function(variable_name, lower_limit, upper_limit,
 accumulated_local_effects <- function(predict_function, num_grid_points,
                                       variable_name, training_data,
                                       grid_points, center, window_size) {
-  library(dplyr)
+
   if(!missing(num_grid_points) && !missing(grid_points)) {
     stop("Only one of num_grid_points and grid_points can be specified")
   }
@@ -431,7 +433,7 @@ accumulated_local_effects <- function(predict_function, num_grid_points,
     grid_points <- c(grid_points, - grid_point_closest_zero)
     grid_points <- sort(grid_points)
   }
-  local_effects <- map2_dbl(head(grid_points, -1), grid_points[-1], local_effect,
+  local_effects <- purrr::map2_dbl(head(grid_points, -1), grid_points[-1], local_effect,
                             variable_name = variable_name,
                             training_data = training_data, predict_function = predict_function, window_size = window_size)
 
@@ -458,6 +460,7 @@ accumulated_local_effects <- function(predict_function, num_grid_points,
 #'   passes through the origin. When using center == "zero" we recommend setting
 #'   window_size because otherwise a smaller and possibly empty set will be used
 #'   to compute the ALE at zero.
+#' @param grid_points The grid points to use for the AlE calculation.
 #' @param window_size the fraction of the data (between zero and one) used to compute each ALE point.
 ale <- function(predict_function,
                 num_grid_points,
@@ -467,13 +470,13 @@ ale <- function(predict_function,
                 grid_points,
                 window_size
                 ) {
-  library(purrr)
+
 
   if(missing(variable_names))
     variable_names <- names(training_data)
   if (!center %in% c("uncentered", "mean", "zero"))
     stop('The "center" argument must be one of "uncentered", "mean", or "zero"')
-  out_data <- map(.x = variable_names, .f = accumulated_local_effects,
+  out_data <- purrr::map(.x = variable_names, .f = accumulated_local_effects,
                   predict_function = predict_function,
                   num_grid_points = num_grid_points,
                   training_data = training_data,
@@ -514,10 +517,9 @@ plot.Interpreter = function(x,
   if (!(method %in% c("pdp", "ice", "pdp+ice","ale"))) {
     stop("Method entered is not supported")
   }
-  library(dplyr)
 
   # Quash R CMD CHeck notes
-  Feat.1 = Feat.2 = Val = Cont = Cat = value = variable = ispdp = NULL
+  Feat.1 = Feat.2 = Val = Cont = Cat = value = grp = variable = ispdp = NULL
 
   # list of plots to be filled
   plots <- list()
@@ -705,7 +707,7 @@ plot.Interpreter = function(x,
         ggplot(plot_data) +
         geom_line(data = plot_data %>% filter(grp == "ale"), aes(x = x, y = ale)) +
         geom_rug(data = plot_data %>% filter(grp == "rug"), aes(x = x)) +
-        facet_wrap( ~ variable, scale = "free") + theme_bw() + xlab("")
+        facet_wrap( ~ variable, scales = "free") + theme_bw() + xlab("")
 
       plots <- append(plots, list(plt))
     }

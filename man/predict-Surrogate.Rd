@@ -11,6 +11,8 @@
 \item{object}{A surrogate object distilled from the interpreter}
 
 \item{newdata}{The dataframe to use for the predictions}
+
+\item{...}{Additional parameters to pass to predict}
 }
 \description{
 Predicts outputs given new data

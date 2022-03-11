@@ -86,6 +86,7 @@ Surrogate <- R6::R6Class(
 #' @description Predicts outputs given new data
 #' @param object A surrogate object distilled from the interpreter
 #' @param newdata The dataframe to use for the predictions
+#' @param ... Additional parameters to pass to predict
 #' @export
 #'
 predict.Surrogate = function(object,

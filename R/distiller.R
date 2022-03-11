@@ -34,7 +34,7 @@ build.grid = function(object, save = T, fit.train = T){
     # create PDP curves for these features
     pdps <- data.frame(sentinel = rep(NA, nrow(data)))
     for (feature in object$features){
-      pdps <- cbind(pdps, forest_interpret$functions.1d[[feature]](data[,feature]))
+      pdps <- cbind(pdps, object$functions.1d[[feature]](data[,feature]))
     }
     pdps <- pdps[,-1]
     pdps <- data.frame(pdps)

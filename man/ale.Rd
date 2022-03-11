@@ -30,6 +30,8 @@ passes through the origin. When using center == "zero" we recommend setting
 window_size because otherwise a smaller and possibly empty set will be used
 to compute the ALE at zero.}
 
+\item{grid_points}{The grid points to use for the AlE calculation.}
+
 \item{window_size}{the fraction of the data (between zero and one) used to compute each ALE point.}
 }
 \description{
