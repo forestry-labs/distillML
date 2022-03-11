@@ -132,6 +132,7 @@ Interpreter <- R6::R6Class(
       }
       names(classes) <- features
 
+
       # check to see if valid sample number
       # if data.points is not specified
       data <- predictor$data
