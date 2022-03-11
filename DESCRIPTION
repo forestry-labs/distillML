@@ -26,7 +26,6 @@ Imports:
     onehot,
     dplyr,
     R6 (>= 2.0),
-    data.table,
     checkmate,
     tidyverse,
     magrittr,
@@ -39,7 +38,6 @@ Suggests:
     rmarkdown,
     mvtnorm
 Collate:
-    'helper.R'
     'predictor.R'
     'interpret.R'
     'distiller.R'

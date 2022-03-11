@@ -1,12 +1,9 @@
 #' @include predictor.R
 #' @include interpret.R
-#' @include helper.R
 #' @importFrom R6 R6Class
 #' @importFrom stats predict
-#' @import data.table
 #' @import ggplot2
 #' @import dplyr
-#' @import gridExtra
 
 #' @name set.method
 #' @title Modify the Method Used for Interpretability
