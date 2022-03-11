@@ -126,12 +126,9 @@ Interpreter <- R6::R6Class(
       features <- possible
 
       # Define feature classes
-      if (any(!(features %in% names(data)))) {
-        stop(paste0("Feature ",features[which(!(features %in% names(data)))]," not in data"))
-      }
       classes <- c()
       for (feature in features){
-        classes <- c(classes, class(data[,feature]))
+        classes <- c(classes, class(predictor$data[,(feature)]))
       }
       names(classes) <- features
 

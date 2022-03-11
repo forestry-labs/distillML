@@ -1,5 +1,5 @@
 test_that("Tests that the ale plots function is working", {
-  library(Distillery)
+
   library(Rforestry)
   set.seed(491)
 
