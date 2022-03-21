@@ -270,6 +270,7 @@ predict_PDP.1D.Plotter = function(object, save = TRUE){
 #'             saved in the interpreter object
 #' @return A list of dataframes for each pair of features.2d
 #' @export
+predict_PDP.2D.Plotter = function(object, feat.2d, save = TRUE){
   if (!(inherits(object, "Interpreter"))){
     stop("Object given is not of the interpreter class.")
   }
