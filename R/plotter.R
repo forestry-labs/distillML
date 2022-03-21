@@ -263,28 +263,29 @@ predict_PDP.1D.Plotter = function(object, save = TRUE){
 #' @description Gives prediction surface for all specified feature pairs in the
 #'              interpreter object (features.2d)
 #' @param object The Interpreter object to use.
+#' @param feat.2d A 2-column dataframe or matrix that gives the first variable in
+#'                in the first column, and the second variable in the next. This should
+#'                the number of rows as the number of 2-D PDPs one would like
 #' @param save A binary variable to determine whether the calculations should be
 #'             saved in the interpreter object
 #' @return A list of dataframes for each pair of features.2d
 #' @export
-predict_PDP.2D.Plotter = function(object, save = TRUE){
   if (!(inherits(object, "Interpreter"))){
     stop("Object given is not of the interpreter class.")
   }
 
-  # if all grid predictions are filled
-  if (sum(is.na(object$saved$PDP.2D)) == 0){
-    return(object$saved$PDP.2D)
-  }
-
-  # find all features that need updating
-  needs.update <- which(is.na(object$saved$PDP.2D))
-
   PDP.2D.preds <- list()
-  for (i in 1:nrow(object$features.2d)){
-    if (i %in% needs.update){
-      feat.1 <- object$features.2d[i,1]
-      feat.2 <- object$features.2d[i,2]
+  names.2d <- c()
+
+  # See if we have all of the prediicted 2-D PDPs desired
+  for (i in 1:nrow(feat.2d)){
+    features <- feat.2d[i, ][order(feat.2d[i,])] # order the features
+    label <- paste(features[1], features[2], sep = ", ")
+
+    # if the predictions for the feature are missing
+    if (any(is.na(object$saved$PDP.2D[[label]]))){
+      feat.1 <- as.character(features[1])
+      feat.2 <- as.character(features[2])
 
       grid.values <- expand.grid(object$grid.points[[feat.1]],
                                  object$grid.points[[feat.2]])
@@ -293,23 +294,23 @@ predict_PDP.2D.Plotter = function(object, save = TRUE){
       results <- cbind(grid.values, preds)
       results <- data.frame(results)
       colnames(results) <- c(feat.1, feat.2, "preds")
+
+      # if save == T
+      if (save){
+        object$saved[["PDP.2D"]][[label]] <- results
+      }
     }
     else{
-      result <- object$saved[["PDP.2D"]][[i]]
+      results <- object$saved[["PDP.2D"]][[label]]
     }
+
+    # append these results
+    names.2d <- c(names.2d, label)
     PDP.2D.preds <- append(PDP.2D.preds, list(results))
-    }
-  all_names <- c(object$features.2d, sep = ", ")
-  names(PDP.2D.preds) <- do.call(paste, all_names)
-
-  if (save == TRUE){
-    object$saved[["PDP.2D"]] <- PDP.2D.preds
-  }
-  else{
-    return(PDP.2D.preds)
   }
 
-  return(object$saved[["PDP.2D"]])
+  names(PDP.2D.preds) <- names.2d
+  return(PDP.2D.preds)
 }
 
 
@@ -320,10 +321,11 @@ predict_PDP.2D.Plotter = function(object, save = TRUE){
 #' @description Given the specified 'center.at' values of the interpreter object, this
 #'              function centers the speccified type of plot.
 #' @param object The Interpreter object to use
-  #' @param plot.type The type of a which the user wants to center
+#' @param plot.type The type of a which the user wants to center
+#' @param feats.2d The 2-D features that we want to center
 #' @return centered dataframe/matrix of values for the given plot
 #' @export
-center.preds = function(object, plot.type){
+center.preds = function(object, plot.type, feats.2d = NULL){
 
   if (!(inherits(object, "Interpreter"))){
     stop("Object given is not of the interpreter class.")
@@ -363,11 +365,17 @@ center.preds = function(object, plot.type){
   }
 
   else {
-    # NEEDS WORK ON CENTERING
-    hold <- object$saved[["PDP.2D"]]
-    for (i in 1:length(hold)){
-      feat.1 <- names(hold[[i]])[1]
-      feat.2 <- names(hold[[i]])[2]
+
+    if (is.null(feats.2d)){
+      stop("Please give the 2-D features needed.")
+    }
+
+    # get the uncentered data needed
+    hold <- predict_PDP.2D.Plotter(object, feats.2d)
+
+    for (i in 1:nrow(feats.2d)){
+      feat.1 <- feats.2d[i,1]
+      feat.2 <- feats.2d[i,2]
 
       center.1 <- object$center.at[[feat.1]]
       center.2 <- object$center.at[[feat.2]]
@@ -629,17 +637,19 @@ plot.Interpreter = function(x,
     }
 
     # for 2-D plots
-    if (!(is.null(features.2d))){
+    if (!(is.null(features.2d))){ # if there are 2-D features given
       feature.classes <- x$feat.class
 
       # get all necessary values
-      vals <- predict_PDP.2D.Plotter(x)
-      vals <- center.preds(x, plot.type = "PDP.2D")
+      vals <- predict_PDP.2D.Plotter(x, feat.2d = features.2d)
+      vals <- center.preds(x, plot.type = "PDP.2D", feats.2d = features.2d)
 
       # for the names in each function
       names.2d <- c()
       for (i in 1:nrow(features.2d)){
         # heatmap for 2 continuous features
+        features.2d[i,] <- features.2d[i,][order(features.2d[i,])]
+
         if (feature.classes[features.2d[i,1]] == "numeric" &&
             feature.classes[features.2d[i,2]]=="numeric"){
 
@@ -672,7 +682,8 @@ plot.Interpreter = function(x,
         plots <- append(plots, list(plot.obj))
         names.2d <- c(names.2d, paste(features.2d[i,1], features.2d[i,2], sep = "."))
       }
-      names(plots) <- c(x$features, names.2d)
+      print(names.2d)
+      names(plots) <- c(names.2d)
     }
     return(plots)
 

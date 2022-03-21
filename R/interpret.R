@@ -269,10 +269,12 @@ Interpreter <- R6::R6Class(
       PDP.1D.list <- as.list(rep(NA, length(features)))
       names(PDP.1D.list) <- features
 
+      # possible two dimensional features
       features.2d <- data.frame(feat.1 = 0, feat.2 =0)
-      for (i in 1:(length(features)-1)){
-        for (j in (i+1):length(features)){
-          row <- c(features[i], features[j])
+      feat.ordered <- features[order(features)]
+      for (i in 1:(length(feat.ordered)-1)){
+        for (j in (i+1):length(feat.ordered)){
+          row <- c(feat.ordered[i], feat.ordered[j])
           features.2d <- rbind(features.2d, row)
         }
       }

@@ -4,10 +4,14 @@
 \alias{predict_PDP.2D.Plotter}
 \title{Two Dimensional Prediction Curve for PDP Plots}
 \usage{
-predict_PDP.2D.Plotter(object, save = TRUE)
+predict_PDP.2D.Plotter(object, feat.2d, save = TRUE)
 }
 \arguments{
 \item{object}{The Interpreter object to use.}
+
+\item{feat.2d}{A 2-column dataframe or matrix that gives the first variable in
+in the first column, and the second variable in the next. This should
+the number of rows as the number of 2-D PDPs one would like}
 
 \item{save}{A binary variable to determine whether the calculations should be
 saved in the interpreter object}
