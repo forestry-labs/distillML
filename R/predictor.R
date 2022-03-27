@@ -107,13 +107,13 @@ Predictor <- R6::R6Class("Predictor",
       #' prediction method must be constructed, with optional argument of type
       if (is.null(predict.func)){
         if (is.null(type)){
-          predict.func.final <- function(model, newdata) predict(model, newdata)
+          predict.func.final <- function(model, newdata, ...) predict(model, newdata, ...)
         } else{
-          predict.func.final <- function(model, newdata) predict(model, newdata, type = type)
+          predict.func.final <- function(model, newdata, ...) predict(model, newdata, type = type, ...)
         }
       } else{
-        predict.func.final <- function(model, newdata){
-          pred <- do.call(predict.func, list(model, newdata = newdata))
+        predict.func.final <- function(model, newdata, ...){
+          pred <- do.call(predict.func, list(model, newdata = newdata, ...))
           data.frame(pred, check.names = FALSE)
         }
       }
@@ -135,7 +135,7 @@ Predictor <- R6::R6Class("Predictor",
 #' @description Gives a single column of predictions for a predictor object
 #' @param object Predictor object to use.
 #' @param newdata The dataframe to use for the predictions.
-#' @param ... Additional arguments
+#' @param ... Additional arguments to be passed to the predict function
 #' @return A single column dataframe containing the predictions for all values
 #' @export
 predict.Predictor = function(object,
@@ -151,7 +151,7 @@ predict.Predictor = function(object,
   }
 
   # if we predict 1 target
-  preds <- object$prediction.function(object$model, newdata)
+  preds <- object$prediction.function(object$model, newdata, ...)
   preds <- data.frame(preds)
 
   # if we predict more than 1 class

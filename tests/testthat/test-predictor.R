@@ -31,6 +31,12 @@ test_that("Tests that the predictor wrapper is working", {
 
   expect_equal(forest_predictor$model@ntree, 500)
 
+  model_data <- forest_predictor$model@processed_dta$processed_x
+  wrapper_data <- forest_predictor$data
+
+  expect_equal(all.equal(names(model_data),
+                         names(wrapper_data)[-8]), TRUE)
+
   context("Check the model in predictor")
   expect_equal(all.equal(forest_predictor$model@processed_dta$y[1:10],
                          forest@processed_dta$y[1:10],
@@ -38,6 +44,7 @@ test_that("Tests that the predictor wrapper is working", {
                TRUE)
 
 
+  context("Check predictions are equal ")
   wrapped_preds <- predict(forest_predictor, test_reg[,-ncol(test_reg)])
   standard_preds <- predict(forest, test_reg[,-ncol(test_reg)])
 
@@ -45,5 +52,46 @@ test_that("Tests that the predictor wrapper is working", {
                          standard_preds,
                          tolerance = 1e-4),
                TRUE)
+
+  context("Try passing parameters to the predict function")
+  # Try passing parameters to the predict function
+  wrapped_preds <- predict(forest_predictor, train_reg[,-ncol(train_reg)], aggregation = "oob")
+  standard_preds <- predict(forest, train_reg[,-ncol(train_reg)], aggregation = "oob")
+
+  expect_equal(all.equal(wrapped_preds[,1],
+                         standard_preds,
+                         tolerance = 1e-4),
+               TRUE)
+
+  context("try giving the forest a custom prediction function")
+  # Now try giving the forest a custom prediction function
+  forest_predictor_debiased <- Predictor$new(model = forest,
+                                             data=train_reg,
+                                             predict.func = correctedPredict,
+                                             y="Body Depth",
+                                             task = "regression")
+
+  wrapped_preds <- predict(forest_predictor, test_reg[,-ncol(test_reg)], nrounds = 0)
+  standard_preds <- correctedPredict(forest, test_reg[,-ncol(test_reg)], nrounds = 0)
+
+  expect_equal(length(wrapped_preds[,1]), length(standard_preds))
+
+
+  context("try a non forestry model")
+  mod2 <- lm(Sepal.Length ~., data = iris[,-5])
+
+  linear_predictor <- Predictor$new(model = mod2,
+                                    data=mod2$model,
+                                    y="Sepal.Length",
+                                    task = "regression")
+
+  preds_wrapped <- predict(linear_predictor, iris[,-c(1,5)])
+  preds_std <- predict(mod2, iris[,-c(1,5)])
+
+  expect_equal(all.equal(preds_wrapped[,1],
+                         unname(preds_std)), TRUE)
+
+
+
   rm(list=ls())
 })
