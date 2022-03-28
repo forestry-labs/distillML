@@ -2,23 +2,27 @@
 % Please edit documentation in R/plotter.R
 \name{set.grid.points}
 \alias{set.grid.points}
-\title{Sets the center value used for plotting}
+\title{Sets grid points used for plotting}
 \usage{
 set.grid.points(object, feature, values)
 }
 \arguments{
-\item{object}{The Interpreter class to recenter}
+\item{object}{The Interpreter class that we want to modify the grid points of.}
 
-\item{feature}{The feature to center}
+\item{feature}{The feature we want to supply new grid points to.}
 
-\item{values}{The set of new values to be used as the grid points for the selected feature}
+\item{values}{The set of new values to be used as the grid points for the selected feature.
+Must be a vector with entries in the range of the feature values in the training set
+and must match the type of the given feature (either a vector of factor levels
+or a vector of continuous feature values).}
 }
 \description{
-Method for setting center value for a specific feature
+Method for setting grid points for a specific feature plot
 }
 \note{
-Because the grid points determine what calculations are performed, changing the grid points
-will remove any of the previously calculated values in the 'Interpreter' object. For any 1-d ICE
+Because the grid points determine what calculations are performed for the
+PDP/ICE functions, changing the grid points will remove any of the previously
+calculated values in the 'Interpreter' object. For any 1-d ICE
 or PDP plot, it will remove the previous calculations for the given feature. For any 2-d PDP
 calcuations, it will remove plots that include the given feature as any of its features.
 }

@@ -2,16 +2,20 @@
 % Please edit documentation in R/plotter.R
 \name{set.center.at}
 \alias{set.center.at}
-\title{Sets the center value used for plotting}
+\title{Sets a new center in the plots made by an Interpreter}
 \usage{
 set.center.at(object, feature, value)
 }
 \arguments{
-\item{object}{The Interpreter class to recenter}
+\item{object}{The Interpreter class that we want to recenter the plots of.}
 
-\item{feature}{The feature to center}
+\item{feature}{The name of the specific feature that we want to center the
+plots of. Can be either a continuous feature or a cetagorical feature. Must match
+the name of one of the features in the Interpreter model's training data set.}
 
-\item{value}{The new center value to use for the feature.}
+\item{value}{The new value to use for the plots of the specified feature to be centered at.
+Must match the type of the feature (a factor level or continuous value in the range
+of the specified feature).}
 }
 \description{
 Method for setting center value for a specific feature

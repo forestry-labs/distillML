@@ -11,9 +11,11 @@
 
 #' @name set.method
 #' @title Modify the Method Used for Interpretability
-#' @description Sets a new method used for interpertability
-#' @param object The Interpreter object
-#' @param method The new method to generate the interpretability functions
+#' @description Sets a new method used for interpretability in the Interpreter
+#'   object. This can be different from the previous type ("ale" or "pdp")
+#' @param object The Interpreter object to change the method attribute in
+#' @param method The new method to use in the Interpreter object. Must be one
+#'   of "pdp" or "ale"
 #' @export
 set.method = function(object, method){
   checkmate::assert_character(method)
@@ -27,11 +29,15 @@ set.method = function(object, method){
 }
 
 #' @name set.center.at
-#' @title Sets the center value used for plotting
+#' @title Sets a new center in the plots made by an Interpreter
 #' @description Method for setting center value for a specific feature
-#' @param object The Interpreter class to recenter
-#' @param feature The feature to center
-#' @param value The new center value to use for the feature.
+#' @param object The Interpreter class that we want to recenter the plots of.
+#' @param feature The name of the specific feature that we want to center the
+#'   plots of. Can be either a continuous feature or a cetagorical feature. Must match
+#'   the name of one of the features in the Interpreter model's training data set.
+#' @param value The new value to use for the plots of the specified feature to be centered at.
+#'   Must match the type of the feature (a factor level or continuous value in the range
+#'   of the specified feature).
 #' @note
 #' Unlike the grid predictions, the center.at values do not modify any of the
 #' previous saved calculations. Therefore, it does not change or remove any of the
@@ -65,14 +71,18 @@ set.center.at = function(object,
 
 # method for setting grid points for a specific feature
 #' @name set.grid.points
-#' @title Sets the center value used for plotting
-#' @description Method for setting center value for a specific feature
-#' @param object The Interpreter class to recenter
-#' @param feature The feature to center
-#' @param values The set of new values to be used as the grid points for the selected feature
+#' @title Sets grid points used for plotting
+#' @description Method for setting grid points for a specific feature plot
+#' @param object The Interpreter class that we want to modify the grid points of.
+#' @param feature The feature we want to supply new grid points to.
+#' @param values The set of new values to be used as the grid points for the selected feature.
+#'   Must be a vector with entries in the range of the feature values in the training set
+#'   and must match the type of the given feature (either a vector of factor levels
+#'   or a vector of continuous feature values).
 #' @note
-#' Because the grid points determine what calculations are performed, changing the grid points
-#' will remove any of the previously calculated values in the 'Interpreter' object. For any 1-d ICE
+#' Because the grid points determine what calculations are performed for the
+#' PDP/ICE functions, changing the grid points will remove any of the previously
+#' calculated values in the 'Interpreter' object. For any 1-d ICE
 #' or PDP plot, it will remove the previous calculations for the given feature. For any 2-d PDP
 #' calcuations, it will remove plots that include the given feature as any of its features.
 #' @export

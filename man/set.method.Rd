@@ -7,10 +7,12 @@
 set.method(object, method)
 }
 \arguments{
-\item{object}{The Interpreter object}
+\item{object}{The Interpreter object to change the method attribute in}
 
-\item{method}{The new method to generate the interpretability functions}
+\item{method}{The new method to use in the Interpreter object. Must be one
+of "pdp" or "ale"}
 }
 \description{
-Sets a new method used for interpertability
+Sets a new method used for interpretability in the Interpreter
+  object. This can be different from the previous type ("ale" or "pdp")
 }
