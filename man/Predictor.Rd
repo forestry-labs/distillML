@@ -4,15 +4,9 @@
 \alias{Predictor}
 \title{Predictor class description}
 \description{
-The class that wraps a machine learning model in order to provide a
- standardized method for predictions for different models.
-}
-\details{
-Predictor Object
-}
-\note{
-A wrapper to pass an ML algorithm (rpart, etc.) through the
-interpretability functions, the data used to create the algorithm
+A wrapper class for generic ML algorithms (xgboost, RF, BART, rpart, etc.)
+in order to standardize the predictions given by different algorithms to be
+compatible with the interpretability functions.
 
 The necessary variables are model, data, y. The other variables are
 optional, and depend on the use cases. Type should be used only when
@@ -23,6 +17,13 @@ probabilities if classification. For classification problems with more than
 two categories, the output comes out as vectors of probabilities for the
 specified "class" category. Because this is for ML interpretability,
 other types of predictions (ex: predictions that spit out the factor) are not allowed.
+}
+\details{
+Predictor Object
+}
+\note{
+The class that wraps a machine learning model in order to provide a
+ standardized method for predictions for different models.
 prediction method must be constructed, with optional argument of type
 }
 \examples{
@@ -52,20 +53,25 @@ y="Carapace Width", task = "regression")
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
 \describe{
-\item{\code{data}}{The training data for building the model}
+\item{\code{data}}{The training data that was used during training for the model. This should
+be a data frame matching the data frame the model was given for training.}
 
-\item{\code{model}}{The object model}
+\item{\code{model}}{The object corresponding to the trained model that we want to make a
+Predictor object for. If this model doesn't have a generic predict method,
+the user has to provide a custom predict function that accepts a data frame.}
 
-\item{\code{task}}{The prediction task the model performs (i.e. classification or regression)}
+\item{\code{task}}{The prediction task the model is trained to perform (`classification` or `regression`).}
 
 \item{\code{class}}{The class for which we get predictions. We specify this to get the predictions
 (such as probabilites) for an observation being in a specific class (e.g. Male or Female).
 This parameter is necessary for classification predictions with more than a single vector
 of predictions.}
 
-\item{\code{prediction.function}}{The prediction function used by the model}
+\item{\code{prediction.function}}{An optional parameter if the model doesn't have a
+generic prediction function. This should take a data frame and return a
+vector of predictions for each observation in the data frame.}
 
-\item{\code{y}}{The name of the outcome feature in `data`.}
+\item{\code{y}}{The name of the outcome feature in the `data` data frame.}
 }
 \if{html}{\out{</div>}}
 }
@@ -95,20 +101,28 @@ of predictions.}
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{model}}{A trained model.}
+\item{\code{model}}{The object corresponding to the trained model that we want to make a
+Predictor object for. If this model doesn't have a generic predict method,
+the user has to provide a custom predict function that accepts a data frame.}
 
-\item{\code{data}}{A dataframe containing the training data.}
+\item{\code{data}}{The training data that was used during training for the model. This should
+be a data frame matching the data frame the model was given for training.}
 
-\item{\code{predict.func}}{A function to run predictions for the model.}
+\item{\code{predict.func}}{An optional parameter if the model doesn't have a
+generic prediction function. This should take a data frame and return a
+vector of predictions for each observation in the data frame.}
 
-\item{\code{y}}{The name of the outcome variable in data.}
+\item{\code{y}}{The name of the outcome feature in the `data` data frame.}
 
-\item{\code{task}}{The prediction class, either `classification` or `regression`}
+\item{\code{task}}{The prediction task the model is trained to perform (`classification` or `regression`).}
 
-\item{\code{class}}{The class of outcomes we want to see predictions for.}
+\item{\code{class}}{The class for which we get predictions. We specify this to get the predictions
+(such as probabilites) for an observation being in a specific class (e.g. Male or Female).
+This parameter is necessary for classification predictions with more than a single vector
+of predictions.}
 
 \item{\code{type}}{The type of predictions done (i.e. 'response' for predicted probabliities for classification).
-This feature should only be used if no predict.funcc is specified.}
+This feature should only be used if no predict.func is specified.}
 }
 \if{html}{\out{</div>}}
 }

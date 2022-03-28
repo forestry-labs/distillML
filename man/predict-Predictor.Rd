@@ -8,15 +8,19 @@
 \method{predict}{Predictor}(object, newdata, ...)
 }
 \arguments{
-\item{object}{Predictor object to use.}
+\item{object}{The Predictor object to use to make predictions.}
 
-\item{newdata}{The dataframe to use for the predictions.}
+\item{newdata}{The data frame to use for the independent features in the prediction.}
 
-\item{...}{Additional arguments}
+\item{...}{Additional arguments that are passed to the model predict function.
+For instance, these can be different aggregation options (aggregation = "oob")
+that are accepted by the prediction function of the model.}
 }
 \value{
-A single column dataframe containing the predictions for all values
+A data frame with a single column containing the predictions for each
+ row of the newdata data frame.
 }
 \description{
-Gives a single column of predictions for a predictor object
+Gives a single column of predictions from a model that
+ is wrapped by the Predictor object
 }

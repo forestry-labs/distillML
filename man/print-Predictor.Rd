@@ -3,15 +3,15 @@
 \name{print-Predictor}
 \alias{print-Predictor}
 \alias{print.Predictor}
-\title{Printing method for Predictor class}
+\title{The Printing method for Predictor class}
 \usage{
 \method{print}{Predictor}(x, ...)
 }
 \arguments{
-\item{x}{The Predictor to print}
+\item{x}{The Predictor object to print}
 
-\item{...}{Additional arguments}
+\item{...}{Additional arguments passed to the plotting function.}
 }
 \description{
-Gives the task of the given predictor x
+Prints the given Predictor object.
 }

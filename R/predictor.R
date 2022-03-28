@@ -2,17 +2,34 @@
 #' @importFrom R6 R6Class
 
 #' @title Predictor class description
-#' @description The class that wraps a machine learning model in order to provide a
-#'  standardized method for predictions for different models.
-#' @field data The training data for building the model
-#' @field model The object model
-#' @field task The prediction task the model performs (i.e. classification or regression)
+#' @description A wrapper class for generic ML algorithms (xgboost, RF, BART, rpart, etc.)
+#' in order to standardize the predictions given by different algorithms to be
+#' compatible with the interpretability functions.
+#'
+#' The necessary variables are model, data, y. The other variables are
+#' optional, and depend on the use cases. Type should be used only when
+#' a prediction function is NOT specified.
+#'
+#' The outputs of the algorithm must be the values if it is regression, or
+#' probabilities if classification. For classification problems with more than
+#' two categories, the output comes out as vectors of probabilities for the
+#' specified "class" category. Because this is for ML interpretability,
+#' other types of predictions (ex: predictions that spit out the factor) are not allowed.
+#'
+#' @field data The training data that was used during training for the model. This should
+#'        be a data frame matching the data frame the model was given for training.
+#' @field model The object corresponding to the trained model that we want to make a
+#'        Predictor object for. If this model doesn't have a generic predict method,
+#'        the user has to provide a custom predict function that accepts a data frame.
+#' @field task The prediction task the model is trained to perform (`classification` or `regression`).
 #' @field class The class for which we get predictions. We specify this to get the predictions
 #'        (such as probabilites) for an observation being in a specific class (e.g. Male or Female).
 #'        This parameter is necessary for classification predictions with more than a single vector
 #'        of predictions.
-#' @field prediction.function The prediction function used by the model
-#' @field y The name of the outcome feature in `data`.
+#' @field prediction.function An optional parameter if the model doesn't have a
+#'        generic prediction function. This should take a data frame and return a
+#'        vector of predictions for each observation in the data frame.
+#' @field y The name of the outcome feature in the `data` data frame.
 #' @examples
 #' library(Distillery)
 #' library(Rforestry)
@@ -46,28 +63,27 @@ Predictor <- R6::R6Class("Predictor",
     prediction.function = NULL,
     y = NULL,
 
-    #' @param model A trained model.
-    #' @param data A dataframe containing the training data.
-    #' @param predict.func A function to run predictions for the model.
-    #' @param y The name of the outcome variable in data.
-    #' @param task The prediction class, either `classification` or `regression`
-    #' @param class The class of outcomes we want to see predictions for.
+    #' @param model The object corresponding to the trained model that we want to make a
+    #'        Predictor object for. If this model doesn't have a generic predict method,
+    #'        the user has to provide a custom predict function that accepts a data frame.
+    #' @param data The training data that was used during training for the model. This should
+    #'        be a data frame matching the data frame the model was given for training.
+    #' @param predict.func An optional parameter if the model doesn't have a
+    #'        generic prediction function. This should take a data frame and return a
+    #'        vector of predictions for each observation in the data frame.
+    #' @param y The name of the outcome feature in the `data` data frame.
+    #' @param task The prediction task the model is trained to perform (`classification` or `regression`).
+    #' @param class The class for which we get predictions. We specify this to get the predictions
+    #'        (such as probabilites) for an observation being in a specific class (e.g. Male or Female).
+    #'        This parameter is necessary for classification predictions with more than a single vector
+    #'        of predictions.
     #' @param type The type of predictions done (i.e. 'response' for predicted probabliities for classification).
-    #'        This feature should only be used if no predict.funcc is specified.
+    #'        This feature should only be used if no predict.func is specified.
     #' @return A `Predictor` object.
     #' @note
-    #' A wrapper to pass an ML algorithm (rpart, etc.) through the
-    #' interpretability functions, the data used to create the algorithm
-    #'
-    #' The necessary variables are model, data, y. The other variables are
-    #' optional, and depend on the use cases. Type should be used only when
-    #' a prediction function is NOT specified.
-    #'
-    #' The outputs of the algorithm must be the values if it is regression, or
-    #' probabilities if classification. For classification problems with more than
-    #' two categories, the output comes out as vectors of probabilities for the
-    #' specified "class" category. Because this is for ML interpretability,
-    #' other types of predictions (ex: predictions that spit out the factor) are not allowed.
+    #' The class that wraps a machine learning model in order to provide a
+    #'  standardized method for predictions for different models.
+
     initialize = function(model=NULL,
                           data=NULL,
                           predict.func=NULL,
@@ -132,11 +148,15 @@ Predictor <- R6::R6Class("Predictor",
 #' @name predict-Predictor
 #' @rdname predict-Predictor
 #' @title Predict method for Predictor class
-#' @description Gives a single column of predictions for a predictor object
-#' @param object Predictor object to use.
-#' @param newdata The dataframe to use for the predictions.
-#' @param ... Additional arguments to be passed to the predict function
-#' @return A single column dataframe containing the predictions for all values
+#' @description Gives a single column of predictions from a model that
+#'  is wrapped by the Predictor object
+#' @param object The Predictor object to use to make predictions.
+#' @param newdata The data frame to use for the independent features in the prediction.
+#' @param ... Additional arguments that are passed to the model predict function.
+#'   For instance, these can be different aggregation options (aggregation = "oob")
+#'   that are accepted by the prediction function of the model.
+#' @return A data frame with a single column containing the predictions for each
+#'  row of the newdata data frame.
 #' @export
 predict.Predictor = function(object,
                              newdata,
@@ -168,10 +188,10 @@ predict.Predictor = function(object,
 
 #' @name print-Predictor
 #' @rdname print-Predictor
-#' @title Printing method for Predictor class
-#' @description Gives the task of the given predictor x
-#' @param x The Predictor to print
-#' @param ... Additional arguments
+#' @title The Printing method for Predictor class
+#' @description Prints the given Predictor object.
+#' @param x The Predictor object to print
+#' @param ... Additional arguments passed to the plotting function.
 #' @export
 print.Predictor = function(
   x,
