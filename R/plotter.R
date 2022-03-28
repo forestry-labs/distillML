@@ -148,8 +148,6 @@ set.grid.points = function(object,
 #'         column has a single observation with the modified feature set to that
 #'         row's grid point.
 #'
-#' Needed fixes: add in second variable interpretations,
-#' add grouping by another variable
 #' @export
 predict_ICE.Plotter = function(object, save = TRUE) {
 
