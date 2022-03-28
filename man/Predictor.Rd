@@ -18,9 +18,6 @@ two categories, the output comes out as vectors of probabilities for the
 specified "class" category. Because this is for ML interpretability,
 other types of predictions (ex: predictions that spit out the factor) are not allowed.
 }
-\details{
-Predictor Object
-}
 \note{
 The class that wraps a machine learning model in order to provide a
  standardized method for predictions for different models.

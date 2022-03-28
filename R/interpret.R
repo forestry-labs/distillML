@@ -2,19 +2,52 @@
 #' @importFrom R6 R6Class
 
 #' @title Interpreter class description
-#' @description The class for different interpretability methods.
-#' @field predictor The predictor object to use as a standardized wrapper for the model
-#' @field features All possible features that can be interpreted with respect to the model
-#' @field features.2d All possible features combinations of length 2
-#' @field data.points The indices of the data points in the training data used for the PDP/ALE.
-#' @field functions.1d List of functions giving single feature interpretations of the model.
-#' @field functions.2d List of functions giving two-feature interpretations of the model
-#' @field feat.class A vector that contains the class for each feature
-#' @field method The chosen interpretability method for the black-box model ("pdp" or "ale").
-#' @field center.at The value(s) to center the feature plots
+#' @description A wrapper class based on a predictor object for examining the
+#' predictions of the model. Its predictions with respect to one or two features.
+#' The two methods for interpreting a model based on one or two features are partial
+#' dependence plots (PDP), which averages over the marginal distribution
+#' of the predictions of the model, and accumulated local effects (ALE) functions
+#' which averages over the conditional distribution of the predictions of the model.
+#'
+#' The only necessary argument is the Predictor object. The other arguments are
+#' optional, but it may be useful to specify the number of samples or the specific
+#' data points (data.points) if the training data is very large.
+#' This can greatly reduce the time for computation.
+#'
+#' For the output, the model returns an interpreter object with two lists of
+#' functions: one for interpreting a single feature's role in the black-box
+#' model, and the other for intepreting a pair of features' role in the
+#' black-box model. These interpretability functions are built for each
+#' possible feature (or pair of features). Each of these functions return
+#' a vector of averaged predictions equal in length to the number of
+#' values (or number of rows) input into the function.
+#'
+#' @field predictor The Predictor object that contains the model that the user wants
+#'        to query. This is the only parameter that is required to initialize an
+#'        Interpreter object. All entries in the vector must
+#'        match column names from the `data` parameter of the Predictor object.
+#' @field features An optional list of single features that we want to create PDP functions for.
+#' @field features.2d A two column data frame that contains pairs of names that we
+#'        want to create 2D pdp functions for. All entries in the data frame must
+#'        match column names from the `data` parameter of the Predictor object.
+#' @field data.points A vector of indices of data points in the training
+#'        data frame to be used as the observations for creating the PDP/ALE functions.
+#'        When the training data is large, it can greatly reduce the required computation
+#'        to pass only a downsampled subset of the training data to the pdp
+#'        function construction. Alternatively, if one is only interested understanding
+#'        the model predictions for a specific subgroup, the indices of the observations
+#'        in the given subgroup can be passed here.
+#' @field functions.1d A List of functions giving single feature interpretations of the model.
+#' @field functions.2d A List of functions giving two-feature interpretations of the model
+#' @field feat.class A vector that contains the class for each feature (categorical or continuous)
+#' @field method The chosen interpretability method for interpretation.
+#'        By default, this method is set to partial dependence plots
+#'        ("pdp"). This can either be set to "pdp" or "ale".
+#' @field center.at The value(s) to center the feature plots at. A list of length
+#'        equal to the length of the features.
 #' @field grid.points A list of vectors containing the grid points to use for
 #'                    the predictions.
-#' @field saved A list that saves the previous calculations for the 1-d ICE plots,
+#' @field saved A list that caches the previous calculations for the 1-d ICE plots,
 #'              1-d PDP plots, 2-d PDP plots, and grid points for building the distillery model.
 #'              This saves the uncentered calculations.
 #' @examples
@@ -60,15 +93,17 @@ Interpreter <- R6::R6Class(
     # functions.ale = to come later
 
     # initialize an interpreter object
-    #' @param predictor The trained predictor object for the model that we want to
-    #'                  interpret.
+    #' @param predictor The Predictor object that contains the model that the user wants
+    #'        to query. This is the only parameter that is required to initialize an
+    #'        Interpreter object. All entries in the vector must
+    #'        match column names from the `data` parameter of the Predictor object.
     #' @param samples The number of observations used for the interpretability
     #'                method. If no number is given, the default set is the
     #'                minimum between 1000 and the number of rows in the
     #'                training data set.
     #' @param data.points The indices of the data points used for the PDP/ALE. This
     #'                    overwrites the "samples" parameter above.
-    #' @param method The chosen interpretability method for the black-box model.
+    #' @param method The chosen interpretability method for interpretation ("pdp" or "ale").
     #'               By default, this method is set to partial dependence plots
     #'               ("pdp"). This can either be set to "pdp" or "ale".
     #' @param grid.size The number of grid points to create for the pdp
@@ -76,25 +111,8 @@ Interpreter <- R6::R6Class(
     #'
     #' @return An `Interpreter` object.
     #' @note
-    #' A wrapper to pass a predictor object (see: predictor.R) for interpreting
-    #' its predictions with respect to one or two features. The two methods
-    #' for interpreting a model based on one or two features are partial
-    #' dependence plots (PDP), which averages over the marginal distribution, and
-    #' accumulated local effects (ALE), which averages over the conditional
-    #' distribution.
-    #'
-    #' The necessary variable is the predictor object. The other variables are
-    #' optional, but it may be useful to specify the number of samples or the
-    #' data.points if the training data is very large (reduces time for computations).
-    #'
-    #' For the output, the model returns an interpreter object with two lists of
-    #' functions: one for interpreting a single feature's role in the black-box
-    #' model, and the other for intepreting a pair of features' role in the
-    #' black-box model. These interpretability functions are built for each
-    #' possible feature (or pair of features). Each of these functions return
-    #' a vector of averaged predictions equal in length to the number of
-    #' values (or number of rows) input into the function.
-    #'
+    #' The class that wraps a Predictor object for application of different
+    #' interpretability methods.
     initialize = function(predictor = NULL,
                           samples = 1000,
                           data.points = NULL,
