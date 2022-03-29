@@ -13,11 +13,16 @@ predict_PDP.2D.Plotter(object, feat.2d, save = TRUE)
 in the first column, and the second variable in the next. This should
 the number of rows as the number of 2-D PDPs one would like}
 
-\item{save}{A binary variable to determine whether the calculations should be
-saved in the interpreter object}
+\item{save}{A boolean indicator to indicate whether the calculations should be
+saved in the interpreter object or not. This can help reduce
+computation if the PDP functions are used many times, but requires
+additional memory to store the predictions.}
 }
 \value{
-A list of dataframes for each pair of features.2d
+A list of data frames for each pair of features.2d. Each data frame
+        contains columns corresponding to the grid points for the two selected
+        features and a column corresponding to the predictions of the model
+        at the given combination of grid points.
 }
 \description{
 Gives prediction surface for all specified feature pairs in the

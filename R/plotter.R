@@ -17,7 +17,9 @@
 #' @param method The new method to use in the Interpreter object. Must be one
 #'   of "pdp" or "ale"
 #' @export
-set.method = function(object, method){
+set.method = function(object,
+                      method)
+{
   checkmate::assert_character(method)
   if (!(inherits(object, "Interpreter"))) {
     stop("Object given is not of the Interpreter class.")
@@ -141,15 +143,19 @@ set.grid.points = function(object,
 #' @title Prediction Function for ICE Plots
 #' @description Gives predictions at each point on the grid.
 #' @param object The Interpeter object to use.
-#' @param save A binary variable to determine whether the calculations should be
-#'             saved in the interpreter object
-#' @return A list of dataframes for each feature. In each dataframe, the first
+#' @param save A boolean indicator to indicate whether the calculations should be
+#'             saved in the interpreter object or not. This can help reduce
+#'             computation if the ICE functions are used many times, but requires
+#'             additional memory to store the predictions.
+#' @return A list of data frames, one for each feature. In each data frame, the first
 #'         column contains the grid values for the feature, and each subsequent
-#'         column has a single observation with the modified feature set to that
-#'         row's grid point.
+#'         column has a single observation corresponding to the prediction of the model
+#'         when with the given feature set to that grid point value.
 #'
 #' @export
-predict_ICE.Plotter = function(object, save = TRUE) {
+predict_ICE.Plotter = function(object,
+                               save = TRUE)
+{
 
   if (!(inherits(object, "Interpreter"))){
     stop("Object given is not of the interpreter class.")
@@ -218,13 +224,17 @@ predict_ICE.Plotter = function(object, save = TRUE) {
 #' @title Prediction Function for PDP Plots
 #' @description Gives prediction curve for all specified features in the
 #'              plotter object
-#' @param object The Interpreter object to use.
-#' @param save A binary variable to determine whether the calculations should be
-#'             saved in the interpreter object
-#' @return A list of dataframes with the grid points and PDP prediction curves
+#' @param object The Interpreter object to plot PDP curves for.
+#' @param save A boolean indicator to indicate whether the calculations should be
+#'             saved in the interpreter object or not. This can help reduce
+#'             computation if the PDP functions are used many times, but requires
+#'             additional memory to store the predictions.
+#' @return A list of data frames with the grid points and PDP prediction values
 #'         for each feature in object
 #' @export
-predict_PDP.1D.Plotter = function(object, save = TRUE){
+predict_PDP.1D.Plotter = function(object,
+                                  save = TRUE)
+{
 
   if (!(inherits(object, "Interpreter"))){
     stop("Objet given is not of the interpreter class.")
@@ -274,11 +284,19 @@ predict_PDP.1D.Plotter = function(object, save = TRUE){
 #' @param feat.2d A 2-column dataframe or matrix that gives the first variable in
 #'                in the first column, and the second variable in the next. This should
 #'                the number of rows as the number of 2-D PDPs one would like
-#' @param save A binary variable to determine whether the calculations should be
-#'             saved in the interpreter object
-#' @return A list of dataframes for each pair of features.2d
+#' @param save A boolean indicator to indicate whether the calculations should be
+#'             saved in the interpreter object or not. This can help reduce
+#'             computation if the PDP functions are used many times, but requires
+#'             additional memory to store the predictions.
+#' @return A list of data frames for each pair of features.2d. Each data frame
+#'         contains columns corresponding to the grid points for the two selected
+#'         features and a column corresponding to the predictions of the model
+#'         at the given combination of grid points.
 #' @export
-predict_PDP.2D.Plotter = function(object, feat.2d, save = TRUE){
+predict_PDP.2D.Plotter = function(object,
+                                  feat.2d,
+                                  save = TRUE)
+{
   if (!(inherits(object, "Interpreter"))){
     stop("Object given is not of the interpreter class.")
   }
@@ -506,14 +524,13 @@ ale <- function(predict_function,
 
 #' @name plot-Interpreter
 #' @rdname plot-Interpreter
-#' @title PLotting method for Interpretor model
-#' @description Plots either the PDP plots or ICE plots
-#' @param x Interpreter object to make plots for.
-#' @param method A method for the plot. Must be one of "ice",
+#' @title Plotting method for Interpretor model
+#' @description Plots the PDP, ALE, or ICE plots for an Interpreter object
+#' @param x Interpreter object to generate plots from
+#' @param method The type of plot that we want to generate. Must be one of "ice",
 #' "pdp+ice", "pdp", or "ale"
-#' @param features 1-D PDP/ICE/ALE curves to plot.
-#' @param features.2d 2-D PDP curves to plot.
-#' @param ... Additional arguments
+#' @param features 1-D features that we want to produce plots for.
+#' @param features.2d 2-D features that we want to produce plots for arguments
 #' @return A list of plots with 1-d features and 2-d features. For 2-d features with
 #'         one continuous and one categorical feature, the plot is a linear plot of the
 #'         continuous feature with group colors representing the categorical feature.

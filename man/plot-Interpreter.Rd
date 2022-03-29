@@ -3,21 +3,19 @@
 \name{plot-Interpreter}
 \alias{plot-Interpreter}
 \alias{plot.Interpreter}
-\title{PLotting method for Interpretor model}
+\title{Plotting method for Interpretor model}
 \usage{
 \method{plot}{Interpreter}(x, method = "pdp+ice", features = NULL, features.2d = NULL, ...)
 }
 \arguments{
-\item{x}{Interpreter object to make plots for.}
+\item{x}{Interpreter object to generate plots from}
 
-\item{method}{A method for the plot. Must be one of "ice",
+\item{method}{The type of plot that we want to generate. Must be one of "ice",
 "pdp+ice", "pdp", or "ale"}
 
-\item{features}{1-D PDP/ICE/ALE curves to plot.}
+\item{features}{1-D features that we want to produce plots for.}
 
-\item{features.2d}{2-D PDP curves to plot.}
-
-\item{...}{Additional arguments}
+\item{features.2d}{2-D features that we want to produce plots for arguments}
 }
 \value{
 A list of plots with 1-d features and 2-d features. For 2-d features with
@@ -27,5 +25,5 @@ A list of plots with 1-d features and 2-d features. For 2-d features with
         the value of the outcome.
 }
 \description{
-Plots either the PDP plots or ICE plots
+Plots the PDP, ALE, or ICE plots for an Interpreter object
 }

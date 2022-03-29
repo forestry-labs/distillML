@@ -7,13 +7,15 @@
 predict_PDP.1D.Plotter(object, save = TRUE)
 }
 \arguments{
-\item{object}{The Interpreter object to use.}
+\item{object}{The Interpreter object to plot PDP curves for.}
 
-\item{save}{A binary variable to determine whether the calculations should be
-saved in the interpreter object}
+\item{save}{A boolean indicator to indicate whether the calculations should be
+saved in the interpreter object or not. This can help reduce
+computation if the PDP functions are used many times, but requires
+additional memory to store the predictions.}
 }
 \value{
-A list of dataframes with the grid points and PDP prediction curves
+A list of data frames with the grid points and PDP prediction values
         for each feature in object
 }
 \description{

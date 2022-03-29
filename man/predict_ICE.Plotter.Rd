@@ -9,17 +9,16 @@ predict_ICE.Plotter(object, save = TRUE)
 \arguments{
 \item{object}{The Interpeter object to use.}
 
-\item{save}{A binary variable to determine whether the calculations should be
-saved in the interpreter object}
+\item{save}{A boolean indicator to indicate whether the calculations should be
+saved in the interpreter object or not. This can help reduce
+computation if the ICE functions are used many times, but requires
+additional memory to store the predictions.}
 }
 \value{
-A list of dataframes for each feature. In each dataframe, the first
+A list of data frames, one for each feature. In each data frame, the first
         column contains the grid values for the feature, and each subsequent
-        column has a single observation with the modified feature set to that
-        row's grid point.
-
-Needed fixes: add in second variable interpretations,
-add grouping by another variable
+        column has a single observation corresponding to the prediction of the model
+        when with the given feature set to that grid point value.
 }
 \description{
 Gives predictions at each point on the grid.
