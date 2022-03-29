@@ -344,13 +344,15 @@ predict_PDP.2D.Plotter = function(object,
 
 #' center.preds
 #' @name center.preds
-#' @title Centers the predicted values for 1-d ICE and PDP plots, 2-d PDP plots
-#' @description Given the specified 'center.at' values of the interpreter object, this
-#'              function centers the speccified type of plot.
+#' @title Centers the predicted values for 1-d ICE and PDP plots or 2-d PDP plots
+#' @description Given the specified 'center.at' values of the Interpreter object, this
+#'              function centers all of the plots in the Interpreter object
+#'              of the specified type of plot.
 #' @param object The Interpreter object to use
-#' @param plot.type The type of a which the user wants to center
-#' @param feats.2d The 2-D features that we want to center
-#' @return centered dataframe/matrix of values for the given plot
+#' @param plot.type The type of plot that the user wants to center the predictions of.
+#'        should be one of either "ICE", "PDP.1D", or "PDP.2D"
+#' @param feats.2d The 2-D features that we want to center.
+#' @return A centered data frame/matrix of values for the plot
 #' @export
 center.preds = function(object, plot.type, feats.2d = NULL){
 
@@ -417,9 +419,37 @@ center.preds = function(object, plot.type, feats.2d = NULL){
 }
 
 # Helper functions for the ALE plots ===========================================
-local_effect <- function(variable_name, lower_limit, upper_limit,
-                         set_value, window_size,
-                         training_data, predict_function) {
+
+#' Local effect gives the local effect on the predictions of a model
+#' in the window around the set_value
+#'
+#' Parameters:
+#'     @param variable_name - The variable we want perturb to calculate the local effect
+#'
+#'     @param lower_limit - The lower limit of the variable we want to use
+#'
+#'     @param upper_limit - The upper limit of the variable we want to use
+#'
+#'     @param set_value - The value we want to perturb the variable around
+#'
+#'     @param window_size - An optional parameter for the size of the window around
+#'                   the variable that we perturb and predict at
+#'
+#'     @param training_data - The training data we use to make predictions
+#'
+#'     @param predict_function - The prediction function we use to make predictions for the model
+#'
+#' Return:
+#'     A single value that is the mean local effect of the peturbation on the
+#'     predictions of the model.
+#'
+local_effect <- function(variable_name,
+                         lower_limit,
+                         upper_limit,
+                         set_value,
+                         window_size,
+                         training_data,
+                         predict_function) {
 
   # Setup
   n <- nrow(training_data)
@@ -452,9 +482,20 @@ local_effect <- function(variable_name, lower_limit, upper_limit,
   (mutate_and_predict(upper_limit) - mutate_and_predict(lower_limit)) %>% mean
 }
 
-accumulated_local_effects <- function(predict_function, num_grid_points,
-                                      variable_name, training_data,
-                                      grid_points, center, window_size) {
+# This function calculates the accumulated local effects for the model over
+# a set of grid points using the prediction function.
+#
+#
+#
+#
+#
+accumulated_local_effects <- function(predict_function,
+                                      num_grid_points,
+                                      variable_name,
+                                      training_data,
+                                      grid_points,
+                                      center,
+                                      window_size) {
 
   if(!missing(num_grid_points) && !missing(grid_points)) {
     stop("Only one of num_grid_points and grid_points can be specified")

@@ -2,23 +2,25 @@
 % Please edit documentation in R/plotter.R
 \name{center.preds}
 \alias{center.preds}
-\title{Centers the predicted values for 1-d ICE and PDP plots, 2-d PDP plots}
+\title{Centers the predicted values for 1-d ICE and PDP plots or 2-d PDP plots}
 \usage{
 center.preds(object, plot.type, feats.2d = NULL)
 }
 \arguments{
 \item{object}{The Interpreter object to use}
 
-\item{plot.type}{The type of a which the user wants to center}
+\item{plot.type}{The type of plot that the user wants to center the predictions of.
+should be one of either "ICE", "PDP.1D", or "PDP.2D"}
 
-\item{feats.2d}{The 2-D features that we want to center}
+\item{feats.2d}{The 2-D features that we want to center.}
 }
 \value{
-centered dataframe/matrix of values for the given plot
+A centered data frame/matrix of values for the plot
 }
 \description{
-Given the specified 'center.at' values of the interpreter object, this
-             function centers the speccified type of plot.
+Given the specified 'center.at' values of the Interpreter object, this
+             function centers all of the plots in the Interpreter object
+             of the specified type of plot.
 }
 \details{
 center.preds
