@@ -128,8 +128,8 @@ Predictor <- R6::R6Class("Predictor",
         }
       } else{
         predict.func.final <- function(model, newdata, ...){
-          pred <- do.call(predict.func, list(model, newdata = newdata, ...))
-          data.frame(pred, check.names = FALSE)
+          preds <- do.call(predict.func, list(model, newdata = newdata, ...))
+          data.frame(preds, check.names = FALSE)
         }
       }
 
