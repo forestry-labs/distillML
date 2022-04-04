@@ -187,7 +187,7 @@ Interpreter <- R6::R6Class(
             return.vals <- c()
             for (v in val){
               data <- predictor$data[data.points, ,drop = FALSE]
-              if (class(v) == "character"){
+              if (classes[[feature]] == "factor"){
                 data[, feature] <- factor(rep(v, nrow(data),
                                               levels = levels(predictor$data[, feature])))
               }
