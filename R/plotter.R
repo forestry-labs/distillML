@@ -574,6 +574,11 @@ ale <- function(predict_function,
 #' @param features.2d 2-D features that we want to produce plots for arguments
 #' @param clusters A number of clusters to cluster the ICE predictions with.
 #'    if this is not NULL, one must use the method "ice" or "pdp+ice"
+#' @param clusterType An indicator specifying what method to use for the clustering.
+#'    The possible options are "preds", and "gradient". If "preds" is used, the clusters
+#'    will be determined by running K means on the predictions of the ICE functions.
+#'    If the "gradient" option is used, the clusters will be determined by running K
+#'    means on the numerical gradient of the predictions of the ICE functions.
 #' @return A list of plots with 1-d features and 2-d features. For 2-d features with
 #'         one continuous and one categorical feature, the plot is a linear plot of the
 #'         continuous feature with group colors representing the categorical feature.
@@ -585,6 +590,7 @@ plot.Interpreter = function(x,
                         features = NULL,
                         features.2d = NULL,
                         clusters = NULL,
+                        clusterType = "preds",
                         ...)
 {
 
@@ -593,7 +599,11 @@ plot.Interpreter = function(x,
   }
 
   if (!(method %in% c("pdp", "ice", "pdp+ice","ale"))) {
-    stop("Method entered is not supported")
+    stop("method entered is not supported")
+  }
+
+  if (!(clusterType %in% c("preds", "gradient"))) {
+    stop("clusterType entered is not supported")
   }
 
   # Quash R CMD CHeck notes
@@ -606,6 +616,9 @@ plot.Interpreter = function(x,
     # for 1-D plots
     if (!(is.null(x$features))){
       for (feature in features){
+        hold_feat <- x$predictor$data[x$data.points, feature, drop=F]
+        names(hold_feat) <- c("feature")
+
         df_all <- predict_ICE.Plotter(x)
         if (x$feat.class[[feature]]!="numeric"){
           # Process Data
@@ -657,8 +670,12 @@ plot.Interpreter = function(x,
           melt.df <- melt(df, id.vars = "feature")
           if (!is.null(clusters)) {
 
-            input = t(df.ice[,-1])
-            #input = t(apply(df.ice[,-1], MARGIN = 2, FUN = function(x){return(diff(x))}))
+            if (clusterType == "gradient") {
+              input = t(apply(df.ice[,-1], MARGIN = 2, FUN = function(x){return(diff(x))}))
+            } else if (clusterType == "preds") {
+              input = t(df.ice[,-1])
+            }
+
             cluster.out <- kmeans(x = input, centers = clusters)
             cluster.map <- data.frame(Var = names(cluster.out$cluster),
                                       Cluster = unname(cluster.out$cluster))
@@ -675,58 +692,79 @@ plot.Interpreter = function(x,
             # If we want to cluster the ice plots, we need to calculate the
             # cluster memberships for each observation
             if (!is.null(clusters)) {
+              data.train <- rbind(df.test,
+                                  data.frame(feature = hold_feat$feature,
+                                             variable = NA,
+                                             value = NA,
+                                             Cluster = 0))
               plot.obj <-
-                ggplot(data = df.test, aes(x = feature,
-                                               y = value,
-                                               group = variable,
-                                               color = Cluster)) +
-                geom_line()+
+                ggplot(data = data.train,
+                       aes(x = feature,
+                           y = value,
+                           group = variable,
+                           color = Cluster)) +
+                geom_line(data = data.train %>% filter(!is.na(value)))+
                 scale_color_viridis_d()+
                 ylab(x$predictor$y) + xlab(feature) +
-                theme_classic()
+                theme_bw()+
+                geom_rug(data = data.train %>% filter(is.na(value)), aes(x = feature), color = "black")
             } else {
+              data.train <- rbind(melt.df.ice,
+                                  data.frame(feature = hold_feat$feature,
+                                             variable = NA,
+                                             value = NA))
+
               plot.obj <-
-                ggplot(data = melt.df.ice, aes(x = feature, y = value, group = variable)) +
-                geom_line(color = "grey")+
+                ggplot(data = data.train, aes(x = feature, y = value, group = variable)) +
+                geom_line(data = data.train %>% filter(!is.na(value)), color = "grey")+
                 ylab(x$predictor$y) + xlab(feature) +
-                theme_classic()
+                geom_rug(data = data.train %>% filter(is.na(value)), aes(x = feature), color = "black")+
+                theme_bw()
             }
           }
 
           if (method == "pdp") {
+            data.train <- rbind(melt.df[melt.df$variable == "pdp", ],
+                                data.frame(feature = hold_feat$feature,
+                                           variable = NA,
+                                           value = NA))
+
             plot.obj <-
-              ggplot(data = melt.df[melt.df$variable == "pdp", ], aes(x = feature, y =
-                                                                        value)) +
-              geom_line()+
+              ggplot(data = data.train, aes(x = feature, y = value)) +
+              geom_line(data = data.train %>% filter(!is.na(value)))+
               ylab(x$predictor$y) + xlab(feature) +
-              theme_classic()
+              geom_rug(data = data.train %>% filter(is.na(value)), aes(x = feature), color = "black")+
+              theme_bw()
           }
 
           if (method == "pdp+ice") {
             melt.df.combined <- melt.df
             melt.df.combined$ispdp <- (melt.df$variable == "pdp")
+
+            data.train <- rbind(melt.df.combined,
+                                data.frame(feature = hold_feat$feature,
+                                           variable = NA,
+                                           value = NA,
+                                           ispdp = NA))
+
             plot.obj <-
-              ggplot(data = melt.df.combined,
+              ggplot(data = data.train,
                      aes(
                        x = feature,
                        y = value,
                        group = variable,
                        color = ispdp
                      )) +
-              geom_line() +
+              geom_line(data = data.train %>% filter(!is.na(value))) +
               scale_color_manual(labels = c("ICE", "PDP") ,values = c("grey", "red")) +
-              guides(color=guide_legend(title = "Plot Type"))+
-              theme_classic() + ylab(x$predictor$y) + xlab(feature)
+              guides(color=guide_legend(title = "Plot Type"))+ ylab(x$predictor$y) + xlab(feature)+
+              geom_rug(data = data.train %>% filter(is.na(value)), aes(x = feature), color = "black")+
+              theme_bw()
           }
-          # create a histogram for the distribution of the data
-          hold_feat <- x$predictor$data[x$data.points, feature, drop=F]
-          names(hold_feat) <- c("feature")
-
-          frequency.plot <- ggplot(hold_feat) + geom_rug(aes(x = feature))
         }
 
 
-        plots <- append(plots, list(grid.arrange(plot.obj, frequency.plot, heights = c(2,1))))
+        plots <- append(plots, list(plot.obj))
       }
 
       names(plots) <- features
