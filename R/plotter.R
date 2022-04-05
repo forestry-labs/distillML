@@ -572,6 +572,8 @@ ale <- function(predict_function,
 #' "pdp+ice", "pdp", or "ale"
 #' @param features 1-D features that we want to produce plots for.
 #' @param features.2d 2-D features that we want to produce plots for arguments
+#' @param clusters A number of clusters to cluster the ICE predictions with.
+#'    if this is not NULL, one must use the method "ice" or "pdp+ice"
 #' @return A list of plots with 1-d features and 2-d features. For 2-d features with
 #'         one continuous and one categorical feature, the plot is a linear plot of the
 #'         continuous feature with group colors representing the categorical feature.
@@ -582,6 +584,7 @@ plot.Interpreter = function(x,
                         method = "pdp+ice",
                         features = NULL,
                         features.2d = NULL,
+                        clusters = NULL,
                         ...)
 {
 
@@ -637,8 +640,7 @@ plot.Interpreter = function(x,
           # make frequency plot
           frequency <- ggplot(temp.data, aes(x=vals, y=counts)) +
             geom_bar(stat = "identity") + xlab(feature) + ylab("Counts")
-        }
-        else{
+        } else{
           df_all <- center.preds(x, plot.type = "ICE")
           df <- df_all[[feature]]
           # df contains both pdp line and all ice lines
@@ -653,14 +655,42 @@ plot.Interpreter = function(x,
           max.val <- max(df[, -"feature"])
 
           melt.df <- melt(df, id.vars = "feature")
-          melt.df.ice <- melt(df.ice, id.vars = "feature")
+          if (!is.null(clusters)) {
+
+            input = t(df.ice[,-1])
+            #input = t(apply(df.ice[,-1], MARGIN = 2, FUN = function(x){return(diff(x))}))
+            cluster.out <- kmeans(x = input, centers = clusters)
+            cluster.map <- data.frame(Var = names(cluster.out$cluster),
+                                      Cluster = unname(cluster.out$cluster))
+
+            melt.df.ice <- melt(df.ice, id.vars = c("feature"))
+            df.test <- left_join(x = melt.df.ice, y = cluster.map, by = c("variable" = "Var"))
+            df.test$Cluster <- as.factor(df.test$Cluster)
+          } else {
+            melt.df.ice <- melt(df.ice, id.vars = "feature")
+          }
+
 
           if (method == "ice") {
-            plot.obj <-
-              ggplot(data = melt.df.ice, aes(x = feature, y = value, group = variable)) +
-              geom_line(color = "grey")+
-              ylab(x$predictor$y) + xlab(feature) +
-              theme_classic()
+            # If we want to cluster the ice plots, we need to calculate the
+            # cluster memberships for each observation
+            if (!is.null(clusters)) {
+              plot.obj <-
+                ggplot(data = df.test, aes(x = feature,
+                                               y = value,
+                                               group = variable,
+                                               color = Cluster)) +
+                geom_line()+
+                scale_color_viridis_d()+
+                ylab(x$predictor$y) + xlab(feature) +
+                theme_classic()
+            } else {
+              plot.obj <-
+                ggplot(data = melt.df.ice, aes(x = feature, y = value, group = variable)) +
+                geom_line(color = "grey")+
+                ylab(x$predictor$y) + xlab(feature) +
+                theme_classic()
+            }
           }
 
           if (method == "pdp") {
@@ -691,13 +721,12 @@ plot.Interpreter = function(x,
           # create a histogram for the distribution of the data
           hold_feat <- x$predictor$data[x$data.points, feature, drop=F]
           names(hold_feat) <- c("feature")
-          frequency <- ggplot(hold_feat, aes(x = feature)) +
-            geom_histogram(bins = (length(x$grid.points[[feature]]))) +
-            xlab(feature)
+
+          frequency.plot <- ggplot(hold_feat) + geom_rug(aes(x = feature))
         }
 
 
-        plots <- append(plots, list(grid.arrange(plot.obj, frequency, heights = c(2,1))))
+        plots <- append(plots, list(grid.arrange(plot.obj, frequency.plot, heights = c(2,1))))
       }
 
       names(plots) <- features
