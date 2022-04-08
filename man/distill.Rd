@@ -7,6 +7,7 @@
 distill(
   object,
   center.mean = T,
+  features = 1:length(object$features),
   snap.grid = T,
   fit.train = T,
   params.glmnet = list()
@@ -17,6 +18,9 @@ distill(
 
 \item{center.mean}{Boolean value that determines whether to center each column
 of predictions by their respective means. Default is TRUE}
+
+\item{features}{The indices of the features in the training data set that we want
+to include as PDP functions in the distilled model.}
 
 \item{snap.grid}{Boolean function that determines whether the model recalculates
 each value predicted or uses an approximation from previous

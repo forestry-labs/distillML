@@ -70,6 +70,8 @@ build.grid = function(object, save = T, fit.train = T){
 #' @param object The Interpreter object
 #' @param center.mean Boolean value that determines whether to center each column
 #'                    of predictions by their respective means. Default is TRUE
+#' @param features The indices of the features in the training data set that we want
+#'                 to include as PDP functions in the distilled model.
 #' @param snap.grid Boolean function that determines whether the model recalculates
 #'                  each value predicted or uses an approximation from previous
 #'                  calculations. Default is TRUE.
@@ -80,8 +82,20 @@ build.grid = function(object, save = T, fit.train = T){
 #'                      parameters, one can do lasso or ridge regression.
 #' @return A surrogate class object that can be used for predictions
 #' @export
-distill = function(object, center.mean = T, snap.grid = T, fit.train = T,
+distill = function(object,
+                   center.mean = T,
+                   features = 1:length(object$features),
+                   snap.grid = T,
+                   fit.train = T,
                    params.glmnet  = list()){
+
+  if (max(features) > length(object$features) || min(features) < 1) {
+    stop("features must be indices of features contained in the original training data set")
+  }
+
+  if (length(object$features) < 2 || length(object$features) < length(features) ) {
+    stop("features must be of length 2 or greater")
+  }
 
   # get data for grid
   data <- build.grid(object, fit.train = fit.train, save = T)
@@ -93,8 +107,7 @@ distill = function(object, center.mean = T, snap.grid = T, fit.train = T,
     for (i in 1:ncol(data)){
       data[,i] <- data[,i]-mean(data[,i]) # subtract each column by the mean
     }
-  }
-  else{
+  } else{
     center <- 0
     feature.centers <- rep(0, ncol(data)-1)
     names(feature.centers) <- names(data)[-ncol(data)]
@@ -105,7 +118,7 @@ distill = function(object, center.mean = T, snap.grid = T, fit.train = T,
   fit.data <- data.frame(sentinel = rep(NA, nrow(data)))
   pdpnames <- c()
 
-  for (feature in object$features){
+  for (feature in object$features[features]){
     # continuous variables
     if (object$feat.class[[feature]]!="factor"){
       fit.data <- cbind(fit.data, data[, feature])

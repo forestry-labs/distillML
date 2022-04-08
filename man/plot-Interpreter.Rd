@@ -5,7 +5,15 @@
 \alias{plot.Interpreter}
 \title{Plotting method for Interpretor model}
 \usage{
-\method{plot}{Interpreter}(x, method = "pdp+ice", features = NULL, features.2d = NULL, ...)
+\method{plot}{Interpreter}(
+  x,
+  method = "pdp+ice",
+  features = NULL,
+  features.2d = NULL,
+  clusters = NULL,
+  clusterType = "preds",
+  ...
+)
 }
 \arguments{
 \item{x}{Interpreter object to generate plots from}
@@ -16,6 +24,15 @@
 \item{features}{1-D features that we want to produce plots for.}
 
 \item{features.2d}{2-D features that we want to produce plots for arguments}
+
+\item{clusters}{A number of clusters to cluster the ICE predictions with.
+if this is not NULL, one must use the method "ice" or "pdp+ice"}
+
+\item{clusterType}{An indicator specifying what method to use for the clustering.
+The possible options are "preds", and "gradient". If "preds" is used, the clusters
+will be determined by running K means on the predictions of the ICE functions.
+If the "gradient" option is used, the clusters will be determined by running K
+means on the numerical gradient of the predictions of the ICE functions.}
 }
 \value{
 A list of plots with 1-d features and 2-d features. For 2-d features with
