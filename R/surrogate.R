@@ -107,9 +107,7 @@ predict.Surrogate = function(object,
   # if uncentered, then we need not do anything
   preds <- data.frame(surrogate.preds = rep(object$intercept, nrow(newdata)))
 
-  nonzero <- names(object$weights)[which(object$weights != 0)]
-
-  for (feature in nonzero){
+  for (feature in names(object$grid)){
     # grid points for this specific feature
     ref <- object$grid[[feature]]
     if (object$snap.grid){
@@ -142,6 +140,7 @@ predict.Surrogate = function(object,
     }
 
     pred <- pred - object$feature.centers[[feature]] # subtract mean of grid points
+
     if (object$interpreter$feat.class[[feature]] != "factor"){
       preds <- preds + object$weights[[feature]]*pred
     }

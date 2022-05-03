@@ -158,7 +158,7 @@ distill = function(object,
   names(fit.data) <- pdpnames
 
   # fit based on cross-validated
-  if (cv == F){
+  if (cv == FALSE){
     # build parameter list for fitting with glmnet
     params.glmnet$x <- as.matrix(fit.data)
     params.glmnet$y <- data$preds
@@ -176,17 +176,19 @@ distill = function(object,
     fit.model <- do.call(glmnet::glmnet, args = c(params.glmnet))
   }
   else{
-    params.cv.glmnet <- as.matrix(fit.data)
-    params.cv.glmnet <- data$preds
+    params.cv.glmnet$x <- as.matrix(fit.data)
+    params.cv.glmnet$y <- data$preds
 
     # if no other parameters were specified
-    if (length(params.glmnet) == 2){
+    if (length(params.cv.glmnet) == 2){
       params.cv.glmnet$lower.limits <- 0
       params.cv.glmnet$intercept <- F
       params.cv.glmnet$alpha <- 1
     }
     # get coefficients for each
-    fit.model <- do.call(glmnet::cv.glmnet, args = (params.cv.glmnet))
+    print(params.cv.glmnet)
+    print(class(params.cv.glmnet))
+    fit.model <- do.call(glmnet::cv.glmnet, args = c(params.cv.glmnet))
   }
 
   coeffs<- as.vector(coef(fit.model))[-1] # to remove intercept term 0
