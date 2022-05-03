@@ -147,7 +147,7 @@ predict.Surrogate = function(object,
     else{
       hold <- paste(feature, newdata[, feature], sep = "_")
       coeffs <- object$weights[hold]
-      hold[is.na(hold)] <-  0 # nothing done if grid does not have this value
+      hold[is.na(coeffs)] <-  0 # nothing done if grid does not have this value
       preds <- preds + coeffs * pred
     }
   }
