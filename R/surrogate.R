@@ -107,7 +107,7 @@ predict.Surrogate = function(object,
   # if uncentered, then we need not do anything
   preds <- data.frame(surrogate.preds = rep(object$intercept, nrow(newdata)))
 
-  nonzero <- names(weights)[which(weights != 0)]
+  nonzero <- names(object$weights)[which(object$weights != 0)]
 
   for (feature in nonzero){
     # grid points for this specific feature
