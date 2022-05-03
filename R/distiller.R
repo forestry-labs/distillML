@@ -186,8 +186,6 @@ distill = function(object,
       params.cv.glmnet$alpha <- 1
     }
     # get coefficients for each
-    print(params.cv.glmnet)
-    print(class(params.cv.glmnet))
     fit.model <- do.call(glmnet::cv.glmnet, args = c(params.cv.glmnet))
   }
 
