@@ -4,10 +4,18 @@
 \alias{build.grid}
 \title{Build grid used for weights in distilled surrogate model}
 \usage{
-build.grid(object, save = T, fit.train = T)
+build.grid(
+  object,
+  feat.ind = 1:length(object$features),
+  save = T,
+  fit.train = T
+)
 }
 \arguments{
 \item{object}{The Interpreter object}
+
+\item{feat.ind}{The indices of the features in the Interpreter's features that we want
+to include as PDP functions in the distilled model.}
 
 \item{save}{Boolean for saving the results in the interpreter object. Default is TRUE.}
 

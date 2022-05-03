@@ -8,9 +8,11 @@ distill(
   object,
   center.mean = T,
   features = 1:length(object$features),
+  cv = F,
   snap.grid = T,
   fit.train = T,
-  params.glmnet = list()
+  params.glmnet = list(),
+  params.cv.glmnet = list()
 )
 }
 \arguments{
@@ -19,8 +21,11 @@ distill(
 \item{center.mean}{Boolean value that determines whether to center each column
 of predictions by their respective means. Default is TRUE}
 
-\item{features}{The indices of the features in the training data set that we want
+\item{features}{The indices of the features in the Interpreter's features that we want
 to include as PDP functions in the distilled model.}
+
+\item{cv}{Boolean that indicates whether we want to cross-validate our fitted coefficients
+with a regularizer. This should only be done when regularizing coefficients.}
 
 \item{snap.grid}{Boolean function that determines whether the model recalculates
 each value predicted or uses an approximation from previous
@@ -31,6 +36,10 @@ the training data. Default is TRUE.}
 
 \item{params.glmnet}{Optional list of parameters to pass to glmnet while fitting
 PDP curves to resemble the original predictions. By specifying
+parameters, one can do lasso or ridge regression.}
+
+\item{params.cv.glmnet}{Optional list of parameters to pass to cv.glmnet while fitting
+   PDP curves to resemble the original predictions. By specifying
 parameters, one can do lasso or ridge regression.}
 }
 \value{
