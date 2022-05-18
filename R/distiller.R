@@ -41,7 +41,7 @@ build.grid = function(object, feat.ind = 1:length(object$features),
     }
     pdps <- pdps[,-1]
     pdps <- data.frame(pdps)
-    colnames(pdps) <- object$features
+    colnames(pdps) <- object$features[feat.ind]
   }
 
   else{
