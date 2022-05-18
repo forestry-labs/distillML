@@ -106,6 +106,7 @@ Predictor <- R6::R6Class("Predictor",
           data.table::setDF(data)
         }
       }
+      rownames(data) <- 1:nrow(data)
 
       # checks for valid y input
       if (is.null(y) || !is.character(y) || !(y%in%names(data))){

@@ -37,19 +37,19 @@
 #'        function construction. Alternatively, if one is only interested understanding
 #'        the model predictions for a specific subgroup, the indices of the observations
 #'        in the given subgroup can be passed here.
-#' @field functions.1d A List of functions giving single feature interpretations of the model.
-#' @field functions.2d A List of functions giving two-feature interpretations of the model
+#' @field pdp.1d A List of functions giving single feature interpretations of the model.
+#' @field pdp.2d A List of functions giving two-feature interpretations of the model
 #' @field feat.class A vector that contains the class for each feature (categorical or continuous)
-#' @field method The chosen interpretability method for interpretation.
-#'        By default, this method is set to partial dependence plots
 #'        ("pdp"). This can either be set to "pdp" or "ale".
 #' @field center.at The value(s) to center the feature plots at. A list of length
 #'        equal to the length of the features.
 #' @field grid.points A list of vectors containing the grid points to use for
 #'                    the predictions.
+#' @field grid.size The number of grid points to plot for a continuous feature
 #' @field saved A list that caches the previous calculations for the 1-d ICE plots,
 #'              1-d PDP plots, 2-d PDP plots, and grid points for building the distillery model.
 #'              This saves the uncentered calculations.
+#' @field ale.grid A list that caches the saved predictions for the ALE method
 #' @examples
 #' library(Distillery)
 #' library(Rforestry)
@@ -82,15 +82,14 @@ Interpreter <- R6::R6Class(
     features = NULL,
     features.2d = NULL,
     data.points = NULL,
-    functions.1d = NULL,
-    functions.2d = NULL,
+    pdp.1d = NULL,
+    pdp.2d = NULL,
     feat.class = NULL,
-    method = NULL,
-    # new features added from plotter function
     center.at = NULL,
     grid.points = NULL,
+    grid.size = NULL,
     saved = NULL,
-    # functions.ale = to come later
+    ale.grid = NULL,
 
     # initialize an interpreter object
     #' @param predictor The Predictor object that contains the model that the user wants
@@ -103,8 +102,6 @@ Interpreter <- R6::R6Class(
     #'                training data set.
     #' @param data.points The indices of the data points used for the PDP/ALE. This
     #'                    overwrites the "samples" parameter above.
-    #' @param method The chosen interpretability method for interpretation ("pdp" or "ale").
-    #'               By default, this method is set to partial dependence plots
     #'               ("pdp"). This can either be set to "pdp" or "ale".
     #' @param grid.size The number of grid points to create for the pdp
     #'                  functions / plots for each feature.
@@ -116,8 +113,6 @@ Interpreter <- R6::R6Class(
     initialize = function(predictor = NULL,
                           samples = 1000,
                           data.points = NULL,
-                          method = "pdp",
-                          # New parameters
                           grid.size = 50) {
       # check to see if predictor is a valid predictor object
       if (is.null(predictor)) {
@@ -154,98 +149,91 @@ Interpreter <- R6::R6Class(
       # check to see if valid sample number
       # if data.points is not specified
       data <- predictor$data
+      valid.indices <- unname(which((rowSums(is.na(predictor$data))) == 0))
       if (is.null(data.points)) {
         checkmate::assert_numeric(samples) # check that sample is numeric
-        samples <- min(samples, nrow(data))
-        if (samples > nrow(data) | samples < 1) {
+        # find data points with complete cases
+        samples <- min(samples, length(valid.indices))
+        if (samples > length(valid.indices) | samples < 1) {
           stop("Invalid sample number.")
         }
         samples <- as.integer(samples)
         # set data.points to be worked with (# of datapoints = sample number)
-        data.points <- sample(1:nrow(data), samples)
+        data.points <- sample(valid.indices, samples)
       }
       # if data points were specified
       else {
         checkmate::assert_numeric(data.points)
-        if (any(!(data.points %in% 1:nrow(data)))) {
-          stop("The data points are not in the training data.")
+        if (any(!(data.points %in% valid.indices))) {
+          stop("The data points are not in the training data, or having missing values.")
         }
-      }
-
-      # check that method is supported
-      checkmate::assert_character(method)
-      if (!(method %in% c("pdp", "ale"))) {
-        stop("This method is not supported by the function.")
       }
 
       # create prediction functions for the features
-      if (method == "pdp") {
-        # for 1-dimensional functions
-        pdp.function <- function(feature) {
-          force(feature)
-          pdp.function.2 <- function(val) {
-            return.vals <- c()
-            for (v in val){
-              data <- predictor$data[data.points, ,drop = FALSE]
-              if (classes[[feature]] == "factor"){
-                data[, feature] <- factor(rep(v, nrow(data),
-                                              levels = levels(predictor$data[, feature])))
-              }
-              else{
-                data[, feature] <- v
-              }
-              return.vals <- c(return.vals, mean(predict(predictor, data)[, 1]))
+      # for 1-dimensional functions
+      pdp.function <- function(feature) {
+        force(feature)
+        pdp.function.2 <- function(val) {
+          return.vals <- c()
+          for (v in val){
+            data <- predictor$data[data.points, ,drop = FALSE]
+            if (classes[[feature]] == "factor"){
+              data[, feature] <- factor(rep(v, nrow(data),
+                                            levels = levels(predictor$data[, feature])))
             }
-            return.vals
+            else{
+              data[, feature] <- v
+            }
+            return.vals <- c(return.vals, mean(predict(predictor, data)[, 1]))
           }
-          return(pdp.function.2)
+          return.vals
         }
-
-        functions.pdp <- list()
-        for (feature in features) {
-          temp.list <- list(pdp.function(feature = feature))
-          functions.pdp <- append(functions.pdp, temp.list)
-        }
-        names(functions.pdp) <- features
-
-        # for 2d features
-        # requires a matrix/dataframe with two columns for predictions
-        pdp.function.2d <- function(feature.1, feature.2){
-          force(feature.1)
-          force(feature.2)
-          pdp.function.2d.2 <- function(values){
-            results <- c()
-            data <- predictor$data[data.points, , drop = FALSE]
-            for (i in 1:nrow(values)){
-              data[, feature.1] <- values[i,1]
-              data[, feature.2] <- values[i,2]
-              results <- c(results, mean(predict(predictor, data)[,1]))
-            }
-            results
-          }
-          return(pdp.function.2d.2)
-        }
-        functions.pdp.2d <- list()
-        for (feature.1 in features){
-          # list of functions for each
-          temp.list <- list()
-          for (feature.2 in features){
-            if (feature.1 != feature.2){
-              temp <- pdp.function.2d(feature.1 = feature.1, feature.2 = feature.2)
-            }
-            else {
-              temp <- "Please use the one-dimensional functions."
-            }
-            temp.list <- append(temp.list, temp)
-          }
-          names(temp.list) <- features
-          functions.pdp.2d <- append(functions.pdp.2d, list(temp.list))
-        }
-        names(functions.pdp.2d) <- features
+        return(pdp.function.2)
       }
-      else {
-        stop("Other methods have not been implemented yet for general functions.")
+
+      functions.pdp <- list()
+      for (feature in features) {
+        temp.list <- list(pdp.function(feature = feature))
+        functions.pdp <- append(functions.pdp, temp.list)
       }
+      names(functions.pdp) <- features
+
+      # for 2d features
+      # requires a matrix/dataframe with two columns for predictions
+      pdp.function.2d <- function(feature.1, feature.2){
+        force(feature.1)
+        force(feature.2)
+        pdp.function.2d.2 <- function(values){
+          results <- c()
+          data <- predictor$data[data.points, , drop = FALSE]
+          for (i in 1:nrow(values)){
+            data[, feature.1] <- values[i,1]
+            data[, feature.2] <- values[i,2]
+            results <- c(results, mean(predict(predictor, data)[,1]))
+          }
+          results
+        }
+        return(pdp.function.2d.2)
+      }
+      functions.pdp.2d <- list()
+      for (feature.1 in features){
+        # list of functions for each
+        temp.list <- list()
+        for (feature.2 in features){
+          if (feature.1 != feature.2){
+            temp <- pdp.function.2d(feature.1 = feature.1, feature.2 = feature.2)
+          }
+          else {
+            temp <- "Please use the one-dimensional functions."
+          }
+          temp.list <- append(temp.list, temp)
+        }
+        names(temp.list) <- features
+        functions.pdp.2d <- append(functions.pdp.2d, list(temp.list))
+      }
+      names(functions.pdp.2d) <- features
+
+
 
       # check to see if valid grid.size
       checkmate::assert_numeric(grid.size)
@@ -258,7 +246,7 @@ Interpreter <- R6::R6Class(
       data <- predictor$data[data.points,]
       grid.points <- list()
       for (feature in features){
-        if (class(data[,feature]) == "numeric"){
+        if (class(data[,feature]) != "factor" && length(unique(data[, feature])) > 2){
           temp.list <- list(seq(min(data[,feature]),max(data[,feature]),length.out = grid.size))
         }
         else{
@@ -271,11 +259,12 @@ Interpreter <- R6::R6Class(
       # center.at is a list of centers for each variable, initialized to the min
       center.at <- list()
       for (i in 1:length(features)){
-        if (class(data[,features[i]]) %in% c("numeric", "integer")){
-          temp.list <- list(min(grid.points[[i]]))
+
+        if (class(data[,features[i]]) ==  "factor"){
+          temp.list <- list(grid.points[[i]][1])
         }
         else{
-          temp.list <- list(grid.points[[i]][1])
+          temp.list <- list(min(grid.points[[i]]))
         }
         center.at <- append(center.at, temp.list)
       }
@@ -298,6 +287,12 @@ Interpreter <- R6::R6Class(
       }
       features.2d <- features.2d[-1, ,drop = F]
 
+      # make ale.grid for continuous/integer features
+      cont <- names(which(classes != "factor"))
+      ale.grid <- as.list(rep(NA, length(cont)))
+      names(ale.grid) <- cont
+
+
       PDP.2D.list <- as.list(rep(NA, nrow(features.2d)))
       all_names <- c(features.2d, sep = ", ")
       names(PDP.2D.list) <- do.call(paste, all_names)
@@ -307,17 +302,18 @@ Interpreter <- R6::R6Class(
       self$features.2d <- features.2d
       self$predictor <- predictor
       self$data.points <- data.points
-      self$functions.1d <- functions.pdp
-      self$functions.2d <- functions.pdp.2d
+      self$pdp.1d <- functions.pdp
+      self$pdp.2d <- functions.pdp.2d
       self$feat.class <- classes
-      self$method <- method
       # added features from plotter object
       self$grid.points <- grid.points
+      self$grid.size <- grid.size
       self$center.at <- center.at
       self$saved <- list(ICE = ICE.list,
                          PDP.1D = PDP.1D.list,
                          PDP.2D = PDP.2D.list,
                          build.grid = NA)
+      self$ale.grid <- ale.grid
     }
   )
 )

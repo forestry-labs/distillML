@@ -9,26 +9,6 @@
 #' @importFrom stats coef na.omit quantile sd
 #' @importFrom utils head
 
-#' @name set.method
-#' @title Modify the Method Used for Interpretability
-#' @description Sets a new method used for interpretability in the Interpreter
-#'   object. This can be different from the previous type ("ale" or "pdp")
-#' @param object The Interpreter object to change the method attribute in
-#' @param method The new method to use in the Interpreter object. Must be one
-#'   of "pdp" or "ale"
-#' @export
-set.method = function(object,
-                      method)
-{
-  checkmate::assert_character(method)
-  if (!(inherits(object, "Interpreter"))) {
-    stop("Object given is not of the Interpreter class.")
-  }
-  if (!(method %in% c("pdp", "ale"))){
-    stop("This method is not supported by the function.")
-  }
-  object[["method"]] <- method
-}
 
 #' @name set.center.at
 #' @title Sets a new center in the plots made by an Interpreter
@@ -58,12 +38,12 @@ set.center.at = function(object,
   # valid feature index
   index <- which(names(object$center.at) == feature)
 
-  if (class(value) == "numeric"){
+  if (class(value) %in% c("numeric", "integer")){
     if (class(value) != class(object$predictor$data[,feature])){
       stop("Invalid value for the given feature.")
     }
   }
-  if (class(value) %in% c("factor", "integer")){
+  if (class(value) == "factor"){
     if (!(value %in% object$grid.points[[index]])){
       stop("Invalid value for the given feature.")
     }
@@ -115,7 +95,7 @@ set.grid.points = function(object,
     }
   }
   # check that center.at value is in the new set of values
-  if (class(values) == "numeric"){
+  if (class(values) != "factor"){
     if (object$center.at[[index]] > max(values) || object$center.at[[index]] < min(values)){
       stop("The value for centering is not included in the new values.")
     }
@@ -253,7 +233,7 @@ predict_PDP.1D.Plotter = function(object,
     results <- NULL
     if (feat %in% needs.update){
       feature <- object$grid.points[[feat]]
-      PDP <- object$functions.1d[[feat]](feature)
+      PDP <- object$pdp.1d[[feat]](feature)
       results <- cbind(feature, PDP)
       results <- data.frame(results)
       colnames(results) <- c("feature", "PDP")
@@ -316,7 +296,7 @@ predict_PDP.2D.Plotter = function(object,
 
       grid.values <- expand.grid(object$grid.points[[feat.1]],
                                  object$grid.points[[feat.2]])
-      preds <- object$functions.2d[[feat.1]][[feat.2]](grid.values)
+      preds <- object$pdp.2d[[feat.1]][[feat.2]](grid.values)
 
       results <- cbind(grid.values, preds)
       results <- data.frame(results)
@@ -384,7 +364,7 @@ center.preds = function(object, plot.type, feats.2d = NULL){
   if (plot.type == "PDP.1D"){
     hold <- object$saved[["PDP.1D"]]
     for (feature in names(hold)){
-      base <- object$functions.1d[[feature]](object$center.at[[feature]])
+      base <- object$pdp.1d[[feature]](object$center.at[[feature]])
       center_row <- c(0, base)
       center_df <- rbind(center_row)[rep(1,nrow(hold[[feature]])),]
 
@@ -409,7 +389,7 @@ center.preds = function(object, plot.type, feats.2d = NULL){
       center.1 <- object$center.at[[feat.1]]
       center.2 <- object$center.at[[feat.2]]
       dat <- data.frame(Var1=center.1, Var2 = center.2)
-      base <- object$functions.2d[[feat.1]][[feat.2]](dat)
+      base <- object$pdp.2d[[feat.1]][[feat.2]](dat)
 
       hold[[i]][,"preds"] <- hold[[i]][,"preds"] - base
     }
@@ -510,8 +490,8 @@ accumulated_local_effects <- function(predict_function,
     grid_points <- sort(grid_points)
   }
   local_effects <- purrr::map2_dbl(head(grid_points, -1), grid_points[-1], local_effect,
-                            variable_name = variable_name,
-                            training_data = training_data, predict_function = predict_function, window_size = window_size)
+                                   variable_name = variable_name,
+                                   training_data = training_data, predict_function = predict_function, window_size = window_size)
 
   accumulated_local_effects <- cumsum(local_effects)
   midpoints <- (head(grid_points, -1) +  grid_points[-1])/2
@@ -545,7 +525,7 @@ ale <- function(predict_function,
                 center = "zero",
                 grid_points,
                 window_size
-                ) {
+) {
 
 
   if(missing(variable_names))
@@ -553,14 +533,43 @@ ale <- function(predict_function,
   if (!center %in% c("uncentered", "mean", "zero"))
     stop('The "center" argument must be one of "uncentered", "mean", or "zero"')
   out_data <- purrr::map(.x = variable_names, .f = accumulated_local_effects,
-                  predict_function = predict_function,
-                  num_grid_points = num_grid_points,
-                  training_data = training_data,
-                  center = center,
-                  grid_points = grid_points,
-                  window_size = window_size) %>% bind_rows
+                         predict_function = predict_function,
+                         num_grid_points = num_grid_points,
+                         training_data = training_data,
+                         center = center,
+                         grid_points = grid_points,
+                         window_size = window_size) %>% bind_rows
   out_data
   return(list(ale = out_data, training_data = training_data %>% select(all_of(variable_names))))
+}
+
+
+#' Constructs ALE for the given interpreter object
+#' @param x An interpreter object
+#' @param feature The feature to build the ALE for (must be continuous)
+#' @param training_data The training data to use in order to build the ALE
+#' @param num_grid_points Number of gridpoints for each feature
+#' @param save Boolean to save the ALE predictions
+#' @return A tibble that contains the ALE predictions for the given values
+#' @export
+predict_ALE <- function(x, feature, training_data, save = T){
+  if (is.na(x$ale.grid[[feature]])){
+    # Create prediction function
+    predict_function <- function(newdata) {
+      x$predictor$prediction.function(x$predictor$model, newdata = newdata)
+    }
+    feat_ale = ale(predict_function,
+                   num_grid_points = x$grid.size,
+                   training_data = training_data,
+                   variable_names = feature, center = "mean")
+    if (save){
+      x$ale.grid[[feature]] <- feat_ale
+    }
+  }
+  else{
+    feat_ale <- x$ale.grid[[feature]]
+  }
+  return(feat_ale)
 }
 
 #' @name plot-Interpreter
@@ -620,7 +629,7 @@ plot.Interpreter = function(x,
         names(hold_feat) <- c("feature")
 
         df_all <- predict_ICE.Plotter(x)
-        if (x$feat.class[[feature]]!="numeric"){
+        if (x$feat.class[[feature]]=="factor"){
           # Process Data
           data.factor <- t(df_all[[feature]])[-1,]
           if (is.null(levels(x$predictor$data[[feature]]))){
@@ -784,8 +793,8 @@ plot.Interpreter = function(x,
         # heatmap for 2 continuous features
         features.2d[i,] <- features.2d[i,][order(features.2d[i,])]
 
-        if (feature.classes[features.2d[i,1]] == "numeric" &&
-            feature.classes[features.2d[i,2]]=="numeric"){
+        if (feature.classes[features.2d[i,1]] != "factor" &&
+            feature.classes[features.2d[i,2]]!="factor"){
 
           values <- vals[[i]]
           names(values) <- c("Feat.1", "Feat.2", "Val")
@@ -798,7 +807,7 @@ plot.Interpreter = function(x,
           # find the continuous feature among the two features
           continuous <- 2
           categorical <- 1
-          if (feature.classes[features.2d[i,1]] == "numeric"){
+          if (feature.classes[features.2d[i,1]] != "factor"){
             continuous <- 1
             categorical <- 2
           }
@@ -824,20 +833,17 @@ plot.Interpreter = function(x,
   } else if (method == "ale") {
     # Implement the ale plots for an interpreter class.
 
-    # Create prediction function
-    predict_function <- function(newdata) {
-      x$predictor$prediction.function(x$predictor$model, newdata = newdata)
+    # check that valid features have been given
+    if (any(x$feat.class[features] == "factor")){
+      stop("ALE methods do not support categorical variables.")
     }
 
     # Pull the training data
-    training_data <- x$predictor$data %>% dplyr::select(-x$predictor$y)
+    training_data <- x$predictor$data[x$data.points, ] %>% dplyr::select(-x$predictor$y)
 
     for (feature in features){
       # Calculate the accumulated local effects using ale function
-      feat_ale = ale(predict_function,
-                     num_grid_points = 50,
-                     training_data = training_data,
-                     variable_names = feature, center = "mean")
+      feat_ale <- predict_ALE(x, feature, training_data, save = T)
 
       # Turn output of ale into a plot
       rugplot_data <-
@@ -911,15 +917,15 @@ localSurrogate = function(object,
   for (i in 1:nrow(features.2d)){
     params.forestry.i <- params.forestry
     # heatmap for 2 continuous features
-    if (feature.classes[features.2d[i,1]] == "numeric" &&
-        feature.classes[features.2d[i,2]]=="numeric"){
+    if (feature.classes[features.2d[i,1]] != "factor" &&
+        feature.classes[features.2d[i,2]]!="factor"){
       feature.1 <- features.2d[i,1]
       feature.2 <- features.2d[i,2]
       vals.1 <- object$grid.points[[feature.1]]
       vals.2 <- object$grid.points[[feature.2]]
       # create a grid point of values
       values <- expand.grid(vals.1, vals.2)
-      predictions <- object$functions.2d[[feature.1]][[feature.2]](values)
+      predictions <- object$pdp.2d[[feature.1]][[feature.2]](values)
 
       values <- cbind(values, predictions)
       values <- data.frame(values)
@@ -947,7 +953,7 @@ localSurrogate = function(object,
       # find the categorical feature and continuous feature
       categorical <- NULL
       continuous <- NULL
-      if (feature.classes[features.2d[i,1]] == "numeric"){
+      if (feature.classes[features.2d[i,1]] != "factor"){
         continuous <- features.2d[i,1]
         categorical <- features.2d[i,2]
       }
@@ -960,10 +966,10 @@ localSurrogate = function(object,
       vals.cat <- object$grid.points[[categorical]]
       # generate predictions for each level
       values <- expand.grid(vals.cont, vals.cat)
-      predictions <- object$functions.2d[[continuous]][[categorical]](values)
+      predictions <- object$pdp.2d[[continuous]][[categorical]](values)
       #predictions <- c()
       #for (j in 1:nrow(values)){
-      #  prediction <- object$interpreter$functions.2d[[continuous]][[categorical]](values[j,1], values[j,2])
+      #  prediction <- object$interpreter$pdp.2d[[continuous]][[categorical]](values[j,1], values[j,2])
       #  predictions <- c(predictions, prediction)
       #}
       values <- cbind(values, predictions)

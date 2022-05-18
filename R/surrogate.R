@@ -136,7 +136,7 @@ predict.Surrogate = function(object,
     }
     else{
       # if snap.grid is F, then we do not snap to the grid
-      pred <- object$interpreter$functions.1d[[feature]](newdata[,feature])
+      pred <- object$interpreter$pdp.1d[[feature]](newdata[,feature])
     }
 
     pred <- pred - object$feature.centers[[feature]] # subtract mean of grid points

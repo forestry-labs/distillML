@@ -75,14 +75,11 @@ function construction. Alternatively, if one is only interested understanding
 the model predictions for a specific subgroup, the indices of the observations
 in the given subgroup can be passed here.}
 
-\item{\code{functions.1d}}{A List of functions giving single feature interpretations of the model.}
+\item{\code{pdp.1d}}{A List of functions giving single feature interpretations of the model.}
 
-\item{\code{functions.2d}}{A List of functions giving two-feature interpretations of the model}
+\item{\code{pdp.2d}}{A List of functions giving two-feature interpretations of the model}
 
-\item{\code{feat.class}}{A vector that contains the class for each feature (categorical or continuous)}
-
-\item{\code{method}}{The chosen interpretability method for interpretation.
-By default, this method is set to partial dependence plots
+\item{\code{feat.class}}{A vector that contains the class for each feature (categorical or continuous)
 ("pdp"). This can either be set to "pdp" or "ale".}
 
 \item{\code{center.at}}{The value(s) to center the feature plots at. A list of length
@@ -91,9 +88,13 @@ equal to the length of the features.}
 \item{\code{grid.points}}{A list of vectors containing the grid points to use for
 the predictions.}
 
+\item{\code{grid.size}}{The number of grid points to plot for a continuous feature}
+
 \item{\code{saved}}{A list that caches the previous calculations for the 1-d ICE plots,
 1-d PDP plots, 2-d PDP plots, and grid points for building the distillery model.
 This saves the uncentered calculations.}
+
+\item{\code{ale.grid}}{A list that caches the saved predictions for the ALE method}
 }
 \if{html}{\out{</div>}}
 }
@@ -113,7 +114,6 @@ This saves the uncentered calculations.}
   predictor = NULL,
   samples = 1000,
   data.points = NULL,
-  method = "pdp",
   grid.size = 50
 )}\if{html}{\out{</div>}}
 }
@@ -132,10 +132,7 @@ minimum between 1000 and the number of rows in the
 training data set.}
 
 \item{\code{data.points}}{The indices of the data points used for the PDP/ALE. This
-overwrites the "samples" parameter above.}
-
-\item{\code{method}}{The chosen interpretability method for interpretation ("pdp" or "ale").
-By default, this method is set to partial dependence plots
+     overwrites the "samples" parameter above.
 ("pdp"). This can either be set to "pdp" or "ale".}
 
 \item{\code{grid.size}}{The number of grid points to create for the pdp
