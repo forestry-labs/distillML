@@ -2,7 +2,8 @@
 % Please edit documentation in R/distiller.R
 \name{distill}
 \alias{distill}
-\title{Build surrogate model from distilled model}
+\title{Builds surrogate model from an interpreter object based on the univariate
+  PDP functions of the original model.}
 \usage{
 distill(
   object,

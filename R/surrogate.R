@@ -35,7 +35,7 @@ Surrogate <- R6::R6Class(
 
    # initialize a surrogate object
    #' @param interpreter The interpreter object we want to build a surrogate model for.
-   #' @param weights The weights for each given feature
+   #' @param weights The weights for each given feature after the surrogate model is fit.
    #' @param intercept The baseline value. If uncentered, this is 0, and if centered, this will be the mean of the predictions
    #'                  of the original model based on the grid points set.
    #' @param feature.centers The baseline value for the effect of each feature. If uncentered, this is 0.

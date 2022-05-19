@@ -57,7 +57,7 @@ data for our predictions}
 \describe{
 \item{\code{interpreter}}{The interpreter object we want to build a surrogate model for.}
 
-\item{\code{weights}}{The weights for each given feature}
+\item{\code{weights}}{The weights for each given feature after the surrogate model is fit.}
 
 \item{\code{intercept}}{The baseline value. If uncentered, this is 0, and if centered, this will be the mean of the predictions
 of the original model based on the grid points set.}
