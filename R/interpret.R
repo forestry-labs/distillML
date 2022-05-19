@@ -311,8 +311,7 @@ Interpreter <- R6::R6Class(
       self$center.at <- center.at
       self$saved <- list(ICE = ICE.list,
                          PDP.1D = PDP.1D.list,
-                         PDP.2D = PDP.2D.list,
-                         build.grid = NA)
+                         PDP.2D = PDP.2D.list)
       self$ale.grid <- ale.grid
     }
   )

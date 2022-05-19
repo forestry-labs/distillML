@@ -115,8 +115,6 @@ set.grid.points = function(object,
   for (i in index_rm){
     object$saved[["PDP.2D"]][[i]] <- NA
   }
-
-  object$saved[["build.grid"]] <- NA
 }
 
 #' @name predict_ICE.Plotter

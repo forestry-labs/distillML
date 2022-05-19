@@ -10,6 +10,7 @@
 #' @title Surrogate class description
 #' @description The class for distilled surrogate models.
 #' @field interpreter The interpreter object to use as a standardized wrapper for the model
+#' @field features The indices of the features in the data used in the surrogate model
 #' @field weights The weights used to recombine the PDPs into a surrogate for the original model
 #' @field intercept The intercept term we use for our predictions
 #' @field feature.centers The center value for the features determined in the model
@@ -24,6 +25,7 @@ Surrogate <- R6::R6Class(
  "Surrogate",
  public = list(
    interpreter = NULL,
+   features = NULL,
    weights = NULL,
    intercept = NULL,
    feature.centers = NULL,
@@ -43,6 +45,7 @@ Surrogate <- R6::R6Class(
    #' @return A surrogate model object that we can use for predictions
    #' @note Do not initalize this class on its own. It is automatically created by the distill function for the interpreter class.
    initialize = function(interpreter,
+                         features,
                          weights,
                          intercept,
                          feature.centers,
@@ -70,6 +73,7 @@ Surrogate <- R6::R6Class(
      }
 
      self$interpreter <- interpreter
+     self$features <- features
      self$weights <- weights
      self$intercept <- intercept
      self$feature.centers <- feature.centers
@@ -107,11 +111,12 @@ predict.Surrogate = function(object,
   # if uncentered, then we need not do anything
   preds <- data.frame(surrogate.preds = rep(object$intercept, nrow(newdata)))
 
-  for (feature in names(object$grid)){
-    # grid points for this specific feature
-    ref <- object$grid[[feature]]
+  for (feature in object$interpreter$features[object$features]){
+
     if (object$snap.grid){
       # if snap.grid is T, then find the closest point in our existing grid points
+      # grid points for this specific feature
+      ref <- object$grid[[feature]]
       pred <- c()
       for (i in 1:length(newdata[,feature])){
 

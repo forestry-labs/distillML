@@ -11,59 +11,29 @@
 #' @param object The Interpreter object
 #' @param feat.ind The indices of the features in the Interpreter's features that we want
 #'                 to include as PDP functions in the distilled model.
-#' @param save Boolean for saving the results in the interpreter object. Default is TRUE.
-#' @param fit.train Boolean for indicating whether we fit to the subsampled training
-#'                  data or to all possible combinations of the grid.points. Default
-#'                  is TRUE, which means that we use the subsampled training data.
 #' @return A dataframe used to find weights in regression (one-hot encoding for
 #'         categorical features)
 #' @export
-build.grid = function(object, feat.ind = 1:length(object$features),
-                      save = T, fit.train = T){
+build.grid = function(object, feat.ind = 1:length(object$features)){
 
   if (!(inherits(object, "Interpreter"))){
     stop("Object given is not of the interpreter class.")
   }
 
-  if (!(all(is.na(object$saved[["build.grid"]])))){
-    return(object$saved[["build.grid"]])
+  # we fit to the training data (or subsample of it)
+  data <- object$predictor$data[object$data.points, ]
+  y <- predict(object$predictor, data[, -which(names(data) == object$predictor$y)])
+
+  # create PDP curves for these features
+  pdps <- data.frame(sentinel = rep(NA, nrow(data)))
+  for (feature in object$features[feat.ind]){
+    pdps <- cbind(pdps, object$pdp.1d[[feature]](data[,feature]))
   }
-
-  # fit.train means that we fit to the training data (or subsample of it)
-  if (fit.train){
-    data <- object$predictor$data[object$data.points, ]
-    y <- predict(object$predictor, data[, -which(names(data) == object$predictor$y)])
-
-    # create PDP curves for these features
-    pdps <- data.frame(sentinel = rep(NA, nrow(data)))
-    for (feature in object$features[feat.ind]){
-      pdps <- cbind(pdps, object$pdp.1d[[feature]](data[,feature]))
-    }
-    pdps <- pdps[,-1]
-    pdps <- data.frame(pdps)
-    colnames(pdps) <- object$features[feat.ind]
-  }
-
-  else{
-    # y represents the true predictions
-    covars <- expand.grid(object$grid.points) # gets all possible grid point combinations
-    y <- predict(object$predictor, covars)
-
-    # build grid of PDP functions (PDP predictions are in the same order as the grid points)
-    ref <- predict_PDP.1D.Plotter(object)
-    ref.values <- list()
-    for (feature in names(ref)){
-      ref.values[[feature]] <- ref[[feature]][,2]
-    }
-    pdps <- expand.grid(ref.values)
-  }
+  pdps <- pdps[,-1]
+  pdps <- data.frame(pdps)
+  colnames(pdps) <- object$features[feat.ind]
 
   grid <- cbind(pdps, y)
-
-  # save and return
-  if (save){
-    object$saved[["build.grid"]] <- grid
-  }
   return(grid)
 }
 
@@ -80,8 +50,9 @@ build.grid = function(object, feat.ind = 1:length(object$features),
 #'                  calculations. Default is TRUE.
 #' @param cv Boolean that indicates whether we want to cross-validate our fitted coefficients
 #'           with a regularizer. This should only be done when regularizing coefficients.
-#' @param fit.train Fit to training data or fit to expand.grid. If true, we fit to
-#'                  the training data. Default is TRUE.
+#' @param snap.train Boolean that determines whether we use the training data or the
+#'  equally spaced grid points. By default, this is true, which means we snap to grid points
+#'  as determined by the training data's marginal distribution.
 #' @param params.glmnet Optional list of parameters to pass to glmnet while fitting
 #'                      PDP curves to resemble the original predictions. By specifying
 #'                      parameters, one can do lasso or ridge regression.
@@ -95,7 +66,7 @@ distill = function(object,
                    features = 1:length(object$features),
                    cv = F,
                    snap.grid = T,
-                   fit.train = T,
+                   snap.train = T,
                    params.glmnet  = list(),
                    params.cv.glmnet = list()
                    ){
@@ -109,7 +80,28 @@ distill = function(object,
   }
 
   # get data for grid
-  data <- build.grid(object, feat.ind = features, fit.train = fit.train, save = T)
+  data <- build.grid(object, feat.ind = features)
+
+  # get snap.grid if enabled
+  if (snap.grid){
+    if (snap.train){
+      train_data <- object$predictor$data[object$data.points, ]
+      grid <- list()
+      for (feat in object$features[features]){
+        feat.data <- data.frame(cbind(train_data[, feat], data[[feat]]))
+        names(feat.data) <- c("feature", "PDP")
+        grid <- append(grid, list(feat.data))
+      }
+      names(grid) <- object$features[features]
+    }
+    else{
+      grid <- predict_PDP.1D.Plotter(object, features = object$features[features])
+    }
+  }
+  else{
+    grid <- NA
+  }
+
 
   # if centered, then remove col means and store original mean of predictions
   if (center.mean){
@@ -193,11 +185,11 @@ distill = function(object,
   names(coeffs) <- colnames(fit.data)
 
   return(Surrogate$new(interpreter = object,
+                       features = features,
                        weights = coeffs,
                        intercept = center,
                        feature.centers = feature.centers,
                        center.mean = center.mean,
-                       grid = predict_PDP.1D.Plotter(object,
-                                                     features = object$features[features]),
+                       grid = grid,
                        snap.grid = snap.grid))
 }
