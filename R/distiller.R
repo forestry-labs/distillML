@@ -68,7 +68,8 @@ build.grid = function(object, feat.ind = 1:length(object$features),
 }
 
 #' @name distill
-#' @title Build surrogate model from distilled model
+#' @title Builds surrogate model from an interpreter object based on the univariate
+#'   PDP functions of the original model.
 #' @description Builds a surrogate model from the PDP functions
 #' @param object The Interpreter object
 #' @param center.mean Boolean value that determines whether to center each column
