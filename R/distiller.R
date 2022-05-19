@@ -197,6 +197,7 @@ distill = function(object,
                        intercept = center,
                        feature.centers = feature.centers,
                        center.mean = center.mean,
-                       grid = predict_PDP.1D.Plotter(object),
+                       grid = predict_PDP.1D.Plotter(object,
+                                                     features = object$features[features]),
                        snap.grid = snap.grid))
 }

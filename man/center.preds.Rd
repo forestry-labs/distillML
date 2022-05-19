@@ -4,10 +4,12 @@
 \alias{center.preds}
 \title{Centers the predicted values for 1-d ICE and PDP plots or 2-d PDP plots}
 \usage{
-center.preds(object, plot.type, feats.2d = NULL)
+center.preds(object, features = NULL, plot.type, feats.2d = NULL)
 }
 \arguments{
 \item{object}{The Interpreter object to use}
+
+\item{features}{The 1-D features we want to center}
 
 \item{plot.type}{The type of plot that the user wants to center the predictions of.
 should be one of either "ICE", "PDP.1D", or "PDP.2D"}

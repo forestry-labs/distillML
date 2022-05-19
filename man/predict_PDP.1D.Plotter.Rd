@@ -4,10 +4,12 @@
 \alias{predict_PDP.1D.Plotter}
 \title{Prediction Function for PDP Plots}
 \usage{
-predict_PDP.1D.Plotter(object, save = TRUE)
+predict_PDP.1D.Plotter(object, features = NULL, save = TRUE)
 }
 \arguments{
 \item{object}{The Interpreter object to plot PDP curves for.}
+
+\item{features}{The features to predict PDP functions foor}
 
 \item{save}{A boolean indicator to indicate whether the calculations should be
 saved in the interpreter object or not. This can help reduce

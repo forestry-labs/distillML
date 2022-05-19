@@ -4,10 +4,12 @@
 \alias{predict_ICE.Plotter}
 \title{Prediction Function for ICE Plots}
 \usage{
-predict_ICE.Plotter(object, save = TRUE)
+predict_ICE.Plotter(object, features = NULL, save = TRUE)
 }
 \arguments{
 \item{object}{The Interpeter object to use.}
+
+\item{features}{Features to predict ICE plots for}
 
 \item{save}{A boolean indicator to indicate whether the calculations should be
 saved in the interpreter object or not. This can help reduce
