@@ -14,6 +14,8 @@ Do not initalize this class on its own. It is automatically created by the disti
 \describe{
 \item{\code{interpreter}}{The interpreter object to use as a standardized wrapper for the model}
 
+\item{\code{features}}{The indices of the features in the data used in the surrogate model}
+
 \item{\code{weights}}{The weights used to recombine the PDPs into a surrogate for the original model}
 
 \item{\code{intercept}}{The intercept term we use for our predictions}
@@ -43,6 +45,7 @@ data for our predictions}
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Surrogate$new(
   interpreter,
+  features,
   weights,
   intercept,
   feature.centers,
@@ -56,6 +59,8 @@ data for our predictions}
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{interpreter}}{The interpreter object we want to build a surrogate model for.}
+
+\item{\code{features}}{The indices of features in the training data used for the surrogate model}
 
 \item{\code{weights}}{The weights for each given feature after the surrogate model is fit.}
 

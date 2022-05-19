@@ -11,7 +11,7 @@ distill(
   features = 1:length(object$features),
   cv = F,
   snap.grid = T,
-  fit.train = T,
+  snap.train = T,
   params.glmnet = list(),
   params.cv.glmnet = list()
 )
@@ -32,8 +32,9 @@ with a regularizer. This should only be done when regularizing coefficients.}
 each value predicted or uses an approximation from previous
 calculations. Default is TRUE.}
 
-\item{fit.train}{Fit to training data or fit to expand.grid. If true, we fit to
-the training data. Default is TRUE.}
+\item{snap.train}{Boolean that determines whether we use the training data or the
+equally spaced grid points. By default, this is true, which means we snap to grid points
+as determined by the training data's marginal distribution.}
 
 \item{params.glmnet}{Optional list of parameters to pass to glmnet while fitting
 PDP curves to resemble the original predictions. By specifying

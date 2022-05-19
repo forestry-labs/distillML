@@ -4,24 +4,13 @@
 \alias{build.grid}
 \title{Build grid used for weights in distilled surrogate model}
 \usage{
-build.grid(
-  object,
-  feat.ind = 1:length(object$features),
-  save = T,
-  fit.train = T
-)
+build.grid(object, feat.ind = 1:length(object$features))
 }
 \arguments{
 \item{object}{The Interpreter object}
 
 \item{feat.ind}{The indices of the features in the Interpreter's features that we want
 to include as PDP functions in the distilled model.}
-
-\item{save}{Boolean for saving the results in the interpreter object. Default is TRUE.}
-
-\item{fit.train}{Boolean for indicating whether we fit to the subsampled training
-data or to all possible combinations of the grid.points. Default
-is TRUE, which means that we use the subsampled training data.}
 }
 \value{
 A dataframe used to find weights in regression (one-hot encoding for
