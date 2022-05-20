@@ -1,10 +1,12 @@
 [![R-CMD-check](https://github.com/forestry-labs/interpretability_sandbox/actions/workflows/check-noncontainerized.yaml/badge.svg)](https://github.com/forestry-labs/interpretability_sandbox/actions/workflows/check-noncontainerized.yaml)
 
-# Distillery: Model distillation and interpretability methods for machine learning models
+# Distillery: Distillation and Interpretability Algorithms
 
 This package provides several methods for model distillation and interpretability 
 for general black box machine learning models. This page serves as a clear 
 example for using this package, where we use the MASS crabs data set.
+
+For documentation, see [https://forestry-labs.github.io/Distillery/index.html](https://forestry-labs.github.io/Distillery/index.html)
 
 ## General Prediction Wrapper
 
