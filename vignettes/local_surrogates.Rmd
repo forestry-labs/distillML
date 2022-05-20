@@ -1,0 +1,64 @@
+---
+title: "Local Surrogate Models"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Local Surrogate Models}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+## Local Surrogate Models for Bivariate PDP Functions
+
+Sometimes it can be difficult to understand the output of a bivariate PDP function.
+As an alternative to visualizing these functions, we can fit a small decision tree 
+using the PDP function values as the outcomes and the two features (and possibly their
+interaction) as the independent features.
+
+```{r, include=FALSE, echo = FALSE, results='hide'}
+# Load the required packages
+library(Distillery)
+library(Rforestry)
+library(ggplot2)
+library(dplyr)
+```
+
+```{r, echo = TRUE}
+# Load the required packages
+library(Distillery)
+library(Rforestry)
+
+# Load in data 
+data("iris")
+set.seed(491)
+data <- iris
+
+# Train a random forest on the data set
+forest <- forestry(x=data[,-1],
+                   y=data[,1])
+
+# Create a predictor wrapper for the forest
+forest_predictor <- Predictor$new(model = forest,
+                                  data=data,
+                                  y="Sepal.Length",
+                                  task = "regression")
+
+forest_interpret <- Interpreter$new(predictor = forest_predictor)
+```
+
+This method is implemented in the `localSurrogate()` function. This can be called 
+as follows.
+
+```{r, echo=TRUE}
+
+# Make the bivariate PDP function
+forest_plot <- plot(forest_interpret,
+                          features.2d = data.frame(col1 = c("Sepal.Width"),
+                                                   col2 = c("Species")))
+
+#tree_explainer <- localSurrogate(object = forest_interpret)
+
+```
+
+
+
+

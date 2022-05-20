@@ -31,33 +31,28 @@ test_that("Tests that the predictor wrapper is working", {
                10)
 
   expect_equal(length(forest_interpret$functions.1d),
-               7)
+               0)
   # Get predictions from a pdp function
   context("Try pdp predictions")
 
   # Get the names of the pdp functions
   func_names <- names(forest_interpret$functions.1d)
-  expect_equal(all.equal(func_names, c("Species",
-                                       "Sex",
-                                       "Index",
-                                       "FrontalLobe",
-                                       "RearWidth",
-                                       "CarapaceLength",
-                                       "CarapaceWidth")), TRUE)
+  expect_equal(func_names, NULL)
 
-  pred_pdp <- forest_interpret$functions.1d$`RearWidth`(c(10,11,12,14,15))
-  pred_pdp_alt <- forest_interpret$functions.1d[[5]](c(10,11,12,14,15))
+  pred_pdp <- forest_interpret$pdp.1d$`RearWidth`(c(10,11,12,14,15))
+  pred_pdp_alt <- forest_interpret$pdp.1d[[5]](c(10,11,12,14,15))
+
+  pred_pdp_2 <- forest_interpret$pdp.2d$Species$Sex(data.frame(col1 = data$Species,
+                                                               col2 = data$Sex))
+
+  pred_pdp_2_alt <- forest_interpret$pdp.2d[[1]][[2]](data.frame(col1 = data$Species,
+                                                               col2 = data$Sex))
 
   expect_equal(all.equal(pred_pdp,pred_pdp_alt, tolerance = 1e-8), TRUE)
+  expect_equal(all.equal(pred_pdp_2,pred_pdp_2_alt, tolerance = 1e-8), TRUE)
 
-  pred_pdp_2 <- forest_interpret$functions.2d$`RearWidth`$`FrontalLobe`(matrix(c(10, 20), nrow=1))
-  pred_pdp_2 <- forest_interpret$functions.2d[[5]][[4]](matrix(c(10,11, 20,23), nrow=2))
-
-  expect_equal(all.equal(pred_pdp_2, c(14.78662, 15.20855), tolerance = 1e-4), TRUE)
-
-  expect_equal(length(pred_pdp), 3)
-
-  expect_equal(length(pred_pdp_2), 2)
+  expect_equal(length(pred_pdp), 5)
+  expect_equal(length(pred_pdp_2), 200)
 
   rm(list=ls())
 })

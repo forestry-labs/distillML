@@ -1,0 +1,85 @@
+---
+title: "Model Distillation"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Model Distillation}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+## Model Distillation
+
+We can distill a general machine learning model into an interpretable additive combination of the 
+PDP functions of the model.
+
+```{r, include=FALSE, echo = FALSE, results='hide'}
+# Load the required packages
+library(Distillery)
+library(Rforestry)
+library(ggplot2)
+library(dplyr)
+```
+
+```{r, echo = TRUE}
+# Load the required packages
+library(Distillery)
+library(Rforestry)
+
+# Load in data 
+data("iris")
+set.seed(491)
+data <- iris
+
+# Train a random forest on the data set
+forest <- forestry(x=data[1:100,-1],
+                   y=data[1:100,1])
+
+# Create a predictor wrapper for the forest
+forest_predictor <- Predictor$new(model = forest,
+                                  data=data,
+                                  y="Sepal.Length",
+                                  task = "regression")
+
+forest_interpret <- Interpreter$new(predictor = forest_predictor)
+```
+
+
+Comparing the predictions of the forest and the surrogate out of sample, we see that
+the performance is quite similar.
+
+```{r, echo=TRUE}
+# Now distill the model
+distilled_model <- distill(forest_interpret)
+
+# Get the predictions of the surrogate
+preds.surrogate <- predict(distilled_model, newdata = iris[101:150,-1])[,1]
+
+# Get the predictions of the original model
+preds.original <- predict(forest, newdata = iris[101:150,-1])
+
+print(sqrt(mean(preds.surrogate - iris[101:150,1])**2))
+print(sqrt(mean(preds.original - iris[101:150,1])**2))
+
+```
+
+We can also compare the predictions themselves. When we predict on the set of observations corresponding to the
+**virginica** flowers, we can actually see that the surrogate model is better at extrapolating the outcomes for
+these flowers as they are generally larger than any values the model has seen before.
+
+```{r, echo=TRUE}
+data.frame(Surrogate.Predictions = preds.surrogate,
+           Model.Predictions = preds.original) %>% 
+  ggplot(aes(x = Surrogate.Predictions,y = Model.Predictions))+
+  ylim(min(min(preds.surrogate),min(preds.original)),max(max(preds.surrogate),max(preds.original)) )+
+  xlim(min(min(preds.surrogate),min(preds.original)),max(max(preds.surrogate),max(preds.original)) )+
+  geom_point()+
+  theme_classic()
+
+
+```
+
+
+
+
+
+

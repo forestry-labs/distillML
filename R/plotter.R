@@ -819,7 +819,9 @@ plot.Interpreter = function(x,
 
           plot.obj <- ggplot(values, aes(x=Feat.1, y=Feat.2, fill = Val)) +
             geom_tile() + xlab(features.2d[i,1]) + ylab(features.2d[i,2])
-          plot.obj <- plot.obj + guides(fill=guide_legend(title = x$predictor$y))
+          plot.obj <- plot.obj +
+            guides(fill=guide_legend(title = x$predictor$y)) +
+            theme_classic()
         }
         else {
           # find the continuous feature among the two features
@@ -838,12 +840,14 @@ plot.Interpreter = function(x,
           }
           plot.obj <- ggplot(values, aes(x=Cont, y=Val, group=Cat, color=Cat)) +
             geom_line() + xlab(features.2d[i,continuous]) + ylab(x$predictor$y)
-          plot.obj <- plot.obj +  guides(color=guide_legend(title = features.2d[i,categorical]))
+          plot.obj <- plot.obj +
+            guides(color=guide_legend(title = features.2d[i,categorical])) +
+            theme_classic()
         }
         plots <- append(plots, list(plot.obj))
         names.2d <- c(names.2d, paste(features.2d[i,1], features.2d[i,2], sep = "."))
       }
-      print(names.2d)
+      #print(names.2d)
       names(plots) <- c(names.2d)
     }
     return(plots)
