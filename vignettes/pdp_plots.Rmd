@@ -1,0 +1,71 @@
+---
+title: "Creating PDP Plots"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Creating PDP Plots}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+## Creating PDP Plots
+
+In order to use interpretability and distillation methods from the **Distillery** package, 
+the machine learning model must be wrapped by a `Predictor` object first.
+This provides a standardized interface for getting the predictions of the algorithm.
+
+```{r, include=FALSE, echo = FALSE, results='hide'}
+# Load the required packages
+library(Distillery)
+library(Rforestry)
+```
+
+```{r, echo = TRUE}
+# Load the required packages
+library(Distillery)
+library(Rforestry)
+
+# Load in data 
+data("iris")
+set.seed(491)
+data <- iris
+
+# Train a random forest on the data set
+forest <- forestry(x=data[,-1],
+                   y=data[,1])
+
+# Create a predictor wrapper for the forest
+forest_predictor <- Predictor$new(model = forest,
+                                  data=data,
+                                  y="Sepal.Length",
+                                  task = "regression")
+```
+
+## Creating an Interpreter
+
+We then can use the standardized prediction wrapper to create an `Interpreter`, a class
+that holds the PDP and ALE functions for a model.
+
+```{r, echo = TRUE}
+# Initialize an interpreter
+forest_interpret <- Interpreter$new(predictor = forest_predictor)
+```
+
+We can directly access the partial dependence functions from the interpreter object, and 
+use these to create predictions.
+
+```{r, echo = TRUE}
+# Make predictions using the Sepal.Width PDP function.
+# predictions <- forest_interpret$pdp.1d$Sepal.Width(seq(2,4, length.out = 20))
+```
+
+## PDP Plots
+
+Given an `Interpreter` object, we can also create PDP plots using the `plot()` method.
+
+```{r, echo=TRUE}
+pdp_plots <-  plot(forest_interpret, method = "pdp", features = "Sepal.Width")
+plot(pdp_plots$Sepal.Width)
+```
+
+The X axis of the plot displays a histogram of the training data so the user can see where the PDP
+is in the support of the training data.

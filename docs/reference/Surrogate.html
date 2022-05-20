@@ -21,6 +21,12 @@
       <ul class="navbar-nav me-auto"><li class="active nav-item">
   <a class="nav-link" href="../reference/index.html">Reference</a>
 </li>
+<li class="nav-item dropdown">
+  <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
+  <div class="dropdown-menu" aria-labelledby="dropdown-articles">
+    <a class="dropdown-item" href="../articles/pdp_plots.html">Creating PDP Plots</a>
+  </div>
+</li>
       </ul><form class="form-inline my-2 my-lg-0" role="search">
         <input type="search" class="form-control me-sm-2" aria-label="Toggle navigation" name="search-input" data-search-index="../search.json" id="search-input" placeholder="Search for" autocomplete="off"></form>
 
@@ -55,6 +61,10 @@
     <h2 id="public-fields">Public fields<a class="anchor" aria-label="anchor" href="#public-fields"></a></h2>
     <p></p><div class="r6-fields"><dl><dt><code>interpreter</code></dt>
 <dd><p>The interpreter object to use as a standardized wrapper for the model</p></dd>
+
+
+<dt><code>features</code></dt>
+<dd><p>The indices of the features in the data used in the surrogate model</p></dd>
 
 
 <dt><code>weights</code></dt>
@@ -99,6 +109,7 @@ data for our predictions</p></dd>
 <h4 id="usage">Usage<a class="anchor" aria-label="anchor" href="#usage"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span class="va"><a href="../reference/Surrogate.html">Surrogate</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span>
   <span class="va">interpreter</span>,
+  <span class="va">features</span>,
   <span class="va">weights</span>,
   <span class="va">intercept</span>,
   <span class="va">feature.centers</span>,
@@ -112,6 +123,10 @@ data for our predictions</p></dd>
 <h4 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>interpreter</code></dt>
 <dd><p>The interpreter object we want to build a surrogate model for.</p></dd>
+
+
+<dt><code>features</code></dt>
+<dd><p>The indices of features in the training data used for the surrogate model</p></dd>
 
 
 <dt><code>weights</code></dt>

@@ -23,6 +23,12 @@
       <ul class="navbar-nav me-auto"><li class="active nav-item">
   <a class="nav-link" href="../reference/index.html">Reference</a>
 </li>
+<li class="nav-item dropdown">
+  <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
+  <div class="dropdown-menu" aria-labelledby="dropdown-articles">
+    <a class="dropdown-item" href="../articles/pdp_plots.html">Creating PDP Plots</a>
+  </div>
+</li>
       </ul><form class="form-inline my-2 my-lg-0" role="search">
         <input type="search" class="form-control me-sm-2" aria-label="Toggle navigation" name="search-input" data-search-index="../search.json" id="search-input" placeholder="Search for" autocomplete="off"></form>
 
@@ -57,7 +63,7 @@
   features <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">object</span><span class="op">$</span><span class="va">features</span><span class="op">)</span>,
   cv <span class="op">=</span> <span class="cn">F</span>,
   snap.grid <span class="op">=</span> <span class="cn">T</span>,
-  fit.train <span class="op">=</span> <span class="cn">T</span>,
+  snap.train <span class="op">=</span> <span class="cn">T</span>,
   params.glmnet <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,
   params.cv.glmnet <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>
 <span class="op">)</span></code></pre></div>
@@ -80,9 +86,10 @@ with a regularizer. This should only be done when regularizing coefficients.</p>
 <dd><p>Boolean function that determines whether the model recalculates
 each value predicted or uses an approximation from previous
 calculations. Default is TRUE.</p></dd>
-<dt>fit.train</dt>
-<dd><p>Fit to training data or fit to expand.grid. If true, we fit to
-the training data. Default is TRUE.</p></dd>
+<dt>snap.train</dt>
+<dd><p>Boolean that determines whether we use the training data or the
+equally spaced grid points. By default, this is true, which means we snap to grid points
+as determined by the training data's marginal distribution.</p></dd>
 <dt>params.glmnet</dt>
 <dd><p>Optional list of parameters to pass to glmnet while fitting
 PDP curves to resemble the original predictions. By specifying
