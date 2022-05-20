@@ -1,8 +1,8 @@
 ---
-title: "Creating PDP Plots"
+title: "PDP Plots"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Creating PDP Plots}
+  %\VignetteIndexEntry{PDP Plots}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -69,3 +69,9 @@ plot(pdp_plots$Sepal.Width)
 
 The X axis of the plot displays a histogram of the training data so the user can see where the PDP
 is in the support of the training data.
+
+We can also include the ICE lines within the PDP plots by changing the method in the plotting function.
+```{r, echo=TRUE}
+pdp_plots <-  plot(forest_interpret, method = "pdp+ice", features = "Sepal.Width")
+plot(pdp_plots$Sepal.Width)
+```

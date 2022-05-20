@@ -1,0 +1,54 @@
+---
+title: "ALE Plots"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{ALE Plots}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+## ALE Plots
+
+Once an interpreter object is created to wrap the algorithm, we can also create ALE
+plots.
+
+```{r, include=FALSE, echo = FALSE, results='hide'}
+# Load the required packages
+library(Distillery)
+library(Rforestry)
+```
+
+```{r, echo = TRUE}
+# Load the required packages
+library(Distillery)
+library(Rforestry)
+
+# Load in data 
+data("iris")
+set.seed(491)
+data <- iris
+
+# Train a random forest on the data set
+forest <- forestry(x=data[,-1],
+                   y=data[,1])
+
+# Create a predictor wrapper for the forest
+forest_predictor <- Predictor$new(model = forest,
+                                  data=data,
+                                  y="Sepal.Length",
+                                  task = "regression")
+
+# Initialize an interpreter
+forest_interpret <- Interpreter$new(predictor = forest_predictor)
+```
+
+Given an `Interpreter` object, we can create ALE plots using the `plot()` method 
+and setting `method="ale"`.
+
+```{r, echo=TRUE}
+ale_plots <-  plot(forest_interpret, method = "ale", features = "Sepal.Width")
+plot(ale_plots$Sepal.Width)
+```
+
+The X axis of the plot displays a histogram of the training data so the user can see where the PDP
+is in the support of the training data.
