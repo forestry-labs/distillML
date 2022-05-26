@@ -842,7 +842,7 @@ plot.Interpreter = function(x,
             geom_line() + xlab(features.2d[i,continuous]) + ylab(x$predictor$y)
           plot.obj <- plot.obj +
             guides(color=guide_legend(title = features.2d[i,categorical])) +
-            theme_classic()
+            theme_bw()
         }
         plots <- append(plots, list(plot.obj))
         names.2d <- c(names.2d, paste(features.2d[i,1], features.2d[i,2], sep = "."))
