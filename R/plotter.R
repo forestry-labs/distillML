@@ -674,7 +674,7 @@ plot.Interpreter = function(x,
             geom_bar(stat = "identity", position = position_dodge()) +
             ylab(x$predictor$y) + xlab(feature) +
             geom_errorbar(aes(ymin = mins, ymax = maxs))
-            theme_classic()
+            theme_bw()
 
           # make frequency plot
           frequency <- ggplot(temp.data, aes(x=vals, y=counts)) +
@@ -821,7 +821,7 @@ plot.Interpreter = function(x,
             geom_tile() + xlab(features.2d[i,1]) + ylab(features.2d[i,2])
           plot.obj <- plot.obj +
             guides(fill=guide_legend(title = x$predictor$y)) +
-            theme_classic()
+            theme_bw()
         }
         else {
           # find the continuous feature among the two features
