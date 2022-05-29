@@ -14,8 +14,6 @@ predict_ALE(x, feature, training_data, save = T)
 \item{training_data}{The training data to use in order to build the ALE}
 
 \item{save}{Boolean to save the ALE predictions}
-
-\item{num_grid_points}{Number of gridpoints for each feature}
 }
 \value{
 A tibble that contains the ALE predictions for the given values

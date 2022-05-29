@@ -8,6 +8,7 @@
 #' @importFrom pdp grid.arrange
 #' @importFrom stats coef na.omit quantile sd
 #' @importFrom utils head
+#' @importFrom stats kmeans
 
 
 #' @name set.center.at
@@ -420,20 +421,20 @@ center.preds = function(object, features = NULL, plot.type, feats.2d = NULL){
 #' in the window around the set_value
 #'
 #' Parameters:
-#'     @param variable_name - The variable we want perturb to calculate the local effect
+#'     param variable_name - The variable we want perturb to calculate the local effect
 #'
-#'     @param lower_limit - The lower limit of the variable we want to use
+#'     param lower_limit - The lower limit of the variable we want to use
 #'
-#'     @param upper_limit - The upper limit of the variable we want to use
+#'     param upper_limit - The upper limit of the variable we want to use
 #'
-#'     @param set_value - The value we want to perturb the variable around
+#'     param set_value - The value we want to perturb the variable around
 #'
-#'     @param window_size - An optional parameter for the size of the window around
+#'     param window_size - An optional parameter for the size of the window around
 #'                   the variable that we perturb and predict at
 #'
-#'     @param training_data - The training data we use to make predictions
+#'     param training_data - The training data we use to make predictions
 #'
-#'     @param predict_function - The prediction function we use to make predictions for the model
+#'     param predict_function - The prediction function we use to make predictions for the model
 #'
 #' Return:
 #'     A single value that is the mean local effect of the peturbation on the
@@ -564,7 +565,6 @@ ale <- function(predict_function,
 #' @param x An interpreter object
 #' @param feature The feature to build the ALE for (must be continuous)
 #' @param training_data The training data to use in order to build the ALE
-#' @param num_grid_points Number of gridpoints for each feature
 #' @param save Boolean to save the ALE predictions
 #' @return A tibble that contains the ALE predictions for the given values
 #' @export
@@ -604,6 +604,7 @@ predict_ALE <- function(x, feature, training_data, save = T){
 #'    will be determined by running K means on the predictions of the ICE functions.
 #'    If the "gradient" option is used, the clusters will be determined by running K
 #'    means on the numerical gradient of the predictions of the ICE functions.
+#' @param ... Additiional parameters to pass to the plot function
 #' @return A list of plots with 1-d features and 2-d features. For 2-d features with
 #'         one continuous and one categorical feature, the plot is a linear plot of the
 #'         continuous feature with group colors representing the categorical feature.
@@ -632,7 +633,7 @@ plot.Interpreter = function(x,
   }
 
   # Quash R CMD CHeck notes
-  Feat.1 = Feat.2 = Val = Cont = Cat = value = grp = variable = ispdp = NULL
+  Feat.1 = Feat.2 = Val = Cont = Cat = value = grp = variable = ispdp = Cluster = NULL
 
   # list of plots to be filled
   plots <- list()

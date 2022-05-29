@@ -1,4 +1,4 @@
-test_that("Tests that the predictor wrapper is working", {
+test_that("Tests that the interpreter wrapper is working", {
 
   library(Rforestry)
   set.seed(491)
@@ -27,11 +27,43 @@ test_that("Tests that the predictor wrapper is working", {
   # Initialize an interpreter
   forest_interpret <- Interpreter$new(predictor = forest_predictor)
 
+  context("Check the initialization of the interpreter object")
+
   expect_equal(length(forest_interpret$data.points[1:10]),
                10)
 
-  expect_equal(length(forest_interpret$functions.1d),
-               0)
+  expect_equal(forest_interpret$grid.size,
+               50)
+
+  expect_equal(forest_interpret$features,
+               c("Species", "Sex", "Index", "FrontalLobe",
+                 "RearWidth", "CarapaceLength", "CarapaceWidth"))
+
+  expect_equal(nrow(forest_interpret$features.2d),
+               choose(length(forest_interpret$features), 2))
+
+  expect_equal(all.equal(names(forest_interpret$center.at),
+                         forest_interpret$features),
+               TRUE)
+
+  expect_equal(all.equal(forest_interpret$features,
+                         names(forest_interpret$feat.class)),
+               TRUE)
+
+  expect_equal(all.equal(forest_interpret$features, names(forest_interpret$pdp.1d)),
+               TRUE)
+
+  expect_equal(all.equal(names(which(forest_interpret$feat.class != "factor")),
+                         names(forest_interpret$ale.grid)),
+               TRUE)
+
+  expect_equal(all(is.na(forest_interpret$saved$ICE)), TRUE)
+
+  expect_equal(all(is.na(forest_interpret$saved$PDP.1D)), TRUE)
+
+  expect_equal(all(is.na(forest_interpret$saved$PDP.2D)), TRUE)
+
+
   # Get predictions from a pdp function
   context("Try pdp predictions")
 

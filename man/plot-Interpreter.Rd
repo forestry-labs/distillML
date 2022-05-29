@@ -33,6 +33,8 @@ The possible options are "preds", and "gradient". If "preds" is used, the cluste
 will be determined by running K means on the predictions of the ICE functions.
 If the "gradient" option is used, the clusters will be determined by running K
 means on the numerical gradient of the predictions of the ICE functions.}
+
+\item{...}{Additiional parameters to pass to the plot function}
 }
 \value{
 A list of plots with 1-d features and 2-d features. For 2-d features with

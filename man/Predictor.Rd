@@ -51,7 +51,8 @@ y="Carapace Width", task = "regression")
 \if{html}{\out{<div class="r6-fields">}}
 \describe{
 \item{\code{data}}{The training data that was used during training for the model. This should
-be a data frame matching the data frame the model was given for training.}
+be a data frame matching the data frame the model was given for training, which
+includes the label or outcome.}
 
 \item{\code{model}}{The object corresponding to the trained model that we want to make a
 Predictor object for. If this model doesn't have a generic predict method,

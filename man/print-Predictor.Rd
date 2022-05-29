@@ -13,5 +13,5 @@
 \item{...}{Additional arguments passed to the plotting function.}
 }
 \description{
-Prints the given Predictor object.
+Prints the task of an instance of the Predictor class.
 }

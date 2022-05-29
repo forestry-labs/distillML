@@ -16,7 +16,8 @@
 #' other types of predictions (ex: predictions that spit out the factor) are not allowed.
 #'
 #' @field data The training data that was used during training for the model. This should
-#'        be a data frame matching the data frame the model was given for training.
+#'        be a data frame matching the data frame the model was given for training, which
+#'        includes the label or outcome.
 #' @field model The object corresponding to the trained model that we want to make a
 #'        Predictor object for. If this model doesn't have a generic predict method,
 #'        the user has to provide a custom predict function that accepts a data frame.
@@ -189,7 +190,7 @@ predict.Predictor = function(object,
 #' @name print-Predictor
 #' @rdname print-Predictor
 #' @title The Printing method for Predictor class
-#' @description Prints the given Predictor object.
+#' @description Prints the task of an instance of the Predictor class.
 #' @param x The Predictor object to print
 #' @param ... Additional arguments passed to the plotting function.
 #' @export

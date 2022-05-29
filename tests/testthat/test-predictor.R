@@ -63,7 +63,7 @@ test_that("Tests that the predictor wrapper is working", {
                          tolerance = 1e-4),
                TRUE)
 
-  context("try giving the forest a custom prediction function")
+  context("Try giving the forest a custom prediction function")
   # Now try giving the forest a custom prediction function
   forest_predictor_debiased <- Predictor$new(model = forest,
                                              data=train_reg,
@@ -77,7 +77,7 @@ test_that("Tests that the predictor wrapper is working", {
   expect_equal(length(wrapped_preds[,1]), length(standard_preds))
 
 
-  context("try a non forestry model")
+  context("Try a non forestry model")
   mod2 <- lm(Sepal.Length ~., data = iris[,-5])
 
   linear_predictor <- Predictor$new(model = mod2,
@@ -91,7 +91,22 @@ test_that("Tests that the predictor wrapper is working", {
   expect_equal(all.equal(preds_wrapped[,1],
                          unname(preds_std)), TRUE)
 
+  context("Try a classification model")
+  mod <- suppressWarnings(glm(Species ~ ., data=iris, family = "binomial"))
 
+  preds <- predict(mod, iris, type = "response")
+
+
+  predictor <- Predictor$new(model = mod,
+                             data = iris,
+                             y = "Species",
+                             task = "classification",
+                             type = "response")
+
+  expect_equal(all.equal(predict(predictor, iris)[,1],
+              unname(predict(mod, iris, type = "response")),
+              tolerance = 1e-4),
+              TRUE)
 
   rm(list=ls())
 })

@@ -17,21 +17,21 @@ local_effect(
 }
 \description{
 Parameters:
-    @param variable_name - The variable we want perturb to calculate the local effect
+    param variable_name - The variable we want perturb to calculate the local effect
 }
 \details{
-@param lower_limit - The lower limit of the variable we want to use
+param lower_limit - The lower limit of the variable we want to use
 
-    @param upper_limit - The upper limit of the variable we want to use
+    param upper_limit - The upper limit of the variable we want to use
 
-    @param set_value - The value we want to perturb the variable around
+    param set_value - The value we want to perturb the variable around
 
-    @param window_size - An optional parameter for the size of the window around
+    param window_size - An optional parameter for the size of the window around
                   the variable that we perturb and predict at
 
-    @param training_data - The training data we use to make predictions
+    param training_data - The training data we use to make predictions
 
-    @param predict_function - The prediction function we use to make predictions for the model
+    param predict_function - The prediction function we use to make predictions for the model
 
 Return:
     A single value that is the mean local effect of the peturbation on the
