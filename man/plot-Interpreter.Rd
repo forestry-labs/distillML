@@ -23,10 +23,12 @@
 
 \item{features}{1-D features that we want to produce plots for.}
 
-\item{features.2d}{2-D features that we want to produce plots for arguments}
+\item{features.2d}{2-D features that we want to produce plots for arguments. If
+the 'method' parameter is set to "ale", this argument should not
+be used.}
 
 \item{clusters}{A number of clusters to cluster the ICE predictions with.
-if this is not NULL, one must use the method "ice" or "pdp+ice"}
+if this is not NULL, one must use the method "ice"}
 
 \item{clusterType}{An indicator specifying what method to use for the clustering.
 The possible options are "preds", and "gradient". If "preds" is used, the clusters

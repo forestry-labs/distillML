@@ -28,28 +28,30 @@
 #'        match column names from the `data` parameter of the Predictor object.
 #' @field features An optional list of single features that we want to create PDP functions for.
 #' @field features.2d A two column data frame that contains pairs of names that we
-#'        want to create 2D pdp functions for. All entries in the data frame must
+#'        want to create 2D PDP functions for. All entries in the data frame must
 #'        match column names from the `data` parameter of the Predictor object.
 #' @field data.points A vector of indices of data points in the training
-#'        data frame to be used as the observations for creating the PDP/ALE functions.
+#'        data frame to be used as the observations for creating the PDP/ICE/ALE plots.
 #'        When the training data is large, it can greatly reduce the required computation
 #'        to pass only a downsampled subset of the training data to the pdp
 #'        function construction. Alternatively, if one is only interested understanding
 #'        the model predictions for a specific subgroup, the indices of the observations
 #'        in the given subgroup can be passed here.
-#' @field pdp.1d A List of functions giving single feature interpretations of the model.
-#' @field pdp.2d A List of functions giving two-feature interpretations of the model
+#' @field pdp.1d A List of functions giving single feature PDP interpretations of the model.
+#' @field pdp.2d A List of functions giving two-feature PDP interpretations of the model
 #' @field feat.class A vector that contains the class for each feature (categorical or continuous)
-#'        ("pdp"). This can either be set to "pdp" or "ale".
-#' @field center.at The value(s) to center the feature plots at. A list of length
-#'        equal to the length of the features.
+#' @field center.at The value(s) to center the feature plots at. A list of equal length
+#'        to the length of the features.
 #' @field grid.points A list of vectors containing the grid points to use for
-#'                    the predictions.
-#' @field grid.size The number of grid points to plot for a continuous feature
-#' @field saved A list that caches the previous calculations for the 1-d ICE plots,
-#'              1-d PDP plots, 2-d PDP plots, and grid points for building the distillery model.
+#'                    the predictions for PDP and ICE plots. For ALE plots, we
+#'                    use quantile-based methods that depend on the distribution of
+#'                    the training data.
+#' @field grid.size The number of grid points to plot for a continuous feature. This
+#'                  parameter sets the number of grid points for PDP, ICE, and ALE plots.
+#' @field saved A list that caches the previous calculations for the 1-D ICE plots,
+#'              1-D PDP plots, 2-D PDP plots, and grid points for building the distillery model.
 #'              This saves the uncentered calculations.
-#' @field ale.grid A list that caches the saved predictions for the ALE method
+#' @field ale.grid A list that caches the saved predictions for the ALE plots
 #' @examples
 #' library(Distillery)
 #' library(Rforestry)
@@ -102,9 +104,8 @@ Interpreter <- R6::R6Class(
     #'                training data set.
     #' @param data.points The indices of the data points used for the PDP/ALE. This
     #'                    overwrites the "samples" parameter above.
-    #'               ("pdp"). This can either be set to "pdp" or "ale".
-    #' @param grid.size The number of grid points to create for the pdp
-    #'                  functions / plots for each feature.
+    #' @param grid.size The number of grid points used to create for the PDP, ICE, and ALE
+    #'                  plots for each feature.
     #'
     #' @return An `Interpreter` object.
     #' @note

@@ -2,7 +2,7 @@
 % Please edit documentation in R/plotter.R
 \name{predict_ALE}
 \alias{predict_ALE}
-\title{Constructs the ALE curve for the given interpreter object}
+\title{Prediction function for the ALE plots}
 \usage{
 predict_ALE(x, feature, training_data, save = T)
 }
@@ -19,5 +19,5 @@ predict_ALE(x, feature, training_data, save = T)
 A tibble that contains the ALE predictions for the given values
 }
 \description{
-Constructs the ALE curve for the given interpreter object
+Prediction function for the ALE plots
 }

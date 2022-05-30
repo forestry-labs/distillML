@@ -2,7 +2,7 @@
 % Please edit documentation in R/plotter.R
 \name{set.grid.points}
 \alias{set.grid.points}
-\title{Sets grid points used for plotting}
+\title{Sets grid points used for plotting PDP and ICE plots}
 \usage{
 set.grid.points(object, feature, values)
 }
@@ -22,7 +22,9 @@ Method for setting grid points for a specific feature plot
 \note{
 Because the grid points determine what calculations are performed for the
 PDP/ICE functions, changing the grid points will remove any of the previously
-calculated values in the 'Interpreter' object. For any 1-d ICE
+calculated values in the 'Interpreter' object. For any 1-D ICE
 or PDP plot, it will remove the previous calculations for the given feature. For any 2-D PDP
 calcuations, it will remove plots that include the given feature as any of its features.
+Note that these set grid points only apply to PDP and ICE plots, and ALE plots have their
+own grid points determined by the distribution of the training data.
 }

@@ -17,7 +17,7 @@ should be one of either "ICE", "PDP.1D", or "PDP.2D"}
 \item{feats.2d}{The 2-D features that we want to center.}
 }
 \value{
-A centered data frame/matrix of values for the plot
+A list of centered data frame/matrix of values for the plot
 }
 \description{
 Given the specified 'center.at' values of the Interpreter object, this
@@ -26,4 +26,10 @@ Given the specified 'center.at' values of the Interpreter object, this
 }
 \details{
 center.preds
+}
+\note{
+This function is mainly used to examine the exact values in the plot if the
+plot is centered. Note that this function should only be called after calling
+one of the various predict functions that matches the 'plot.type' parameter
+with 'save' equal to TRUE.
 }

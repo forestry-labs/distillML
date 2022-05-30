@@ -25,3 +25,9 @@ A list of data frames, one for each feature. In each data frame, the first
 \description{
 Gives predictions at each point on the grid.
 }
+\note{
+This method is meant to primarily be used to find the exact values for the ICE
+curves plotted. Note that after the PDP curve is plotted, the returned
+object of this function will be the saved predictions for plotting the curve, rather
+than a recalculation of the values.
+}

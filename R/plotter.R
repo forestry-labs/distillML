@@ -12,7 +12,7 @@
 
 
 #' @name set.center.at
-#' @title Sets a new center in the plots made by an Interpreter
+#' @title Sets a new center in the PDP and ICE plots made by an Interpreter
 #' @description Method for setting center value for a specific feature
 #' @param object The Interpreter class that we want to recenter the plots of.
 #' @param feature The name of the specific feature that we want to center the
@@ -55,7 +55,7 @@ set.center.at = function(object,
 
 # method for setting grid points for a specific feature
 #' @name set.grid.points
-#' @title Sets grid points used for plotting
+#' @title Sets grid points used for plotting PDP and ICE plots
 #' @description Method for setting grid points for a specific feature plot
 #' @param object The Interpreter class that we want to modify the grid points of.
 #' @param feature The feature we want to supply new grid points to.
@@ -66,9 +66,11 @@ set.center.at = function(object,
 #' @note
 #' Because the grid points determine what calculations are performed for the
 #' PDP/ICE functions, changing the grid points will remove any of the previously
-#' calculated values in the 'Interpreter' object. For any 1-d ICE
+#' calculated values in the 'Interpreter' object. For any 1-D ICE
 #' or PDP plot, it will remove the previous calculations for the given feature. For any 2-D PDP
 #' calcuations, it will remove plots that include the given feature as any of its features.
+#' Note that these set grid points only apply to PDP and ICE plots, and ALE plots have their
+#' own grid points determined by the distribution of the training data.
 #' @export
 set.grid.points = function(object,
                            feature,
@@ -132,6 +134,11 @@ set.grid.points = function(object,
 #'         column contains the grid values for the feature, and each subsequent
 #'         column has a single observation corresponding to the prediction of the model
 #'         when with the given feature set to that grid point value.
+#' @note
+#' This method is meant to primarily be used to find the exact values for the ICE
+#' curves plotted. Note that after the PDP curve is plotted, the returned
+#' object of this function will be the saved predictions for plotting the curve, rather
+#' than a recalculation of the values.
 #'
 #' @export
 predict_ICE.Plotter = function(object,
@@ -218,6 +225,11 @@ predict_ICE.Plotter = function(object,
 #'             additional memory to store the predictions.
 #' @return A list of data frames with the grid points and PDP prediction values
 #'         for each feature in object
+#' @note
+#' This method is meant to primarily be used to find the exact values for the 1-D PDP
+#' curves plotted. Note that after the PDP curve is plotted, the returned
+#' object of this function will be the saved predictions for plotting the curve, rather
+#' than a recalculation of the values.
 #' @export
 predict_PDP.1D.Plotter = function(object,
                                   features = NULL,
@@ -285,6 +297,11 @@ predict_PDP.1D.Plotter = function(object,
 #'         contains columns corresponding to the grid points for the two selected
 #'         features and a column corresponding to the predictions of the model
 #'         at the given combination of grid points.
+#' @note
+#' This method is meant to primarily be used to find the exact values for the 2-D PDP
+#' curves or heatmap plotted. Note that after the PDP curve is plotted, the returned
+#' object of this function will be the saved predictions for plotting the curve, rather
+#' than a recalculation of the values.
 #' @export
 predict_PDP.2D.Plotter = function(object,
                                   feat.2d,
@@ -346,7 +363,12 @@ predict_PDP.2D.Plotter = function(object,
 #' @param plot.type The type of plot that the user wants to center the predictions of.
 #'        should be one of either "ICE", "PDP.1D", or "PDP.2D"
 #' @param feats.2d The 2-D features that we want to center.
-#' @return A centered data frame/matrix of values for the plot
+#' @return A list of centered data frame/matrix of values for the plot
+#' @note
+#' This function is mainly used to examine the exact values in the plot if the
+#' plot is centered. Note that this function should only be called after calling
+#' one of the various predict functions that matches the 'plot.type' parameter
+#' with 'save' equal to TRUE.
 #' @export
 center.preds = function(object, features = NULL, plot.type, feats.2d = NULL){
 
@@ -562,7 +584,7 @@ ale <- function(predict_function,
 }
 
 
-#' Constructs the ALE curve for the given interpreter object
+#' Prediction function for the ALE plots
 #' @param x An interpreter object
 #' @param feature The feature to build the ALE for (must be continuous)
 #' @param training_data The training data to use in order to build the ALE
@@ -570,7 +592,7 @@ ale <- function(predict_function,
 #' @return A tibble that contains the ALE predictions for the given values
 #' @export
 predict_ALE <- function(x, feature, training_data, save = T){
-  if (is.na(x$ale.grid[[feature]])){
+  if (any(is.na(x$ale.grid[[feature]]))){
     # Create prediction function
     predict_function <- function(newdata) {
       x$predictor$prediction.function(x$predictor$model, newdata = newdata)
@@ -597,9 +619,11 @@ predict_ALE <- function(x, feature, training_data, save = T){
 #' @param method The type of plot that we want to generate. Must be one of "ice",
 #' "pdp+ice", "pdp", or "ale"
 #' @param features 1-D features that we want to produce plots for.
-#' @param features.2d 2-D features that we want to produce plots for arguments
+#' @param features.2d 2-D features that we want to produce plots for arguments. If
+#'                    the 'method' parameter is set to "ale", this argument should not
+#'                    be used.
 #' @param clusters A number of clusters to cluster the ICE predictions with.
-#'    if this is not NULL, one must use the method "ice" or "pdp+ice"
+#'    if this is not NULL, one must use the method "ice"
 #' @param clusterType An indicator specifying what method to use for the clustering.
 #'    The possible options are "preds", and "gradient". If "preds" is used, the clusters
 #'    will be determined by running K means on the predictions of the ICE functions.
@@ -850,7 +874,7 @@ plot.Interpreter = function(x,
         names.2d <- c(names.2d, paste(features.2d[i,1], features.2d[i,2], sep = "."))
       }
       #print(names.2d)
-      names(plots) <- c(names.2d)
+      names(plots) <- c(features, names.2d)
     }
     return(plots)
 
@@ -1000,7 +1024,7 @@ localSurrogate = function(object,
       values <- data.frame(values)
       names(values) <- c("Cont", "Cat", "Val")
       plot.obj <- ggplot(values, aes(x=Cont, y=Val, group=Cat, color=Cat)) +
-        geom_line() + xlab(continuous) + ylab(object$predictor$y)
+        geom_line() + xlab(continuous) + ylab(object$predictor$y) + theme_bw
       plot.obj <- plot.obj +  guides(color=guide_legend(title = categorical))
 
       # When doing categorical + continuous interactions need to think

@@ -27,3 +27,9 @@ Gives prediction curve for all specified features in the
 \details{
 predict_PDP.1D.Plotter
 }
+\note{
+This method is meant to primarily be used to find the exact values for the 1-D PDP
+curves plotted. Note that after the PDP curve is plotted, the returned
+object of this function will be the saved predictions for plotting the curve, rather
+than a recalculation of the values.
+}

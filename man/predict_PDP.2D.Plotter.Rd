@@ -31,3 +31,9 @@ Gives prediction surface for all specified feature pairs in the
 \details{
 predict_PDP.2D.Plotter
 }
+\note{
+This method is meant to primarily be used to find the exact values for the 2-D PDP
+curves or heatmap plotted. Note that after the PDP curve is plotted, the returned
+object of this function will be the saved predictions for plotting the curve, rather
+than a recalculation of the values.
+}

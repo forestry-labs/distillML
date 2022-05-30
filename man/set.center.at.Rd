@@ -2,7 +2,7 @@
 % Please edit documentation in R/plotter.R
 \name{set.center.at}
 \alias{set.center.at}
-\title{Sets a new center in the plots made by an Interpreter}
+\title{Sets a new center in the PDP and ICE plots made by an Interpreter}
 \usage{
 set.center.at(object, feature, value)
 }
