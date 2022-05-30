@@ -6,10 +6,19 @@
   create a small surrogate model for the two features using the PDP function
   as the output and the two features as the independent variables.}
 \usage{
-localSurrogate(object, interact = FALSE, params.forestry = list())
+localSurrogate(
+  object,
+  features.2d = NULL,
+  interact = FALSE,
+  params.forestry = list()
+)
 }
 \arguments{
 \item{object}{Interpreter object to make plots + surrogate for.}
+
+\item{features.2d}{A two-column dataframe of pairs of features to make local surrogates for.
+Each row represents a pair of features, with the names of features as the
+entries.}
 
 \item{interact}{An indicator specifying if the surrogate model should also be
 given the interaction terms to create the surrogate models with.
@@ -18,6 +27,10 @@ Default is FALSE.}
 \item{params.forestry}{Optional list of parameters to pass to the surrogate
 model. Defaults to the standard Rforestry parameters with ntree = 1
 and maxDepth = 2.}
+}
+\value{
+A list of two distinct lists: one list contains the local surrogate models,
+        and the other containing the 2-D PDP plots for the specified features.
 }
 \description{
 Plots and returns a Rforestry object with a single tree explaining

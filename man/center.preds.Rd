@@ -9,12 +9,15 @@ center.preds(object, features = NULL, plot.type, feats.2d = NULL)
 \arguments{
 \item{object}{The Interpreter object to use}
 
-\item{features}{The 1-D features we want to center}
+\item{features}{A vector of names for the 1-D features we want to center}
 
 \item{plot.type}{The type of plot that the user wants to center the predictions of.
 should be one of either "ICE", "PDP.1D", or "PDP.2D"}
 
-\item{feats.2d}{The 2-D features that we want to center.}
+\item{feats.2d}{A 2-column dataframe or matrix that gives the first variable in
+in the first column, and the second variable in the next. The
+number of rows is equal to the number of 2-D PDPs one would like
+to center.}
 }
 \value{
 A list of centered data frame/matrix of values for the plot

@@ -22,7 +22,7 @@ predictions corresponding to that tibble.}
 
 \item{training_data}{the training data used to fit the model}
 
-\item{variable_names}{a character vector of column names in training_data for which an ALE is required.}
+\item{variable_names}{a vector of feature names in training data for which an ALE is required.}
 
 \item{center}{one of "uncentered" meaning the plots are not centered, "mean"
 meaning the plots are centered at their mean and "zero" meaning the ALE

@@ -104,7 +104,8 @@ Predictor object for. If this model doesn't have a generic predict method,
 the user has to provide a custom predict function that accepts a data frame.}
 
 \item{\code{data}}{The training data that was used during training for the model. This should
-be a data frame matching the data frame the model was given for training.}
+be a data frame matching the data frame the model was given for training, including
+the label or outcome.}
 
 \item{\code{predict.func}}{An optional parameter if the model doesn't have a
 generic prediction function. This should take a data frame and return a

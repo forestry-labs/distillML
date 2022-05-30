@@ -30,18 +30,20 @@ with a regularizer. This should only be done when regularizing coefficients.}
 
 \item{snap.grid}{Boolean function that determines whether the model recalculates
 each value predicted or uses an approximation from previous
-calculations. Default is TRUE.}
+calculations. When this parameter is set to TRUE, we approximate
+the predicted values with prevoius calculations. Default is TRUE.}
 
 \item{snap.train}{Boolean that determines whether we use the training data or the
-equally spaced grid points. By default, this is true, which means we snap to grid points
-as determined by the training data's marginal distribution.}
+equally spaced grid points. By default, this is true, which means
+we snap to grid points as determined by the training data's marginal
+distribution.}
 
 \item{params.glmnet}{Optional list of parameters to pass to glmnet while fitting
 PDP curves to resemble the original predictions. By specifying
 parameters, one can do lasso or ridge regression.}
 
 \item{params.cv.glmnet}{Optional list of parameters to pass to cv.glmnet while fitting
-   PDP curves to resemble the original predictions. By specifying
+PDP curves to resemble the original predictions. By specifying
 parameters, one can do lasso or ridge regression.}
 }
 \value{
@@ -49,4 +51,8 @@ A surrogate class object that can be used for predictions
 }
 \description{
 Builds a surrogate model from the PDP functions
+}
+\note{
+For further details, please refer to the vignette for this method, which includes
+usage examples.
 }

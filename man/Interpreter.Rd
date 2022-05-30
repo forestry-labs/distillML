@@ -5,7 +5,7 @@
 \title{Interpreter class description}
 \description{
 A wrapper class based on a predictor object for examining the
-predictions of the model. Its predictions with respect to one or two features.
+predictions of the model with respect to one or two features.
 The two methods for interpreting a model based on one or two features are partial
 dependence plots (PDP), which averages over the marginal distribution
 of the predictions of the model, and accumulated local effects (ALE) functions
@@ -26,7 +26,8 @@ values (or number of rows) input into the function.
 }
 \note{
 The class that wraps a Predictor object for application of different
-interpretability methods.
+interpretability methods. For detailed examples of usage, please refer
+to the vignette.
 }
 \examples{
 library(Distillery)

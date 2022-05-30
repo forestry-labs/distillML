@@ -46,9 +46,19 @@ Given an `Interpreter` object, we can create ALE plots using the `plot()` method
 and setting `method="ale"`.
 
 ```{r, echo=TRUE}
-ale_plots <-  plot(forest_interpret, method = "ale", features = "Sepal.Width")
+ale_plots <-  plot(forest_interpret, method = "ale", features = c("Sepal.Width", 
+                                                                  "Petal.Length"))
 plot(ale_plots$Sepal.Width)
+plot(ale_plots$Petal.Length)
 ```
 
-The X axis of the plot displays a histogram of the training data so the user can see where the PDP
-is in the support of the training data.
+The X axis of the plot displays a histogram of the training data so the user 
+can see where the ALE is in the support of the training data. In contrast to 
+the fixed grid points for PDP and ICE methods, the ALE method sets its grid points 
+based on quantiles of the marginal distribution. By doing so, it avoids sparsity 
+within any one neighborhood. As a result, methods such as $\texttt{set.grid.points}$ 
+and $\texttt{set.center.at}$ do not affect the ALE plots. The key parameter for this 
+method is $\texttt{grid.size}$ when initializing the $\texttt{Interpreter}$ object, 
+which determines the number of points calculated by the ALE. 
+
+

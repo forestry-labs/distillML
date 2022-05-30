@@ -9,12 +9,13 @@ set.grid.points(object, feature, values)
 \arguments{
 \item{object}{The Interpreter class that we want to modify the grid points of.}
 
-\item{feature}{The feature we want to supply new grid points to.}
+\item{feature}{The name of the feature to set grid points for.}
 
 \item{values}{The set of new values to be used as the grid points for the selected feature.
 Must be a vector with entries in the range of the feature values in the training set
 and must match the type of the given feature (either a vector of factor levels
-or a vector of continuous feature values).}
+or a vector of continuous feature values). Note that the center must be within
+the range of new grid points for continuous features.}
 }
 \description{
 Method for setting grid points for a specific feature plot

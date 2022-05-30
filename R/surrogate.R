@@ -18,6 +18,39 @@
 #'                    data for our predictions
 #' @field grid A list of PDPS that determine our prediction.
 #' @field snap.grid Boolean that determines whether we use grid.points
+#' @examples
+#' library(Distillery)
+#' library(Rforestry)
+#' set.seed(491)
+#' data <- MASS::crabs
+#'
+#' levels(data$sex) <- list(Male = "M", Female = "F")
+#' levels(data$sp) <- list(Orange = "O", Blue = "B")
+#' colnames(data) <- c("Species","Sex","Index","Frontal Lobe",
+#' "Rear Width", "Carapace Length","Carapace Width","Body Depth")
+#'
+#' test_ind <- sample(1:nrow(data), nrow(data)%/%5)
+#' train_reg <- data[-test_ind,]
+#' test_reg <- data[test_ind,]
+#'
+#'
+#' forest <- forestry(x=train_reg[,-which(names(train_reg)=="Carapace Width")],
+#' y=train_reg[,which(names(train_reg)=="Carapace Width")])
+#'
+#' forest_predictor <- Predictor$new(model = forest, data=train_reg,
+#' y="Carapace Width", task = "regression")
+#'
+#' forest_interpret <- Interpreter$new(predictor = forest_predictor)
+#'
+#' # Both initializations of a surrogate class result in the same surrogate model
+#' surrogate.model <- distill(forest_interpret)
+#' surrogate.model <- distill(forest_interpret,
+#'                            center.mean = TRUE,
+#'                            features = 1:length(forest_interpret$features),
+#'                            cv = FALSE,
+#'                            snap.grid = TRUE,
+#'                            snap.train = TRUE)
+#'
 #'
 #' @export
 
@@ -37,14 +70,18 @@ Surrogate <- R6::R6Class(
    #' @param interpreter The interpreter object we want to build a surrogate model for.
    #' @param features The indices of features in the training data used for the surrogate model
    #' @param weights The weights for each given feature after the surrogate model is fit.
-   #' @param intercept The baseline value. If uncentered, this is 0, and if centered, this will be the mean of the predictions
-   #'                  of the original model based on the grid points set.
+   #' @param intercept The baseline value. If uncentered, this is 0, and if centered,
+   #'                  this will be the mean of the predictions of the original model
+   #'                  on the training data.
    #' @param feature.centers The baseline value for the effect of each feature. If uncentered, this is 0.
    #' @param center.mean A boolean value that shows whether this model is a centered or uncentered model
-   #' @param grid The values that we snap to if have snap.grid turned on
-   #' @param snap.grid Boolean that determines if we use previously calculated values or re-predict using the functions.
+   #' @param grid A list of dataframes containing the pre-calculated values used to generate predictions
+   #'             if snap.grid is TRUE
+   #' @param snap.grid Boolean that determines if we use previously calculated values
+   #'                  or re-predict using the functions.
    #' @return A surrogate model object that we can use for predictions
-   #' @note Do not initalize this class on its own. It is automatically created by the distill function for the interpreter class.
+   #' @note Do not initalize this class on its own. It is automatically created
+   #'       by the distill function for the interpreter class.
    initialize = function(interpreter,
                          features,
                          weights,
@@ -92,6 +129,7 @@ Surrogate <- R6::R6Class(
 #' @param object A surrogate object distilled from the interpreter
 #' @param newdata The dataframe to use for the predictions
 #' @param ... Additional parameters to pass to predict
+#' @return A one-column dataframe of the surrogate model's predictions
 #' @export
 #'
 predict.Surrogate = function(object,

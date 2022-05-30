@@ -19,3 +19,8 @@ A dataframe used to find weights in regression (one-hot encoding for
 \description{
 A dataframe storing the true predictions and the PDP predictions
 }
+\note{
+This function is mainly used as a subroutine for the distill function. We include this
+as a public function to allow users to create their own weights and surrogate functions
+outside of our implemented method.
+}

@@ -9,7 +9,6 @@ test_that("Tests that distillation with selected features is working", {
   levels(data$sp) <- list(Orange = "O", Blue = "B")
   colnames(data) <- c("Species","Sex","Index","FrontalLobe",
                       "RearWidth", "CarapaceLength","CarapaceWidth","BodyDepth")
-  data <- data[, c(-1,-2,-3)]
 
   test_ind <- sample(1:nrow(data), nrow(data)%/%5)
   train_reg <- data[-test_ind,]
@@ -29,22 +28,89 @@ test_that("Tests that distillation with selected features is working", {
   forest_interpret <- Interpreter$new(predictor = forest_predictor)
 
   # Standard distillation
+  context("Default distillation function")
   surrogate.model <- distill(forest_interpret)
   surrogate.model$weights
-  expect_equal(all.equal(names(surrogate.model$weights), c("FrontalLobe","RearWidth",
-                                                           "CarapaceLength","CarapaceWidth")),TRUE)
+  expect_equal(all.equal(names(surrogate.model$weights),
+                         c("Species_Blue", "Species_Orange", "Sex_Male", "Sex_Female", "Index",
+                           "FrontalLobe","RearWidth","CarapaceLength","CarapaceWidth")),
+               TRUE)
+  expect_equal(sum(surrogate.model$weights < 0), 0)
 
-  # Try passing some feature indices to the model to select specific features
-  surrogate.model <- distill(forest_interpret,
-                             features = c(1,2,3))
-  surrogate.model$weights
+  expect_equal(surrogate.model$grid$FrontalLobe[,1],
+               forest_interpret$predictor$data[forest_interpret$data.points, "FrontalLobe"])
 
-  expect_equal(all.equal(names(surrogate.model$weights), c("FrontalLobe","RearWidth", "CarapaceLength")),TRUE)
+  expect_equal(surrogate.model$grid$FrontalLobe[,2],
+               forest_interpret$pdp.1d$FrontalLobe(forest_interpret$predictor$data[forest_interpret$data.points, "FrontalLobe"]),
+               tolerance = 1e4)
 
-  surrogate.model <- distill(forest_interpret,
-                             features = c(2,3))
-  surrogate.model$weights
-  expect_equal(all.equal(names(surrogate.model$weights), c("RearWidth", "CarapaceLength")),TRUE)
+  # Equal Grid Spacing
+  context("Snap.train F for distill")
+  surrogate.model <- distill(forest_interpret, snap.train = F)
+  expect_equal(all.equal(names(surrogate.model$weights),
+                         c("Species_Blue", "Species_Orange", "Sex_Male", "Sex_Female", "Index",
+                           "FrontalLobe","RearWidth","CarapaceLength","CarapaceWidth")),
+               TRUE)
+  expect_equal(sum(surrogate.model$weights < 0), 0)
+  expect_equal(surrogate.model$grid$FrontalLobe[,1],
+               forest_interpret$grid.points$FrontalLobe)
+
+  expect_equal(surrogate.model$grid$FrontalLobe[,2],
+               forest_interpret$pdp.1d$FrontalLobe(forest_interpret$grid.points$FrontalLobe),
+               tolerance = 1e4)
+
+  # No snapping to grid
+  context("Snap.grid F for distill")
+  surrogate.model <- distill(forest_interpret, snap.grid = F)
+  expect_equal(all.equal(names(surrogate.model$weights),
+                         c("Species_Blue", "Species_Orange", "Sex_Male", "Sex_Female", "Index",
+                           "FrontalLobe","RearWidth","CarapaceLength","CarapaceWidth")),
+               TRUE)
+  expect_equal(sum(surrogate.model$weights < 0), 0)
+  expect_equal(surrogate.model$grid, NA)
+
+  # Specific feature test
+  context("distill with specified features")
+  feat.index <- which(forest_interpret$features %in% c("Sex", "FrontalLobe", "RearWidth"))
+  surrogate.model <- distill(forest_interpret, features = feat.index)
+  expect_equal(all.equal(names(surrogate.model$weights),
+                         c("Sex_Male", "Sex_Female", "FrontalLobe", "RearWidth")),
+               TRUE)
+  expect_equal(sum(surrogate.model$weights < 0), 0)
+  expect_equal(length(surrogate.model$grid), 3)
+
+  # Check that we can pass parameters to glmnet
+  context("distill with user-specified parameters for fitting")
+  surrogate.model <- distill(forest_interpret, params.glmnet = list(family = "gaussian",
+                                                                    alpha = 1,
+                                                                    lambda = 0,
+                                                                    intercept = F,
+                                                                    upper.limits = 0))
+  expect_equal(all.equal(names(surrogate.model$weights),
+                         c("Species_Blue", "Species_Orange", "Sex_Male", "Sex_Female", "Index",
+                           "FrontalLobe","RearWidth","CarapaceLength","CarapaceWidth")),
+               TRUE)
+  expect_equal(sum(surrogate.model$weights >0), 0)
+
+
+  # Check that we can do cross validation with cv.glmnet
+  context("distill with cross validation")
+  surrogate.model <- distill(forest_interpret, cv = TRUE)
+  expect_equal(all.equal(names(surrogate.model$weights),
+                         c("Species_Blue", "Species_Orange", "Sex_Male", "Sex_Female", "Index",
+                           "FrontalLobe","RearWidth","CarapaceLength","CarapaceWidth")),
+               TRUE)
+  expect_equal(sum(surrogate.model$weights < 0), 0)
+
+  surrogate.model <- distill(forest_interpret, cv = TRUE,
+                             params.cv.glmnet = list(upper.limits = 0,
+                                                     intercept = F,
+                                                     alpha = 1))
+  expect_equal(all.equal(names(surrogate.model$weights),
+                         c("Species_Blue", "Species_Orange", "Sex_Male", "Sex_Female", "Index",
+                           "FrontalLobe","RearWidth","CarapaceLength","CarapaceWidth")),
+               TRUE)
+  expect_equal(sum(surrogate.model$weights > 0), 0)
 
   rm(list=ls())
 })

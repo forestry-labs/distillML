@@ -9,12 +9,12 @@ predict_ICE.Plotter(object, features = NULL, save = TRUE)
 \arguments{
 \item{object}{The Interpeter object to use.}
 
-\item{features}{Features to predict ICE plots for}
+\item{features}{A vector with the names of the features to predict ICE plots for}
 
 \item{save}{A boolean indicator to indicate whether the calculations should be
 saved in the interpreter object or not. This can help reduce
 computation if the ICE functions are used many times, but requires
-additional memory to store the predictions.}
+additional memory to store the predictions. By default, this is TRUE.}
 }
 \value{
 A list of data frames, one for each feature. In each data frame, the first

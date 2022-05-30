@@ -15,7 +15,7 @@
 #' @title Sets a new center in the PDP and ICE plots made by an Interpreter
 #' @description Method for setting center value for a specific feature
 #' @param object The Interpreter class that we want to recenter the plots of.
-#' @param feature The name of the specific feature that we want to center the
+#' @param feature A vector with the names of the features that we want to center the
 #'   plots of. Can be either a continuous feature or a cetagorical feature. Must match
 #'   the name of one of the features in the Interpreter model's training data set.
 #' @param value The new value to use for the plots of the specified feature to be centered at.
@@ -58,11 +58,12 @@ set.center.at = function(object,
 #' @title Sets grid points used for plotting PDP and ICE plots
 #' @description Method for setting grid points for a specific feature plot
 #' @param object The Interpreter class that we want to modify the grid points of.
-#' @param feature The feature we want to supply new grid points to.
+#' @param feature The name of the feature to set grid points for.
 #' @param values The set of new values to be used as the grid points for the selected feature.
 #'   Must be a vector with entries in the range of the feature values in the training set
 #'   and must match the type of the given feature (either a vector of factor levels
-#'   or a vector of continuous feature values).
+#'   or a vector of continuous feature values). Note that the center must be within
+#'   the range of new grid points for continuous features.
 #' @note
 #' Because the grid points determine what calculations are performed for the
 #' PDP/ICE functions, changing the grid points will remove any of the previously
@@ -125,11 +126,11 @@ set.grid.points = function(object,
 #' @title Prediction Function for ICE Plots
 #' @description Gives predictions at each point on the grid.
 #' @param object The Interpeter object to use.
-#' @param features Features to predict ICE plots for
+#' @param features A vector with the names of the features to predict ICE plots for
 #' @param save A boolean indicator to indicate whether the calculations should be
 #'             saved in the interpreter object or not. This can help reduce
 #'             computation if the ICE functions are used many times, but requires
-#'             additional memory to store the predictions.
+#'             additional memory to store the predictions. By default, this is TRUE.
 #' @return A list of data frames, one for each feature. In each data frame, the first
 #'         column contains the grid values for the feature, and each subsequent
 #'         column has a single observation corresponding to the prediction of the model
@@ -218,11 +219,12 @@ predict_ICE.Plotter = function(object,
 #' @description Gives prediction curve for all specified features in the
 #'              plotter object
 #' @param object The Interpreter object to plot PDP curves for.
-#' @param features The features to predict PDP functions foor
+#' @param features A vector with the names of the features to predict ICE plots for
 #' @param save A boolean indicator to indicate whether the calculations should be
 #'             saved in the interpreter object or not. This can help reduce
 #'             computation if the PDP functions are used many times, but requires
-#'             additional memory to store the predictions.
+#'             additional memory to store the predictions. By default, this is set
+#'             to TRUE.
 #' @return A list of data frames with the grid points and PDP prediction values
 #'         for each feature in object
 #' @note
@@ -287,12 +289,13 @@ predict_PDP.1D.Plotter = function(object,
 #'              interpreter object (features.2d)
 #' @param object The Interpreter object to use.
 #' @param feat.2d A 2-column dataframe or matrix that gives the first variable in
-#'                in the first column, and the second variable in the next. This should
-#'                the number of rows as the number of 2-D PDPs one would like
+#'                in the first column, and the second variable in the next. The
+#'                number of rows is equal to the number of 2-D PDPs one would like.
 #' @param save A boolean indicator to indicate whether the calculations should be
 #'             saved in the interpreter object or not. This can help reduce
 #'             computation if the PDP functions are used many times, but requires
-#'             additional memory to store the predictions.
+#'             additional memory to store the predictions. By default, this is set
+#'             to TRUE.
 #' @return A list of data frames for each pair of features.2d. Each data frame
 #'         contains columns corresponding to the grid points for the two selected
 #'         features and a column corresponding to the predictions of the model
@@ -359,10 +362,13 @@ predict_PDP.2D.Plotter = function(object,
 #'              function centers all of the plots in the Interpreter object
 #'              of the specified type of plot.
 #' @param object The Interpreter object to use
-#' @param features The 1-D features we want to center
+#' @param features A vector of names for the 1-D features we want to center
 #' @param plot.type The type of plot that the user wants to center the predictions of.
 #'        should be one of either "ICE", "PDP.1D", or "PDP.2D"
-#' @param feats.2d The 2-D features that we want to center.
+#' @param feats.2d  A 2-column dataframe or matrix that gives the first variable in
+#'                in the first column, and the second variable in the next. The
+#'                number of rows is equal to the number of 2-D PDPs one would like
+#'                to center.
 #' @return A list of centered data frame/matrix of values for the plot
 #' @note
 #' This function is mainly used to examine the exact values in the plot if the
@@ -550,7 +556,7 @@ accumulated_local_effects <- function(predict_function,
 #' predictions corresponding to that tibble.
 #' @param num_grid_points the number of grid_points at which to construct the ALE
 #' @param training_data the training data used to fit the model
-#' @param variable_names a character vector of column names in training_data for which an ALE is required.
+#' @param variable_names a vector of feature names in training data for which an ALE is required.
 #' @param center one of "uncentered" meaning the plots are not centered, "mean"
 #'   meaning the plots are centered at their mean and "zero" meaning the ALE
 #'   passes through the origin. When using center == "zero" we recommend setting
@@ -618,17 +624,21 @@ predict_ALE <- function(x, feature, training_data, save = T){
 #' @param x Interpreter object to generate plots from
 #' @param method The type of plot that we want to generate. Must be one of "ice",
 #' "pdp+ice", "pdp", or "ale"
-#' @param features 1-D features that we want to produce plots for.
-#' @param features.2d 2-D features that we want to produce plots for arguments. If
+#' @param features a vector of feature names that we want to produce 1-D plots for.
+#' @param features.2d 2-D features that we want to produce plots for arguments.
+#'                    A two-column dataframe of pairs of features to make local
+#'                    surrogates for. Each row represents a pair of features,
+#'                    with the names of features as the entries.If
 #'                    the 'method' parameter is set to "ale", this argument should not
 #'                    be used.
 #' @param clusters A number of clusters to cluster the ICE predictions with.
-#'    if this is not NULL, one must use the method "ice"
+#'                 If this is not NULL, one must use the method "ice".
 #' @param clusterType An indicator specifying what method to use for the clustering.
 #'    The possible options are "preds", and "gradient". If "preds" is used, the clusters
 #'    will be determined by running K means on the predictions of the ICE functions.
 #'    If the "gradient" option is used, the clusters will be determined by running K
-#'    means on the numerical gradient of the predictions of the ICE functions.
+#'    means on the numerical gradient of the predictions of the ICE functions. If
+#'    this is not NULL, one must use the method "ice".
 #' @param ... Additiional parameters to pass to the plot function
 #' @return A list of plots with 1-d features and 2-d features. For 2-d features with
 #'         one continuous and one categorical feature, the plot is a linear plot of the
@@ -925,14 +935,20 @@ plot.Interpreter = function(x,
 #' @description Plots and returns a Rforestry object with a single tree explaining
 #'   the PDP surface.
 #' @param object Interpreter object to make plots + surrogate for.
+#' @param features.2d A two-column dataframe of pairs of features to make local surrogates for.
+#'                    Each row represents a pair of features, with the names of features as the
+#'                    entries.
 #' @param interact An indicator specifying if the surrogate model should also be
 #'   given the interaction terms to create the surrogate models with.
 #'   Default is FALSE.
 #' @param params.forestry Optional list of parameters to pass to the surrogate
 #'   model. Defaults to the standard Rforestry parameters with ntree = 1
 #'   and maxDepth = 2.
+#' @return A list of two distinct lists: one list contains the local surrogate models,
+#'         and the other containing the 2-D PDP plots for the specified features.
 #' @export
 localSurrogate = function(object,
+                          features.2d = NULL,
                           interact = FALSE,
                           params.forestry = list())
 {
@@ -941,8 +957,8 @@ localSurrogate = function(object,
     stop("Object given is not of the interpreter class.")
   }
 
-  if ((is.null(object$features.2d))) {
-    stop("Interpreter object must have a set of 2d features to create a surrogate model")
+  if ((is.null(features.2d))) {
+    stop("The user must input a set of 2d features to create a surrogate model.")
   }
 
   # If no forestry params given, default to maxDepth = 2 and ntree = 1
@@ -957,9 +973,9 @@ localSurrogate = function(object,
   # list of plots to be filled
   plots <- list()
   surrogates <- list()
-
-  features.2d <- object$features.2d
   feature.classes <- object$feat.class
+
+
   # for the names in each function
   names.2d <- c()
   for (i in 1:nrow(features.2d)){
@@ -982,7 +998,8 @@ localSurrogate = function(object,
       # still need to relabel axis
       plot.obj <- ggplot(values, aes(x=Feat.1, y=Feat.2, fill = Val)) +
         geom_tile() + xlab(feature.1) + ylab(feature.2)
-      plot.obj <- plot.obj + guides(fill=guide_legend(title = object$predictor$y))
+      plot.obj <- plot.obj + guides(fill=guide_legend(title = object$predictor$y))+
+        theme_bw()
 
       # Include the interaction term as a feature for the explanatory tree
       if (interact) {
@@ -1015,16 +1032,11 @@ localSurrogate = function(object,
       # generate predictions for each level
       values <- expand.grid(vals.cont, vals.cat)
       predictions <- object$pdp.2d[[continuous]][[categorical]](values)
-      #predictions <- c()
-      #for (j in 1:nrow(values)){
-      #  prediction <- object$interpreter$pdp.2d[[continuous]][[categorical]](values[j,1], values[j,2])
-      #  predictions <- c(predictions, prediction)
-      #}
       values <- cbind(values, predictions)
       values <- data.frame(values)
       names(values) <- c("Cont", "Cat", "Val")
       plot.obj <- ggplot(values, aes(x=Cont, y=Val, group=Cat, color=Cat)) +
-        geom_line() + xlab(continuous) + ylab(object$predictor$y) + theme_bw
+        geom_line() + xlab(continuous) + ylab(object$predictor$y) + theme_bw()
       plot.obj <- plot.obj +  guides(color=guide_legend(title = categorical))
 
       # When doing categorical + continuous interactions need to think
@@ -1043,8 +1055,8 @@ localSurrogate = function(object,
     surrogates <- append(surrogates, surrogate_model)
 
   }
-  names(plots) <- c(object$features, names.2d)
-  names(surrogates) <- c(object$features, names.2d)
+  names(plots) <- c(names.2d)
+  names(surrogates) <- c(names.2d)
 
   return(list("plots" = plots, "models" = surrogates))
 }

@@ -7,7 +7,43 @@
 The class for distilled surrogate models.
 }
 \note{
-Do not initalize this class on its own. It is automatically created by the distill function for the interpreter class.
+Do not initalize this class on its own. It is automatically created
+      by the distill function for the interpreter class.
+}
+\examples{
+library(Distillery)
+library(Rforestry)
+set.seed(491)
+data <- MASS::crabs
+
+levels(data$sex) <- list(Male = "M", Female = "F")
+levels(data$sp) <- list(Orange = "O", Blue = "B")
+colnames(data) <- c("Species","Sex","Index","Frontal Lobe",
+"Rear Width", "Carapace Length","Carapace Width","Body Depth")
+
+test_ind <- sample(1:nrow(data), nrow(data)\%/\%5)
+train_reg <- data[-test_ind,]
+test_reg <- data[test_ind,]
+
+
+forest <- forestry(x=train_reg[,-which(names(train_reg)=="Carapace Width")],
+y=train_reg[,which(names(train_reg)=="Carapace Width")])
+
+forest_predictor <- Predictor$new(model = forest, data=train_reg,
+y="Carapace Width", task = "regression")
+
+forest_interpret <- Interpreter$new(predictor = forest_predictor)
+
+# Both initializations of a surrogate class result in the same surrogate model
+surrogate.model <- distill(forest_interpret)
+surrogate.model <- distill(forest_interpret,
+                           center.mean = TRUE,
+                           features = 1:length(forest_interpret$features),
+                           cv = FALSE,
+                           snap.grid = TRUE,
+                           snap.train = TRUE)
+
+
 }
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
@@ -64,16 +100,19 @@ data for our predictions}
 
 \item{\code{weights}}{The weights for each given feature after the surrogate model is fit.}
 
-\item{\code{intercept}}{The baseline value. If uncentered, this is 0, and if centered, this will be the mean of the predictions
-of the original model based on the grid points set.}
+\item{\code{intercept}}{The baseline value. If uncentered, this is 0, and if centered,
+this will be the mean of the predictions of the original model
+on the training data.}
 
 \item{\code{feature.centers}}{The baseline value for the effect of each feature. If uncentered, this is 0.}
 
 \item{\code{center.mean}}{A boolean value that shows whether this model is a centered or uncentered model}
 
-\item{\code{grid}}{The values that we snap to if have snap.grid turned on}
+\item{\code{grid}}{A list of dataframes containing the pre-calculated values used to generate predictions
+if snap.grid is TRUE}
 
-\item{\code{snap.grid}}{Boolean that determines if we use previously calculated values or re-predict using the functions.}
+\item{\code{snap.grid}}{Boolean that determines if we use previously calculated values
+or re-predict using the functions.}
 }
 \if{html}{\out{</div>}}
 }

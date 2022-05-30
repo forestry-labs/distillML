@@ -13,6 +13,10 @@
 #'                 to include as PDP functions in the distilled model.
 #' @return A dataframe used to find weights in regression (one-hot encoding for
 #'         categorical features)
+#' @note
+#' This function is mainly used as a subroutine for the distill function. We include this
+#' as a public function to allow users to create their own weights and surrogate functions
+#' outside of our implemented method.
 #' @export
 build.grid = function(object, feat.ind = 1:length(object$features)){
 
@@ -48,19 +52,24 @@ build.grid = function(object, feat.ind = 1:length(object$features)){
 #'                 to include as PDP functions in the distilled model.
 #' @param snap.grid Boolean function that determines whether the model recalculates
 #'                  each value predicted or uses an approximation from previous
-#'                  calculations. Default is TRUE.
+#'                  calculations. When this parameter is set to TRUE, we approximate
+#'                  the predicted values with prevoius calculations. Default is TRUE.
 #' @param cv Boolean that indicates whether we want to cross-validate our fitted coefficients
 #'           with a regularizer. This should only be done when regularizing coefficients.
 #' @param snap.train Boolean that determines whether we use the training data or the
-#'  equally spaced grid points. By default, this is true, which means we snap to grid points
-#'  as determined by the training data's marginal distribution.
+#'                   equally spaced grid points. By default, this is true, which means
+#'                   we snap to grid points as determined by the training data's marginal
+#'                   distribution.
 #' @param params.glmnet Optional list of parameters to pass to glmnet while fitting
 #'                      PDP curves to resemble the original predictions. By specifying
 #'                      parameters, one can do lasso or ridge regression.
 #' @param params.cv.glmnet Optional list of parameters to pass to cv.glmnet while fitting
 #'                         PDP curves to resemble the original predictions. By specifying
-#'                      parameters, one can do lasso or ridge regression.
+#'                         parameters, one can do lasso or ridge regression.
 #' @return A surrogate class object that can be used for predictions
+#' @note
+#' For further details, please refer to the vignette for this method, which includes
+#' usage examples.
 #' @export
 distill = function(object,
                    center.mean = T,

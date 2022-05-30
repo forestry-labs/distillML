@@ -14,6 +14,9 @@
 
 \item{...}{Additional parameters to pass to predict}
 }
+\value{
+A one-column dataframe of the surrogate model's predictions
+}
 \description{
 Predicts outputs given new data
 }

@@ -21,20 +21,24 @@
 \item{method}{The type of plot that we want to generate. Must be one of "ice",
 "pdp+ice", "pdp", or "ale"}
 
-\item{features}{1-D features that we want to produce plots for.}
+\item{features}{a vector of feature names that we want to produce 1-D plots for.}
 
-\item{features.2d}{2-D features that we want to produce plots for arguments. If
+\item{features.2d}{2-D features that we want to produce plots for arguments.
+A two-column dataframe of pairs of features to make local
+surrogates for. Each row represents a pair of features,
+with the names of features as the entries.If
 the 'method' parameter is set to "ale", this argument should not
 be used.}
 
 \item{clusters}{A number of clusters to cluster the ICE predictions with.
-if this is not NULL, one must use the method "ice"}
+If this is not NULL, one must use the method "ice".}
 
 \item{clusterType}{An indicator specifying what method to use for the clustering.
 The possible options are "preds", and "gradient". If "preds" is used, the clusters
 will be determined by running K means on the predictions of the ICE functions.
 If the "gradient" option is used, the clusters will be determined by running K
-means on the numerical gradient of the predictions of the ICE functions.}
+means on the numerical gradient of the predictions of the ICE functions. If
+this is not NULL, one must use the method "ice".}
 
 \item{...}{Additiional parameters to pass to the plot function}
 }

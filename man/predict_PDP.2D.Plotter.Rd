@@ -10,13 +10,14 @@ predict_PDP.2D.Plotter(object, feat.2d, save = TRUE)
 \item{object}{The Interpreter object to use.}
 
 \item{feat.2d}{A 2-column dataframe or matrix that gives the first variable in
-in the first column, and the second variable in the next. This should
-the number of rows as the number of 2-D PDPs one would like}
+in the first column, and the second variable in the next. The
+number of rows is equal to the number of 2-D PDPs one would like.}
 
 \item{save}{A boolean indicator to indicate whether the calculations should be
 saved in the interpreter object or not. This can help reduce
 computation if the PDP functions are used many times, but requires
-additional memory to store the predictions.}
+additional memory to store the predictions. By default, this is set
+to TRUE.}
 }
 \value{
 A list of data frames for each pair of features.2d. Each data frame

@@ -28,32 +28,48 @@ test_that("Tests that the local surrogate wrapper is working", {
   forest_interpret <- Interpreter$new(predictor = forest_predictor)
   expect_equal(all.equal(forest_interpret$features,
                          c( "Species","Sex","Index","FrontalLobe","RearWidth","CarapaceLength","CarapaceWidth")),TRUE)
-  # Now test the surrogate method
-  # forest_plot <- plot(forest_interpret,
-  #                    method = "pdp+ice",
-  #                           features.2d = data.frame(col1 = c("Frontal Lobe"),
-  #                                                    col2 = c("Rear Width")))
 
-  #forest_surrogate <- localSurrogate(forest_plot,
-  #                                   interact = FALSE)
-  # plot(forest_surrogate$models[[1]])
-  #expect_equal(forest_surrogate$models[[1]]@ntree, 1)
+  # Test Default Settings
+  local.surr <- localSurrogate(forest_interpret,
+                               features.2d = data.frame(feat.1 = c("FrontalLobe"),
+                                                        feat.2 = c("RearWidth")),
+                               interact = F)
 
+  expect_equal(names(local.surr$plots), names(local.surr$models))
+  expect_equal(names(local.surr$plots), "FrontalLobe.RearWidth")
+  expect_equal(local.surr$models[[1]]@ntree, 1)
+  expect_equal(ncol(local.surr$models[[1]]@processed_dta$processed_x), 2)
 
-  # Try with interaction
-  #forest_surrogate <- localSurrogate(forest_plot,
-  #                                   interact = TRUE)
-  #expect_equal(ncol(forest_surrogate$models[[1]]@processed_dta$processed_x), 3)
+  # Test interaction term
+  local.surr <- localSurrogate(forest_interpret,
+                               features.2d = data.frame(feat.1 = c("FrontalLobe"),
+                                                        feat.2 = c("RearWidth")),
+                               interact = T)
+  expect_equal(names(local.surr$plots), names(local.surr$models))
+  expect_equal(names(local.surr$plots), "FrontalLobe.RearWidth")
+  expect_equal(local.surr$models[[1]]@ntree, 1)
+  expect_equal(ncol(local.surr$models[[1]]@processed_dta$processed_x), 3)
 
-  #Try with categorical features
-  #forest_plot <- plot(forest_interpret,
-  #                           features.2d = data.frame(col1 = c("Frontal Lobe"),
-  #                                                    col2 = c("Species")))
+  # Test continuous and categorical variable combination - No interaction terms available yet
+  local.surr <- localSurrogate(forest_interpret,
+                               features.2d = data.frame(feat.1 = c("FrontalLobe"),
+                                                        feat.2 = c("Sex")),
+                               interact = F)
+  expect_equal(names(local.surr$plots), names(local.surr$models))
+  expect_equal(names(local.surr$plots), "FrontalLobe.Sex")
+  expect_equal(local.surr$models[[1]]@ntree, 1)
+  expect_equal(ncol(local.surr$models[[1]]@processed_dta$processed_x), 2)
 
-  #forest_surrogate <- localSurrogate(forest_plot)
+  # Test user-supplied parameters
+  local.surr <- localSurrogate(forest_interpret,
+                               features.2d = data.frame(feat.1 = c("FrontalLobe"),
+                                                     feat.2 = c("Sex")),
+                               params.forestry = list(maxDepth = 4, ntree = 2))
+  expect_equal(names(local.surr$plots), names(local.surr$models))
+  expect_equal(names(local.surr$plots), "FrontalLobe.Sex")
+  expect_equal(local.surr$models[[1]]@ntree, 2)
+  expect_equal(local.surr$models[[1]]@maxDepth, 4)
 
-  #expect_gt(length(forest_surrogate$models[[1]]@processed_dta$categoricalFeatureCols_cpp),
-  #          0)
-  # plot(forest_surrogate$models[[1]])
   rm(list=ls())
 })
+

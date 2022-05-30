@@ -9,7 +9,7 @@ set.center.at(object, feature, value)
 \arguments{
 \item{object}{The Interpreter class that we want to recenter the plots of.}
 
-\item{feature}{The name of the specific feature that we want to center the
+\item{feature}{A vector with the names of the features that we want to center the
 plots of. Can be either a continuous feature or a cetagorical feature. Must match
 the name of one of the features in the Interpreter model's training data set.}
 

@@ -9,12 +9,13 @@ predict_PDP.1D.Plotter(object, features = NULL, save = TRUE)
 \arguments{
 \item{object}{The Interpreter object to plot PDP curves for.}
 
-\item{features}{The features to predict PDP functions foor}
+\item{features}{A vector with the names of the features to predict ICE plots for}
 
 \item{save}{A boolean indicator to indicate whether the calculations should be
 saved in the interpreter object or not. This can help reduce
 computation if the PDP functions are used many times, but requires
-additional memory to store the predictions.}
+additional memory to store the predictions. By default, this is set
+to TRUE.}
 }
 \value{
 A list of data frames with the grid points and PDP prediction values
