@@ -24,7 +24,8 @@
 #' @note
 #' Unlike the grid predictions, the center.at values do not modify any of the
 #' previous saved calculations. Therefore, it does not change or remove any of the
-#' previously calculated, saved data.
+#' previously calculated, saved data. These center values are simply for the plots
+#' made by the interpreter object, rather than the distilled model.
 #' @export
 set.center.at = function(object,
                          feature,
@@ -66,7 +67,7 @@ set.center.at = function(object,
 #' Because the grid points determine what calculations are performed for the
 #' PDP/ICE functions, changing the grid points will remove any of the previously
 #' calculated values in the 'Interpreter' object. For any 1-d ICE
-#' or PDP plot, it will remove the previous calculations for the given feature. For any 2-d PDP
+#' or PDP plot, it will remove the previous calculations for the given feature. For any 2-D PDP
 #' calcuations, it will remove plots that include the given feature as any of its features.
 #' @export
 set.grid.points = function(object,
@@ -417,29 +418,29 @@ center.preds = function(object, features = NULL, plot.type, feats.2d = NULL){
 
 # Helper functions for the ALE plots ===========================================
 
-#' Local effect gives the local effect on the predictions of a model
-#' in the window around the set_value
-#'
-#' Parameters:
-#'     param variable_name - The variable we want perturb to calculate the local effect
-#'
-#'     param lower_limit - The lower limit of the variable we want to use
-#'
-#'     param upper_limit - The upper limit of the variable we want to use
-#'
-#'     param set_value - The value we want to perturb the variable around
-#'
-#'     param window_size - An optional parameter for the size of the window around
-#'                   the variable that we perturb and predict at
-#'
-#'     param training_data - The training data we use to make predictions
-#'
-#'     param predict_function - The prediction function we use to make predictions for the model
-#'
-#' Return:
-#'     A single value that is the mean local effect of the peturbation on the
-#'     predictions of the model.
-#'
+# Local effect gives the local effect on the predictions of a model
+# in the window around the set_value
+#
+# Parameters:
+#     param variable_name - The variable we want perturb to calculate the local effect
+#
+#     param lower_limit - The lower limit of the variable we want to use
+#
+#     param upper_limit - The upper limit of the variable we want to use
+#
+#     param set_value - The value we want to perturb the variable around
+#
+#     param window_size - An optional parameter for the size of the window around
+#                   the variable that we perturb and predict at
+#
+#     param training_data - The training data we use to make predictions
+#
+#     param predict_function - The prediction function we use to make predictions for the model
+#
+# Return:
+#     A single value that is the mean local effect of the peturbation on the
+#     predictions of the model.
+#
 local_effect <- function(variable_name,
                          lower_limit,
                          upper_limit,
@@ -561,7 +562,7 @@ ale <- function(predict_function,
 }
 
 
-#' Constructs ALE for the given interpreter object
+#' Constructs the ALE curve for the given interpreter object
 #' @param x An interpreter object
 #' @param feature The feature to build the ALE for (must be continuous)
 #' @param training_data The training data to use in order to build the ALE

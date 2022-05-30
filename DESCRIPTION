@@ -45,4 +45,5 @@ Collate:
     'distiller.R'
     'plotter.R'
     'surrogate.R'
+VignetteBuilder: knitr
 RoxygenNote: 7.1.2

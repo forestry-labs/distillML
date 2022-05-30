@@ -23,6 +23,6 @@ Method for setting grid points for a specific feature plot
 Because the grid points determine what calculations are performed for the
 PDP/ICE functions, changing the grid points will remove any of the previously
 calculated values in the 'Interpreter' object. For any 1-d ICE
-or PDP plot, it will remove the previous calculations for the given feature. For any 2-d PDP
+or PDP plot, it will remove the previous calculations for the given feature. For any 2-D PDP
 calcuations, it will remove plots that include the given feature as any of its features.
 }
