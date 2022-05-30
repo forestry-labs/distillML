@@ -33,7 +33,8 @@ Imports:
     tidyr,
     data.table,
     pdp,
-    mltools
+    mltools,
+    gridExtra
 Suggests:
     testthat,
     knitr,
