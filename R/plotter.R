@@ -5,8 +5,7 @@
 #' @import ggplot2
 #' @import dplyr
 #' @importFrom data.table setDT melt :=
-#' @importFrom gridExtra arrangeGrob
-#' @importFrom pdp grid.arrange
+#' @importFrom gridExtra grid.arrange
 #' @importFrom stats coef na.omit quantile sd
 #' @importFrom utils head
 #' @importFrom stats kmeans
