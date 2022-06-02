@@ -158,14 +158,7 @@ plot(forest_interpret,
      features = c("Frontal Lobe", "Rear Width"))
 ```
 
-    ## $`Frontal Lobe`
-
-![](README_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
-
-    ## 
-    ## $`Rear Width`
-
-![](README_files/figure-gfm/unnamed-chunk-5-2.png)<!-- -->
+![](README_files/figure-gfm/pdp.png)<!-- -->
 
 ``` r
 plot(forest_interpret,
@@ -173,14 +166,7 @@ plot(forest_interpret,
      features = c("Frontal Lobe", "Rear Width"))
 ```
 
-    ## $`Frontal Lobe`
-
-![](README_files/figure-gfm/unnamed-chunk-5-3.png)<!-- -->
-
-    ## 
-    ## $`Rear Width`
-
-![](README_files/figure-gfm/unnamed-chunk-5-4.png)<!-- -->
+![](README_files/figure-gfm/ice.png)<!-- -->
 
 ``` r
 ## default option (does this without specifying method)
@@ -189,14 +175,7 @@ plot(forest_interpret,
      features = c("Frontal Lobe", "Rear Width"))
 ```
 
-    ## $`Frontal Lobe`
-
-![](README_files/figure-gfm/unnamed-chunk-5-5.png)<!-- -->
-
-    ## 
-    ## $`Rear Width`
-
-![](README_files/figure-gfm/unnamed-chunk-5-6.png)<!-- -->
+![](README_files/figure-gfm/pdp_ice.png)<!-- -->
 
 ``` r
 plot(forest_interpret,
@@ -204,14 +183,7 @@ plot(forest_interpret,
      features = c("Frontal Lobe", "Rear Width"))
 ```
 
-    ## $`Frontal Lobe`
-
-![](README_files/figure-gfm/unnamed-chunk-5-7.png)<!-- -->
-
-    ## 
-    ## $`Rear Width`
-
-![](README_files/figure-gfm/unnamed-chunk-5-8.png)<!-- -->
+![](README_files/figure-gfm/ale.png)<!-- -->
 
 For bivariate summary plots, the package provides two distinct methods.
 Given a continuous and categorical feature, the `plot` function provides
@@ -254,15 +226,11 @@ local.surr <- localSurrogate(forest_interpret,
                                                       feat.2 = c("Sex", 
                                                                  "Rear Width")))
 plot(local.surr$models$`Frontal Lobe.Sex`)
-```
-
-![](README_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
-
-``` r
 plot(local.surr$models$`Frontal Lobe.Rear Width`)
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-7-2.png)<!-- -->
+![](README_files/figure-gfm/local_surr.png)<!-- -->
+
 
 For additional details on the `localSurrogate` method, such as
 specifying the depth or number of trees in the weak learner, please
