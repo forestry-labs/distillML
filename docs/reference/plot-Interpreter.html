@@ -24,12 +24,9 @@
 <li class="nav-item dropdown">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
-    <a class="dropdown-item" href="../articles/advanced_pdp.html">Advanced PDP Features</a>
-    <a class="dropdown-item" href="../articles/ale_plots.html">ALE Plots</a>
-    <a class="dropdown-item" href="../articles/cluster_ice.html">ICE Clustering</a>
-    <a class="dropdown-item" href="../articles/local_surrogates.html">Local Surrogate Models</a>
-    <a class="dropdown-item" href="../articles/model_distillation.html">Model Distillation</a>
-    <a class="dropdown-item" href="../articles/pdp_plots.html">PDP Plots</a>
+    <a class="dropdown-item" href="../articles/advanced_plotting.html">Plotting Methods</a>
+    <a class="dropdown-item" href="../articles/local_surrogates.html">Local Surrogate</a>
+    <a class="dropdown-item" href="../articles/model_distillation.html">Distillation Methods</a>
   </div>
 </li>
       </ul><form class="form-inline my-2 my-lg-0" role="search">
@@ -79,18 +76,26 @@
 <dd><p>The type of plot that we want to generate. Must be one of "ice",
 "pdp+ice", "pdp", or "ale"</p></dd>
 <dt>features</dt>
-<dd><p>1-D features that we want to produce plots for.</p></dd>
+<dd><p>a vector of feature names that we want to produce 1-D plots for.</p></dd>
 <dt>features.2d</dt>
-<dd><p>2-D features that we want to produce plots for arguments</p></dd>
+<dd><p>2-D features that we want to produce plots for arguments.
+A two-column dataframe of pairs of features to make local
+surrogates for. Each row represents a pair of features,
+with the names of features as the entries.If
+the 'method' parameter is set to "ale", this argument should not
+be used.</p></dd>
 <dt>clusters</dt>
 <dd><p>A number of clusters to cluster the ICE predictions with.
-if this is not NULL, one must use the method "ice" or "pdp+ice"</p></dd>
+If this is not NULL, one must use the method "ice".</p></dd>
 <dt>clusterType</dt>
 <dd><p>An indicator specifying what method to use for the clustering.
 The possible options are "preds", and "gradient". If "preds" is used, the clusters
 will be determined by running K means on the predictions of the ICE functions.
 If the "gradient" option is used, the clusters will be determined by running K
-means on the numerical gradient of the predictions of the ICE functions.</p></dd>
+means on the numerical gradient of the predictions of the ICE functions. If
+this is not NULL, one must use the method "ice".</p></dd>
+<dt>...</dt>
+<dd><p>Additiional parameters to pass to the plot function</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>

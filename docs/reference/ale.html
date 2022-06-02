@@ -24,12 +24,9 @@
 <li class="nav-item dropdown">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
-    <a class="dropdown-item" href="../articles/advanced_pdp.html">Advanced PDP Features</a>
-    <a class="dropdown-item" href="../articles/ale_plots.html">ALE Plots</a>
-    <a class="dropdown-item" href="../articles/cluster_ice.html">ICE Clustering</a>
-    <a class="dropdown-item" href="../articles/local_surrogates.html">Local Surrogate Models</a>
-    <a class="dropdown-item" href="../articles/model_distillation.html">Model Distillation</a>
-    <a class="dropdown-item" href="../articles/pdp_plots.html">PDP Plots</a>
+    <a class="dropdown-item" href="../articles/advanced_plotting.html">Plotting Methods</a>
+    <a class="dropdown-item" href="../articles/local_surrogates.html">Local Surrogate</a>
+    <a class="dropdown-item" href="../articles/model_distillation.html">Distillation Methods</a>
   </div>
 </li>
       </ul><form class="form-inline my-2 my-lg-0" role="search">
@@ -80,7 +77,7 @@ predictions corresponding to that tibble.</p></dd>
 <dt>training_data</dt>
 <dd><p>the training data used to fit the model</p></dd>
 <dt>variable_names</dt>
-<dd><p>a character vector of column names in training_data for which an ALE is required.</p></dd>
+<dd><p>a vector of feature names in training data for which an ALE is required.</p></dd>
 <dt>center</dt>
 <dd><p>one of "uncentered" meaning the plots are not centered, "mean"
 meaning the plots are centered at their mean and "zero" meaning the ALE

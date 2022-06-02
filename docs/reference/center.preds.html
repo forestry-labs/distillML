@@ -28,12 +28,9 @@
 <li class="nav-item dropdown">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
-    <a class="dropdown-item" href="../articles/advanced_pdp.html">Advanced PDP Features</a>
-    <a class="dropdown-item" href="../articles/ale_plots.html">ALE Plots</a>
-    <a class="dropdown-item" href="../articles/cluster_ice.html">ICE Clustering</a>
-    <a class="dropdown-item" href="../articles/local_surrogates.html">Local Surrogate Models</a>
-    <a class="dropdown-item" href="../articles/model_distillation.html">Model Distillation</a>
-    <a class="dropdown-item" href="../articles/pdp_plots.html">PDP Plots</a>
+    <a class="dropdown-item" href="../articles/advanced_plotting.html">Plotting Methods</a>
+    <a class="dropdown-item" href="../articles/local_surrogates.html">Local Surrogate</a>
+    <a class="dropdown-item" href="../articles/model_distillation.html">Distillation Methods</a>
   </div>
 </li>
       </ul><form class="form-inline my-2 my-lg-0" role="search">
@@ -73,20 +70,30 @@
     <dl><dt>object</dt>
 <dd><p>The Interpreter object to use</p></dd>
 <dt>features</dt>
-<dd><p>The 1-D features we want to center</p></dd>
+<dd><p>A vector of names for the 1-D features we want to center</p></dd>
 <dt>plot.type</dt>
 <dd><p>The type of plot that the user wants to center the predictions of.
 should be one of either "ICE", "PDP.1D", or "PDP.2D"</p></dd>
 <dt>feats.2d</dt>
-<dd><p>The 2-D features that we want to center.</p></dd>
+<dd><p>A 2-column dataframe or matrix that gives the first variable in
+in the first column, and the second variable in the next. The
+number of rows is equal to the number of 2-D PDPs one would like
+to center.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A centered data frame/matrix of values for the plot</p>
+    <p>A list of centered data frame/matrix of values for the plot</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>center.preds</p>
+    </div>
+    <div class="section level2">
+    <h2 id="note">Note<a class="anchor" aria-label="anchor" href="#note"></a></h2>
+    <p>This function is mainly used to examine the exact values in the plot if the
+plot is centered. Note that this function should only be called after calling
+one of the various predict functions that matches the 'plot.type' parameter
+with 'save' equal to TRUE.</p>
     </div>
 
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>

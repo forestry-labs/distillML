@@ -24,12 +24,9 @@
 <li class="nav-item dropdown">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
-    <a class="dropdown-item" href="../articles/advanced_pdp.html">Advanced PDP Features</a>
-    <a class="dropdown-item" href="../articles/ale_plots.html">ALE Plots</a>
-    <a class="dropdown-item" href="../articles/cluster_ice.html">ICE Clustering</a>
-    <a class="dropdown-item" href="../articles/local_surrogates.html">Local Surrogate Models</a>
-    <a class="dropdown-item" href="../articles/model_distillation.html">Model Distillation</a>
-    <a class="dropdown-item" href="../articles/pdp_plots.html">PDP Plots</a>
+    <a class="dropdown-item" href="../articles/advanced_plotting.html">Plotting Methods</a>
+    <a class="dropdown-item" href="../articles/local_surrogates.html">Local Surrogate</a>
+    <a class="dropdown-item" href="../articles/model_distillation.html">Distillation Methods</a>
   </div>
 </li>
       </ul><form class="form-inline my-2 my-lg-0" role="search">
@@ -67,12 +64,12 @@
     <dl><dt>object</dt>
 <dd><p>The Interpeter object to use.</p></dd>
 <dt>features</dt>
-<dd><p>Features to predict ICE plots for</p></dd>
+<dd><p>A vector with the names of the features to predict ICE plots for</p></dd>
 <dt>save</dt>
 <dd><p>A boolean indicator to indicate whether the calculations should be
 saved in the interpreter object or not. This can help reduce
 computation if the ICE functions are used many times, but requires
-additional memory to store the predictions.</p></dd>
+additional memory to store the predictions. By default, this is TRUE.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
@@ -80,6 +77,13 @@ additional memory to store the predictions.</p></dd>
         column contains the grid values for the feature, and each subsequent
         column has a single observation corresponding to the prediction of the model
         when with the given feature set to that grid point value.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="note">Note<a class="anchor" aria-label="anchor" href="#note"></a></h2>
+    <p>This method is meant to primarily be used to find the exact values for the ICE
+curves plotted. Note that after the PDP curve is plotted, the returned
+object of this function will be the saved predictions for plotting the curve, rather
+than a recalculation of the values.</p>
     </div>
 
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>

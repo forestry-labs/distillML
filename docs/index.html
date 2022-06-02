@@ -45,12 +45,9 @@
 <li class="nav-item dropdown">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
-    <a class="dropdown-item" href="articles/advanced_pdp.html">Advanced PDP Features</a>
-    <a class="dropdown-item" href="articles/ale_plots.html">ALE Plots</a>
-    <a class="dropdown-item" href="articles/cluster_ice.html">ICE Clustering</a>
-    <a class="dropdown-item" href="articles/local_surrogates.html">Local Surrogate Models</a>
-    <a class="dropdown-item" href="articles/model_distillation.html">Model Distillation</a>
-    <a class="dropdown-item" href="articles/pdp_plots.html">PDP Plots</a>
+    <a class="dropdown-item" href="articles/advanced_plotting.html">Plotting Methods</a>
+    <a class="dropdown-item" href="articles/local_surrogates.html">Local Surrogate</a>
+    <a class="dropdown-item" href="articles/model_distillation.html">Distillation Methods</a>
   </div>
 </li>
       </ul>
@@ -74,19 +71,24 @@
 <div class="row">
   <main id="main" class="col-md-9">
 <div class="section level1">
-<div class="page-header"><h1 id="distillery-distillation-and-interpretability-algorithms">Distillery: Distillation and Interpretability Algorithms<a class="anchor" aria-label="anchor" href="#distillery-distillation-and-interpretability-algorithms"></a>
+<div class="page-header"><h1 id="distillery-interpretable-machine-learning-methods-and-surrogate-model-methods">Distillery: Interpretable Machine Learning Methods and Surrogate Model Methods<a class="anchor" aria-label="anchor" href="#distillery-interpretable-machine-learning-methods-and-surrogate-model-methods"></a>
 </h1></div>
-<p>This package provides several methods for model distillation and interpretability for general black box machine learning models. This page serves as a clear example for using this package, where we use the MASS crabs data set.</p>
-<p>For documentation, see <a href="https://forestry-labs.github.io/Distillery/index.html" class="external-link">https://forestry-labs.github.io/Distillery/index.html</a></p>
+<p><code>Distillery</code> provides several methods for model distillation and interpretability for general black box machine learning models. This package provides implementations of the partial dependence plot (PDP), individual conditional expectation (ICE), and accumulated local effect (ALE) methods, which are model-agnostic interpretability methods (work with any supervised machine learning model). This package also provides a novel method for building a surrogate model that approximates the behavior of its initial algorithm.</p>
+<p>Below, we provide a simple example that outlines how to use this package. For further details on surrogate distillation, advanced interpretability features, or local surrogate methods, see the articles provided on this page.</p>
+<p>For documentation, see <a href="https://forestry-labs.github.io/Distillery/index.html" class="external-link uri">https://forestry-labs.github.io/Distillery/index.html</a></p>
 <div class="section level2">
-<h2 id="general-prediction-wrapper">General Prediction Wrapper<a class="anchor" aria-label="anchor" href="#general-prediction-wrapper"></a>
+<h2 id="a-simple-example-predicting-carapace-width-of-leptograpsus-crabs">A Simple Example: Predicting Carapace Width of Leptograpsus Crabs<a class="anchor" aria-label="anchor" href="#a-simple-example-predicting-carapace-width-of-leptograpsus-crabs"></a>
 </h2>
+<p>Throughout this section, we provide a tutorial on using the package with a random forest predictor for the Carapace Width of Leptograpsus Crabs. We demonstrate how to plot PDP, ICE, and ALE curves for machine learning interpretability, and show how to build the surrogate model that approximates the behavior of the initial random forest predictor.</p>
+<div class="section level3">
+<h3 id="general-prediction-wrapper">General Prediction Wrapper<a class="anchor" aria-label="anchor" href="#general-prediction-wrapper"></a>
+</h3>
 <p>First we load in the crabs data set. This contains physical measurements of several species of crabs collected at Fremantle, West Australia.</p>
-<pre><code><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://www.stats.ox.ac.uk/pub/MASS4/" class="external-link">MASS</a></span><span class="op">)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-datatable.com" class="external-link">data.table</a></span><span class="op">)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://www.stats.ox.ac.uk/pub/MASS4/" class="external-link">MASS</a></span><span class="op">)</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/forestry-labs/interpretability_sandbox" class="external-link">Distillery</a></span><span class="op">)</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/forestry-labs/Rforestry" class="external-link">Rforestry</a></span><span class="op">)</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span>
 
 <span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">491</span><span class="op">)</span>
 
@@ -94,9 +96,11 @@
 <span class="fu"><a href="https://rdrr.io/r/base/levels.html" class="external-link">levels</a></span><span class="op">(</span><span class="va">data</span><span class="op">$</span><span class="va">sex</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>Male <span class="op">=</span> <span class="st">"M"</span>, Female <span class="op">=</span> <span class="st">"F"</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/base/levels.html" class="external-link">levels</a></span><span class="op">(</span><span class="va">data</span><span class="op">$</span><span class="va">sp</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>Orange <span class="op">=</span> <span class="st">"O"</span>, Blue <span class="op">=</span> <span class="st">"B"</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Species"</span>,<span class="st">"Sex"</span>,<span class="st">"Index"</span>,<span class="st">"Frontal Lobe"</span>,
-                    <span class="st">"Rear Width"</span>, <span class="st">"Carapace Length"</span>,<span class="st">"Carapace Width"</span>,<span class="st">"Body Depth"</span><span class="op">)</span></code></pre>
+                    <span class="st">"Rear Width"</span>, <span class="st">"Carapace Length"</span>,<span class="st">"Carapace Width"</span>,
+                    <span class="st">"Body Depth"</span><span class="op">)</span></code></pre></div>
 <p>We can train a random forest to estimate the Carapace Width of the crabs based on the other features. In order to use the interpretability features, we must create a <code>Predictor</code> class for the estimator we want to interpret. This class standardizes the predictions, tracks the outcome feature, and stores the training data.</p>
-<pre><code><span class="co"># Get training data set</span>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># Get training data set</span>
 <span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">491</span><span class="op">)</span>
 <span class="va">test_ind</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span><span class="op"><a href="https://rdrr.io/r/base/Arithmetic.html" class="external-link">%/%</a></span><span class="fl">5</span><span class="op">)</span>
 <span class="va">train_reg</span> <span class="op">&lt;-</span> <span class="va">data</span><span class="op">[</span><span class="op">-</span><span class="va">test_ind</span>,<span class="op">]</span>
@@ -112,54 +116,123 @@
 <span class="va">forest_predictor</span> <span class="op">&lt;-</span> <span class="va"><a href="reference/Predictor.html">Predictor</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span>model <span class="op">=</span> <span class="va">forest</span>, 
                                   data<span class="op">=</span><span class="va">train_reg</span>, 
                                   y<span class="op">=</span><span class="st">"Carapace Width"</span>,
-                                  task <span class="op">=</span> <span class="st">"regression"</span><span class="op">)</span></code></pre>
+                                  task <span class="op">=</span> <span class="st">"regression"</span><span class="op">)</span></code></pre></div>
 </div>
-<div class="section level2">
-<h2 id="interpretability-wrapper">Interpretability Wrapper<a class="anchor" aria-label="anchor" href="#interpretability-wrapper"></a>
-</h2>
-<p>Once we have initialized a <code>Predictor</code> object for the forest, we can pass this to the <code>Interpretor</code> class. In the future, this will have several methods implemented as different options, but now it defaults to creating PDP functions + plots for the estimator. Examining the <code>Interpretor</code>, we can see the current method selected: “pdp”, the feature names, the training data indices, and the lists of pdp functions.</p>
-<pre><code><span class="va">forest_interpret</span> <span class="op">&lt;-</span> <span class="va"><a href="reference/Interpreter.html">Interpreter</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span>predictor <span class="op">=</span> <span class="va">forest_predictor</span><span class="op">)</span>
+<div class="section level3">
+<h3 id="interpretability-wrapper">Interpretability Wrapper<a class="anchor" aria-label="anchor" href="#interpretability-wrapper"></a>
+</h3>
+<p>Once we have initialized a <code>Predictor</code> object for the forest, we can pass this to the <code>Interpreter</code> class. By default, the <code>Interpreter</code> class subsamples the training data to be at most 1000 samples in order to speed up computation for interpretabilitiy methods. This class provides the names and classes of the features, the indicies of the sampled data points, lists of univariate and bivariate PDP functions, and stores additional information for plot settings.</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">forest_interpret</span> <span class="op">&lt;-</span> <span class="va"><a href="reference/Interpreter.html">Interpreter</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span>predictor <span class="op">=</span> <span class="va">forest_predictor</span><span class="op">)</span>
 
-<span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">forest_interpret</span><span class="op">)</span></code></pre>
-<p>The pdp functions are stored in two lists, one for 1-d pdp functions and one for 2-d pdp functions. For any feature, we can retrieve the pdp function by selecting the entry in the list with that feature name</p>
-<pre><code><span class="va">one_feat</span> <span class="op">&lt;-</span> <span class="va">train_reg</span><span class="op">$</span><span class="va">`Frontal Lobe`</span>
-<span class="va">preds_pdp</span> <span class="op">&lt;-</span> <span class="va">forest_interpret</span><span class="op">$</span><span class="va">functions.1d</span><span class="op">$</span><span class="fu">`Frontal Lobe`</span><span class="op">(</span><span class="va">one_feat</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">preds_pdp</span><span class="op">)</span></code></pre>
+<span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">forest_interpret</span><span class="op">)</span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="do">## &lt;Interpreter&gt;</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="do">##   Public:</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="do">##     ale.grid: list</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="do">##     center.at: list</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="do">##     clone: function (deep = FALSE) </span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="do">##     data.points: 17 59 105 8 18 51 157 37 102 44 119 131 107 75 7 148 60  ...</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="do">##     feat.class: factor factor integer numeric numeric numeric numeric</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="do">##     features: Species Sex Index Frontal Lobe Rear Width Carapace Lengt ...</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="do">##     features.2d: data.frame</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="do">##     grid.points: list</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="do">##     grid.size: 50</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="do">##     initialize: function (predictor = NULL, samples = 1000, data.points = NULL, </span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="do">##     pdp.1d: list</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="do">##     pdp.2d: list</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="do">##     predictor: Predictor, R6</span></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a><span class="do">##     saved: list</span></span></code></pre></div>
+<p>The PDP functions are stored in two lists, one for univariate PDP functions and one for bivariate PDP functions.For any feature, we can retrieve the pdp function by selecting the entry in the list with that feature name. We can directly use these PDP functions by specifying values for a specific feature. The functions then return the PDP curve’s values. For univariate functions, we specify values through a vector of values. For bivariate functions, we input a dataframe or matrix with two columns, with each row providing a pair of values and each column representing a specific feature.</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># univariate PDP </span>
+<span class="va">one_feat</span> <span class="op">&lt;-</span> <span class="va">train_reg</span><span class="op">$</span><span class="va">`Frontal Lobe`</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span><span class="op">]</span>
+<span class="va">preds_pdp</span> <span class="op">&lt;-</span> <span class="va">forest_interpret</span><span class="op">$</span><span class="va">pdp.1d</span><span class="op">$</span><span class="fu">`Frontal Lobe`</span><span class="op">(</span><span class="va">one_feat</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">preds_pdp</span><span class="op">)</span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="do">##  [1] 34.30249 34.41734 34.44234 34.44921 34.67518 35.00046 35.02284 35.11743</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="do">##  [9] 35.47968 35.47968</span></span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># bivariate PDP</span>
+<span class="va">two_feat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="va">train_reg</span><span class="op">$</span><span class="va">`Frontal Lobe`</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span><span class="op">]</span>, 
+                  <span class="va">train_reg</span><span class="op">$</span><span class="va">`Rear Width`</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span><span class="op">]</span><span class="op">)</span>
+<span class="va">preds_pdp_2d</span> <span class="op">&lt;-</span> <span class="va">forest_interpret</span><span class="op">$</span><span class="va">pdp.2d</span><span class="op">$</span><span class="va">`Frontal Lobe`</span><span class="op">$</span><span class="fu">`Rear Width`</span><span class="op">(</span><span class="va">two_feat</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">preds_pdp_2d</span><span class="op">)</span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="do">##  [1] 31.86542 32.27242 32.33959 32.35324 33.07650 33.29917 33.40389 34.38326</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="do">##  [9] 34.61258 34.78585</span></span></code></pre></div>
 </div>
-<div class="section level2">
-<h2 id="plotter-wrapper">Plotter Wrapper<a class="anchor" aria-label="anchor" href="#plotter-wrapper"></a>
-</h2>
-<p>In order to use these pdp functions to create plots, we can use the <code>plot</code> method for the Interpreter class.</p>
-<pre><code><span class="co"># check plotter wrapper</span>
-<span class="va">forest_plot</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">forest_interpret</span>, 
-                    method <span class="op">=</span> <span class="st">"pdp+ice"</span>,
-                    features <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Frontal Lobe"</span><span class="op">)</span>,
-                    features.2d <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>col1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Frontal Lobe"</span>, <span class="st">"Frontal Lobe"</span>, <span class="st">"Frontal Lobe"</span><span class="op">)</span>,
-                                             col2 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Species"</span>, <span class="st">"Sex"</span>, <span class="st">"Rear Width"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>
-
-<span class="va">plots</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">forest_plot</span><span class="op">)</span>
-<span class="va">plots</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span>
-<span class="va">plots</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span>
-<span class="va">plots</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span>
-<span class="va">plots</span><span class="op">[[</span><span class="fl">4</span><span class="op">]</span><span class="op">]</span></code></pre>
+<div class="section level3">
+<h3 id="basic-plotting">Basic Plotting<a class="anchor" aria-label="anchor" href="#basic-plotting"></a>
+</h3>
+<p>For univariate and bivariate interpretability methods, we can use the <code>plot</code> method for the Interpreter class. For univariate summaries of the model’s behavior, we have three main options: PDP, ICE, and ALE curves. For all univariate plots for a feature, <code>Distillery</code> includes a histogram of the marginal distribution of that feature to show the support. To plot a specific curve for a given set of feature, we simply specify the <code>method</code> parameter in <code>plot</code> function, as shown below:</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># plotting PDP functions</span>
+<span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">forest_interpret</span>,
+     method <span class="op">=</span> <span class="st">"pdp"</span>,
+     features <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Frontal Lobe"</span>, <span class="st">"Rear Width"</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<p><img src="README_files/figure-gfm/pdp.png"><!-- --></p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">forest_interpret</span>,
+     method <span class="op">=</span> <span class="st">"ice"</span>,
+     features <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Frontal Lobe"</span>, <span class="st">"Rear Width"</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<p><img src="README_files/figure-gfm/ice.png"><!-- --></p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co">## default option (does this without specifying method)</span>
+<span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">forest_interpret</span>,
+     method <span class="op">=</span> <span class="st">"pdp+ice"</span>,
+     features <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Frontal Lobe"</span>, <span class="st">"Rear Width"</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<p><img src="README_files/figure-gfm/pdp_ice.png"><!-- --></p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">forest_interpret</span>,
+     method <span class="op">=</span> <span class="st">"ale"</span>,
+     features <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Frontal Lobe"</span>, <span class="st">"Rear Width"</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<p><img src="README_files/figure-gfm/ale.png"><!-- --></p>
+<p>For bivariate summary plots, the package provides two distinct methods. Given a continuous and categorical feature, the <code>plot</code> function provides conditional PDP curves, which separates the mean values based on the categorical feature value. For two continuous features, the <code>plot</code> function provides a PDP heatmap. To input the pairs of features to plot, we specify this in the form of a two-column dataframe of feature names, where each row represents a single pair.</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">forest_interpret</span>,
+     features.2d <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>feat.1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Frontal Lobe"</span>, <span class="st">"Frontal Lobe"</span><span class="op">)</span>,
+                              feat.2 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Sex"</span>, <span class="st">"Rear Width"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<div class="sourceCode" id="cb14"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="do">## $`Frontal Lobe.Sex`</span></span></code></pre></div>
+<p><img src="README_files/figure-gfm/unnamed-chunk-6-1.png"><!-- --></p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="do">## </span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="do">## $`Frontal Lobe.Rear Width`</span></span></code></pre></div>
+<p><img src="README_files/figure-gfm/unnamed-chunk-6-2.png"><!-- --></p>
+<p>For more advanced plotting features, such as clustering ICE curves or specifying the number of points plotted, please refer to the article “Advanced Plotting Features”.</p>
 </div>
-<div class="section level2">
-<h2 id="pdp-distillation">PDP Distillation<a class="anchor" aria-label="anchor" href="#pdp-distillation"></a>
-</h2>
-<p>We can also distill a model using the <code>distill</code> method for an interpreter object.</p>
-<pre><code><span class="va">forest_surrogate</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/distill.html">distill</a></span><span class="op">(</span><span class="va">forest_interpret</span><span class="op">)</span>
+<div class="section level3">
+<h3 id="local-surrogates">Local Surrogates<a class="anchor" aria-label="anchor" href="#local-surrogates"></a>
+</h3>
+<p>Even with a heatmap or conditional plots, two dimensional summaries may be difficult to interpret. The function <code>localSurrogate</code> provides a local summary of how changes in a pair of features affect the predictions of the model by providing a simple decision tree summary. In the plots below, the left tree represents the “Frontal Lobe” and “Sex” pair, while the right tree represents the “Frontal Lobe” and “Rear Width” pair.</p>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">local.surr</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/localSurrogate.html">localSurrogate</a></span><span class="op">(</span><span class="va">forest_interpret</span>,
+                             features.2d <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>feat.1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Frontal Lobe"</span>, 
+                                                                 <span class="st">"Frontal Lobe"</span><span class="op">)</span>,
+                                                      feat.2 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Sex"</span>, 
+                                                                 <span class="st">"Rear Width"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">local.surr</span><span class="op">$</span><span class="va">models</span><span class="op">$</span><span class="va">`Frontal Lobe.Sex`</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">local.surr</span><span class="op">$</span><span class="va">models</span><span class="op">$</span><span class="va">`Frontal Lobe.Rear Width`</span><span class="op">)</span></code></pre></div>
+<p><img src="README_files/figure-gfm/local_surr.png"><!-- --></p>
+<p>For additional details on the <code>localSurrogate</code> method, such as specifying the depth or number of trees in the weak learner, please refer to the article “Local Surrogate”.</p>
+</div>
+<div class="section level3">
+<h3 id="distillation-creating-the-default-surrogate-model">Distillation: Creating the Default Surrogate Model<a class="anchor" aria-label="anchor" href="#distillation-creating-the-default-surrogate-model"></a>
+</h3>
+<p>In this package, we also provide an implementation of a new algorithm, which creates a linear recombination of the univariate PDP curves to generate a surrogate model. To do this, we use the <code>distill</code> method on an interpeter object, which returns a surrogate model. With this surrogate model, we can make predictions, and compare the original predictions of the random forest and those of the surrogate model below.</p>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">forest_surrogate</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/distill.html">distill</a></span><span class="op">(</span><span class="va">forest_interpret</span><span class="op">)</span>
 
 <span class="va">predictions_forest</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">forest</span>,
-                              newdata <span class="op">=</span> <span class="va">test_reg</span><span class="op">[</span>,<span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">test_reg</span><span class="op">)</span><span class="op">]</span><span class="op">)</span>
+                              <span class="va">test_reg</span><span class="op">[</span>,<span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">test_reg</span><span class="op">)</span> <span class="op">==</span> <span class="st">"Carapace Width"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span>
+
+<span class="co"># surrogate predictions are returned as a one-column dataframe</span>
 <span class="va">predictions_surrogate</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">forest_surrogate</span>,
-                                 <span class="va">test_reg</span><span class="op">[</span>,<span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">test_reg</span><span class="op">)</span><span class="op">]</span><span class="op">)</span>
-                                 
-<span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">predictions_forest</span>, <span class="va">predictions_surrogate</span><span class="op">)</span></code></pre>
+                                 <span class="va">test_reg</span><span class="op">[</span>,<span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">test_reg</span><span class="op">)</span> <span class="op">==</span> <span class="st">"Carapace Width"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span>
+
+<span class="va">plot.comparison</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>original <span class="op">=</span> <span class="va">predictions_forest</span>,
+                              surrogate <span class="op">=</span> <span class="va">predictions_surrogate</span><span class="op">[</span>,<span class="fl">1</span><span class="op">]</span><span class="op">)</span>
+<span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">plot.comparison</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">original</span>, y <span class="op">=</span> <span class="va">surrogate</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> 
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html" class="external-link">geom_abline</a></span><span class="op">(</span>col <span class="op">=</span> <span class="st">"red"</span><span class="op">)</span></code></pre></div>
+<p><img src="README_files/figure-gfm/unnamed-chunk-8-1.png"><!-- --></p>
+<p>For additional details on creating the distilled surrogate models, please refer to the article “Distillation Methods”.</p>
 </div>
-<div class="section level2">
-<h2 id="todo">TODO<a class="anchor" aria-label="anchor" href="#todo"></a>
-</h2>
-<p>It would be nice to have in the future: - ICE plot clustering - Lookup table embeddings from the PDP surrogate - Some sort of loneliness index implemented - When the covariates of the observation are in the support of the training set, create bootstrap confidence bands for the PDP predictions. - Fix 2-D PDP plots</p>
 </div>
 </div>
 

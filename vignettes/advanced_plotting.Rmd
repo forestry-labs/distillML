@@ -1,13 +1,13 @@
 ---
-title: "Advanced Plotting Features"
+title: "Plotting Methods"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Advanced Plotting Features}
+  %\VignetteIndexEntry{Plotting Methods}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
-## Advanced Plotting Features
+## Plotting Methods
 
 In this article, we provide more detail on the different plots for the 
 interpretability methods, including how to set the number of points plotted 

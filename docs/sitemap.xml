@@ -7,6 +7,9 @@
     <loc>/articles/advanced_pdp.html</loc>
   </url>
   <url>
+    <loc>/articles/advanced_plotting.html</loc>
+  </url>
+  <url>
     <loc>/articles/ale_plots.html</loc>
   </url>
   <url>
@@ -23,6 +26,9 @@
   </url>
   <url>
     <loc>/articles/pdp_plots.html</loc>
+  </url>
+  <url>
+    <loc>/articles/prediction_wrapper.html</loc>
   </url>
   <url>
     <loc>/authors.html</loc>

@@ -2,11 +2,8 @@ pandoc: 2.11.4
 pkgdown: 2.0.3
 pkgdown_sha: ~
 articles:
-  advanced_pdp: advanced_pdp.html
-  ale_plots: ale_plots.html
-  cluster_ice: cluster_ice.html
+  advanced_plotting: advanced_plotting.html
   local_surrogates: local_surrogates.html
   model_distillation: model_distillation.html
-  pdp_plots: pdp_plots.html
-last_built: 2022-05-20T14:38Z
+last_built: 2022-06-02T19:11Z
 

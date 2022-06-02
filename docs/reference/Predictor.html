@@ -44,12 +44,9 @@ other types of predictions (ex: predictions that spit out the factor) are not al
 <li class="nav-item dropdown">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
-    <a class="dropdown-item" href="../articles/advanced_pdp.html">Advanced PDP Features</a>
-    <a class="dropdown-item" href="../articles/ale_plots.html">ALE Plots</a>
-    <a class="dropdown-item" href="../articles/cluster_ice.html">ICE Clustering</a>
-    <a class="dropdown-item" href="../articles/local_surrogates.html">Local Surrogate Models</a>
-    <a class="dropdown-item" href="../articles/model_distillation.html">Model Distillation</a>
-    <a class="dropdown-item" href="../articles/pdp_plots.html">PDP Plots</a>
+    <a class="dropdown-item" href="../articles/advanced_plotting.html">Plotting Methods</a>
+    <a class="dropdown-item" href="../articles/local_surrogates.html">Local Surrogate</a>
+    <a class="dropdown-item" href="../articles/model_distillation.html">Distillation Methods</a>
   </div>
 </li>
       </ul><form class="form-inline my-2 my-lg-0" role="search">
@@ -98,7 +95,8 @@ prediction method must be constructed, with optional argument of type</p>
     <h2 id="public-fields">Public fields<a class="anchor" aria-label="anchor" href="#public-fields"></a></h2>
     <p></p><div class="r6-fields"><dl><dt><code>data</code></dt>
 <dd><p>The training data that was used during training for the model. This should
-be a data frame matching the data frame the model was given for training.</p></dd>
+be a data frame matching the data frame the model was given for training, which
+includes the label or outcome.</p></dd>
 
 
 <dt><code>model</code></dt>
@@ -164,7 +162,8 @@ the user has to provide a custom predict function that accepts a data frame.</p>
 
 <dt><code>data</code></dt>
 <dd><p>The training data that was used during training for the model. This should
-be a data frame matching the data frame the model was given for training.</p></dd>
+be a data frame matching the data frame the model was given for training, including
+the label or outcome.</p></dd>
 
 
 <dt><code>predict.func</code></dt>

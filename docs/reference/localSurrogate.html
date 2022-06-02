@@ -30,12 +30,9 @@
 <li class="nav-item dropdown">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
-    <a class="dropdown-item" href="../articles/advanced_pdp.html">Advanced PDP Features</a>
-    <a class="dropdown-item" href="../articles/ale_plots.html">ALE Plots</a>
-    <a class="dropdown-item" href="../articles/cluster_ice.html">ICE Clustering</a>
-    <a class="dropdown-item" href="../articles/local_surrogates.html">Local Surrogate Models</a>
-    <a class="dropdown-item" href="../articles/model_distillation.html">Model Distillation</a>
-    <a class="dropdown-item" href="../articles/pdp_plots.html">PDP Plots</a>
+    <a class="dropdown-item" href="../articles/advanced_plotting.html">Plotting Methods</a>
+    <a class="dropdown-item" href="../articles/local_surrogates.html">Local Surrogate</a>
+    <a class="dropdown-item" href="../articles/model_distillation.html">Distillation Methods</a>
   </div>
 </li>
       </ul><form class="form-inline my-2 my-lg-0" role="search">
@@ -68,13 +65,22 @@
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">localSurrogate</span><span class="op">(</span><span class="va">object</span>, interact <span class="op">=</span> <span class="cn">FALSE</span>, params.forestry <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">localSurrogate</span><span class="op">(</span>
+  <span class="va">object</span>,
+  features.2d <span class="op">=</span> <span class="cn">NULL</span>,
+  interact <span class="op">=</span> <span class="cn">FALSE</span>,
+  params.forestry <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>
+<span class="op">)</span></code></pre></div>
     </div>
 
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
     <dl><dt>object</dt>
 <dd><p>Interpreter object to make plots + surrogate for.</p></dd>
+<dt>features.2d</dt>
+<dd><p>A two-column dataframe of pairs of features to make local surrogates for.
+Each row represents a pair of features, with the names of features as the
+entries.</p></dd>
 <dt>interact</dt>
 <dd><p>An indicator specifying if the surrogate model should also be
 given the interaction terms to create the surrogate models with.
@@ -84,6 +90,11 @@ Default is FALSE.</p></dd>
 model. Defaults to the standard Rforestry parameters with ntree = 1
 and maxDepth = 2.</p></dd>
 </dl></div>
+    <div class="section level2">
+    <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
+    <p>A list of two distinct lists: one list contains the local surrogate models,
+        and the other containing the 2-D PDP plots for the specified features.</p>
+    </div>
 
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside></div>

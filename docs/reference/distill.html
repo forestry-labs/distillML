@@ -26,12 +26,9 @@
 <li class="nav-item dropdown">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
-    <a class="dropdown-item" href="../articles/advanced_pdp.html">Advanced PDP Features</a>
-    <a class="dropdown-item" href="../articles/ale_plots.html">ALE Plots</a>
-    <a class="dropdown-item" href="../articles/cluster_ice.html">ICE Clustering</a>
-    <a class="dropdown-item" href="../articles/local_surrogates.html">Local Surrogate Models</a>
-    <a class="dropdown-item" href="../articles/model_distillation.html">Model Distillation</a>
-    <a class="dropdown-item" href="../articles/pdp_plots.html">PDP Plots</a>
+    <a class="dropdown-item" href="../articles/advanced_plotting.html">Plotting Methods</a>
+    <a class="dropdown-item" href="../articles/local_surrogates.html">Local Surrogate</a>
+    <a class="dropdown-item" href="../articles/model_distillation.html">Distillation Methods</a>
   </div>
 </li>
       </ul><form class="form-inline my-2 my-lg-0" role="search">
@@ -90,23 +87,30 @@ with a regularizer. This should only be done when regularizing coefficients.</p>
 <dt>snap.grid</dt>
 <dd><p>Boolean function that determines whether the model recalculates
 each value predicted or uses an approximation from previous
-calculations. Default is TRUE.</p></dd>
+calculations. When this parameter is set to TRUE, we approximate
+the predicted values with prevoius calculations. Default is TRUE.</p></dd>
 <dt>snap.train</dt>
 <dd><p>Boolean that determines whether we use the training data or the
-equally spaced grid points. By default, this is true, which means we snap to grid points
-as determined by the training data's marginal distribution.</p></dd>
+equally spaced grid points. By default, this is true, which means
+we snap to grid points as determined by the training data's marginal
+distribution.</p></dd>
 <dt>params.glmnet</dt>
 <dd><p>Optional list of parameters to pass to glmnet while fitting
 PDP curves to resemble the original predictions. By specifying
 parameters, one can do lasso or ridge regression.</p></dd>
 <dt>params.cv.glmnet</dt>
 <dd><p>Optional list of parameters to pass to cv.glmnet while fitting
-   PDP curves to resemble the original predictions. By specifying
+PDP curves to resemble the original predictions. By specifying
 parameters, one can do lasso or ridge regression.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A surrogate class object that can be used for predictions</p>
+    </div>
+    <div class="section level2">
+    <h2 id="note">Note<a class="anchor" aria-label="anchor" href="#note"></a></h2>
+    <p>For further details, please refer to the vignette for this method, which includes
+usage examples.</p>
     </div>
 
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
