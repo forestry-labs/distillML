@@ -15,9 +15,7 @@
 #' @title Sets a new center in the PDP and ICE plots made by an Interpreter
 #' @description Method for setting center value for a specific feature
 #' @param object The Interpreter class that we want to recenter the plots of.
-#' @param feature A vector with the names of the features that we want to center the
-#'   plots of. Can be either a continuous feature or a cetagorical feature. Must match
-#'   the name of one of the features in the Interpreter model's training data set.
+#' @param feature The name of the feature to set grid points for.
 #' @param value The new value to use for the plots of the specified feature to be centered at.
 #'   Must match the type of the feature (a factor level or continuous value in the range
 #'   of the specified feature).

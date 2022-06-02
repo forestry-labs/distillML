@@ -10,7 +10,7 @@
 \arguments{
 \item{x}{The Predictor object to print}
 
-\item{...}{Additional arguments passed to the plotting function.}
+\item{...}{Additional arguments passed to the print function.}
 }
 \description{
 Prints the task of an instance of the Predictor class.

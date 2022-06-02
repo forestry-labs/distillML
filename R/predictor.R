@@ -193,7 +193,7 @@ predict.Predictor = function(object,
 #' @title The Printing method for Predictor class
 #' @description Prints the task of an instance of the Predictor class.
 #' @param x The Predictor object to print
-#' @param ... Additional arguments passed to the plotting function.
+#' @param ... Additional arguments passed to the print function.
 #' @export
 print.Predictor = function(
   x,

@@ -1,8 +1,3 @@
----
-output:
-  pdf_document: default
-  html_document: default
----
 [![R-CMD-check](https://github.com/forestry-labs/interpretability_sandbox/actions/workflows/check-noncontainerized.yaml/badge.svg)](https://github.com/forestry-labs/interpretability_sandbox/actions/workflows/check-noncontainerized.yaml)
 
 # Distillery: Interpretable Machine Learning Methods and Surrogate Model Methods
@@ -24,10 +19,10 @@ provided on this page.
 For documentation, see
 <https://forestry-labs.github.io/Distillery/index.html>
 
-## A Simple Example: Predicting Carparace Width of Leptograpsus Crabs
+## A Simple Example: Predicting Carapace Width of Leptograpsus Crabs
 
 Throughout this section, we provide a tutorial on using the package with
-a random forest predictor for the Carparace Width of Leptograpsus Crabs.
+a random forest predictor for the Carapace Width of Leptograpsus Crabs.
 We demonstrate how to plot PDP, ICE, and ALE curves for machine learning
 interpretability, and show how to build the surrogate model that
 approximates the behavior of the initial random forest predictor.
@@ -148,6 +143,8 @@ print(preds_pdp_2d)
 For univariate and bivariate interpretability methods, we can use the
 `plot` method for the Interpreter class. For univariate summaries of the
 model’s behavior, we have three main options: PDP, ICE, and ALE curves.
+For all univariate plots for a feature, `Distillery` includes a histogram of 
+the marginal distribution of that feature to show the support.
 To plot a specific curve for a given set of feature, we simply specify
 the `method` parameter in `plot` function, as shown below:
 
@@ -189,7 +186,7 @@ For bivariate summary plots, the package provides two distinct methods.
 Given a continuous and categorical feature, the `plot` function provides
 conditional PDP curves, which separates the mean values based on the
 categorical feature value. For two continuous features, the `plot`
-function provides a heatmap. To input the pairs of features to plot, we
+function provides a PDP heatmap. To input the pairs of features to plot, we
 specify this in the form of a two-column dataframe of feature names,
 where each row represents a single pair.
 
@@ -217,7 +214,9 @@ specifying the number of points plotted, please refer to the article
 Even with a heatmap or conditional plots, two dimensional summaries may
 be difficult to interpret. The function `localSurrogate` provides a
 local summary of how changes in a pair of features affect the
-predictions of the model by providing a simple decision tree summary.
+predictions of the model by providing a simple decision tree summary. 
+In the plots below, the left tree represents the "Frontal Lobe" and "Sex" pair, 
+while the right tree represents the "Frontal Lobe" and "Rear Width" pair.
 
 ``` r
 local.surr <- localSurrogate(forest_interpret,
