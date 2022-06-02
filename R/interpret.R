@@ -101,7 +101,8 @@ Interpreter <- R6::R6Class(
     #' @param samples The number of observations used for the interpretability
     #'                method. If no number is given, the default set is the
     #'                minimum between 1000 and the number of rows in the
-    #'                training data set.
+    #'                training data set. Rows with missing values are excluded from
+    #'                being sampled.
     #' @param data.points The indices of the data points used for the PDP/ALE. This
     #'                    overwrites the "samples" parameter above.
     #' @param grid.size The number of grid points used to create for the PDP, ICE, and ALE
@@ -110,8 +111,8 @@ Interpreter <- R6::R6Class(
     #' @return An `Interpreter` object.
     #' @note
     #' The class that wraps a Predictor object for application of different
-    #' interpretability methods. For detailed examples of usage, please refer
-    #' to the vignette.
+    #' interpretability methods. For usage examples, please refer to the README
+    #' document.
     initialize = function(predictor = NULL,
                           samples = 1000,
                           data.points = NULL,
