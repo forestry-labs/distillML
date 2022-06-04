@@ -1,4 +1,4 @@
-[![R-CMD-check](https://github.com/forestry-labs/interpretability_sandbox/actions/workflows/check-noncontainerized.yaml/badge.svg)](https://github.com/forestry-labs/interpretability_sandbox/actions/workflows/check-noncontainerized.yaml)
+[![R-CMD-check](https://github.com/forestry-labs/Distillery/actions/workflows/check-noncontainerized.yaml/badge.svg)](https://github.com/forestry-labs/Distillery/actions/workflows/check-noncontainerized.yaml)
 
 # Distillery: Interpretable Machine Learning Methods and Surrogate Model Methods
 

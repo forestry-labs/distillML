@@ -9,30 +9,23 @@ Authors@R: c(
     person("Jasjeet", "Sekhon", role = "aut")
     )
 Maintainer: Theo Saarinen <theo_s@berkeley.edu>
-BugReports: https://github.com/forestry-labs/interpretability_sandbox/issues
-URL: https://github.com/forestry-labs/interpretability_sandbox
+BugReports: https://github.com/forestry-labs/Distillery/issues
+URL: https://github.com/forestry-labs/Distillery
 Description: Provides several methods for model distillation and interpretability 
     for general black box machine learning models and treatment effect estimation
     methods.  Brian Cho, Theo F. Saarinen, Jasjeet S. Sekhon, Simon Walter.
 License: GPL (>=3)
 Encoding: UTF-8
 Imports:
-    MASS,
-    parallel,
-    methods,
     ggplot2,
     glmnet,
     Rforestry,
-    onehot,
     dplyr,
     R6 (>= 2.0),
     checkmate,
-    tidyverse,
-    magrittr,
     purrr,
     tidyr,
     data.table,
-    pdp,
     mltools,
     gridExtra
 Suggests:
