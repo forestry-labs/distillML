@@ -249,7 +249,7 @@ Interpreter <- R6::R6Class(
       data <- predictor$data[data.points,]
       grid.points <- list()
       for (feature in features){
-        if (class(data[,feature]) != "factor" && length(unique(data[, feature])) > 2){
+        if (!inherits(data[,feature], "factor") && length(unique(data[, feature])) > 2){
           temp.list <- list(seq(min(data[,feature]),max(data[,feature]),length.out = grid.size))
         }
         else{
@@ -263,7 +263,7 @@ Interpreter <- R6::R6Class(
       center.at <- list()
       for (i in 1:length(features)){
 
-        if (class(data[,features[i]]) ==  "factor"){
+        if (inherits(data[,features[i]], "factor")){
           temp.list <- list(grid.points[[i]][1])
         }
         else{

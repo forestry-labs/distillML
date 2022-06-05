@@ -29,7 +29,7 @@
 #' colnames(data) <- c("Species","Sex","Index","Frontal Lobe",
 #' "Rear Width", "Carapace Length","Carapace Width","Body Depth")
 #'
-#' test_ind <- sample(1:nrow(data), nrow(data)%/%5)
+#' test_ind <- sample(1:nrow(data), 180)
 #' train_reg <- data[-test_ind,]
 #' test_reg <- data[test_ind,]
 #'
@@ -160,7 +160,7 @@ predict.Surrogate = function(object,
       for (i in 1:length(newdata[,feature])){
 
         # find closest grid point for each i
-        if (class(newdata[,feature])=="factor"){
+        if (inherits(newdata[,feature], "factor")){
 
           # if we have seen the factor before
           if (newdata[i,feature] %in% levels(object$interpreter$grid.points[[feature]])){

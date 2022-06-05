@@ -10,7 +10,7 @@ test_that("Tests that the surrogate models are working", {
   colnames(data) <- c("Species","Sex","Index","FrontalLobe",
                       "RearWidth", "CarapaceLength","CarapaceWidth","BodyDepth")
 
-  test_ind <- sample(1:nrow(data), nrow(data)%/%5)
+  test_ind <- sample(1:nrow(data), 180)
   train_reg <- data[-test_ind,]
   test_reg <- data[test_ind,]
 

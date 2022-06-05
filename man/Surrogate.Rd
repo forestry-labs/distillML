@@ -21,7 +21,7 @@ levels(data$sp) <- list(Orange = "O", Blue = "B")
 colnames(data) <- c("Species","Sex","Index","Frontal Lobe",
 "Rear Width", "Carapace Length","Carapace Width","Body Depth")
 
-test_ind <- sample(1:nrow(data), nrow(data)\%/\%5)
+test_ind <- sample(1:nrow(data), 180)
 train_reg <- data[-test_ind,]
 test_reg <- data[test_ind,]
 

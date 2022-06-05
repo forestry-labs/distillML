@@ -38,12 +38,12 @@ set.center.at = function(object,
   # valid feature index
   index <- which(names(object$center.at) == feature)
 
-  if (class(value) %in% c("numeric", "integer")){
+  if (inherits(value, c("numeric", "integer"))){
     if (class(value) != class(object$predictor$data[,feature])){
       stop("Invalid value for the given feature.")
     }
   }
-  if (class(value) == "factor"){
+  if (inherits(value, "factor")){
     if (!(value %in% object$grid.points[[index]])){
       stop("Invalid value for the given feature.")
     }
@@ -87,18 +87,18 @@ set.grid.points = function(object,
   if (length(values) < 2){
     stop("Requires at least 2 distinct values.")
   }
-  if (class(values) == "numeric"){
+  if (inherits(values,"numeric")){
     if (class(values) != class(object$predictor$data[,feature])){
       stop("Invalid value for the given feature.")
     }
   }
-  if (class(values) %in% c("factor", "integer")){
+  if (inherits(values, c("factor", "integer"))){
     if (any(!(values %in% object$predictor$data[,feature]))){
       stop("Invalid value for the given feature.")
     }
   }
   # check that center.at value is in the new set of values
-  if (class(values) != "factor"){
+  if (!inherits(values, "factor")){
     if (object$center.at[[index]] > max(values) || object$center.at[[index]] < min(values)){
       stop("The value for centering is not included in the new values.")
     }
@@ -173,7 +173,7 @@ predict_ICE.Plotter = function(object,
         newdata <- newdata[,-which(names(newdata)==object$predictor$y)]
 
         # necessary fix for factor variables
-        if (class(val) == "character"){
+        if (inherits(val, "character")){
           newdata[,feature] <- factor(rep(val, nrow(newdata)),
                                       levels = levels(object$grid.points[[index]]))
         }
@@ -317,7 +317,8 @@ predict_PDP.2D.Plotter = function(object,
 
   # See if we have all of the prediicted 2-D PDPs desired
   for (i in 1:nrow(feat.2d)){
-    features <- feat.2d[i, ][order(feat.2d[i,])] # order the features
+    ordering <- order(feat.2d[i,])
+    features <- feat.2d[i, ][ordering] # order the features
     label <- paste(features[1], features[2], sep = ", ")
 
     # if the predictions for the feature are missing
@@ -843,7 +844,8 @@ plot.Interpreter = function(x,
       names.2d <- c()
       for (i in 1:nrow(features.2d)){
         # heatmap for 2 continuous features
-        features.2d[i,] <- features.2d[i,][order(features.2d[i,])]
+        ordering <- order(features.2d[i,])
+        features.2d[i,] <- features.2d[i,][ordering]
 
         if (feature.classes[features.2d[i,1]] != "factor" &&
             feature.classes[features.2d[i,2]]!="factor"){
