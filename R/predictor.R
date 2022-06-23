@@ -31,7 +31,7 @@
 #'        vector of predictions for each observation in the data frame.
 #' @field y The name of the outcome feature in the `data` data frame.
 #' @examples
-#' library(Distillery)
+#' library(distillML)
 #' library(Rforestry)
 #' set.seed(491)
 #' data <- MASS::crabs

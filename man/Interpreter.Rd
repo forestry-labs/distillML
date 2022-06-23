@@ -30,7 +30,7 @@ interpretability methods. For usage examples, please refer to the README
 document.
 }
 \examples{
-library(Distillery)
+library(distillML)
 library(Rforestry)
 set.seed(491)
 data <- MASS::crabs
@@ -94,7 +94,7 @@ the training data.}
 parameter sets the number of grid points for PDP, ICE, and ALE plots.}
 
 \item{\code{saved}}{A list that caches the previous calculations for the 1-D ICE plots,
-1-D PDP plots, 2-D PDP plots, and grid points for building the distillery model.
+1-D PDP plots, 2-D PDP plots, and grid points for building the distilled model.
 This saves the uncentered calculations.}
 
 \item{\code{ale.grid}}{A list that caches the saved predictions for the ALE plots}

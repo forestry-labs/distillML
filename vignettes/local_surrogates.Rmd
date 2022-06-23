@@ -20,14 +20,14 @@ and how to specify different parameters of the weak learner returned.
 
 ```{r, include=FALSE, echo = FALSE, results='hide'}
 # Load the required packages
-library(Distillery)
+library(distillML)
 library(Rforestry)
 library(ggplot2)
 ```
 
 ```{r, echo = TRUE}
 # Load the required packages
-library(Distillery)
+library(distillML)
 library(Rforestry)
 
 # Load in data 

@@ -1,9 +1,9 @@
 ## -----------------------------------------------------------------------------
 library(MASS)
-library(Distillery)
+library(distillML)
 library(Rforestry)
 
-# Load in data 
+# Load in data
 data("iris")
 set.seed(491)
 data <- iris
@@ -41,11 +41,11 @@ plot(forest_interpreter, features = "Sepal.Width")
 
 ## -----------------------------------------------------------------------------
 # Set new grid points
-set.grid.points(forest_interpreter, "Sepal.Width", 
+set.grid.points(forest_interpreter, "Sepal.Width",
                 values = seq(2, 4.5, length.out = 100))
 
 # Set new center
-set.center.at(forest_interpreter, "Sepal.Width", 
+set.center.at(forest_interpreter, "Sepal.Width",
               mean(seq(2, 4.5, length.out = 100)))
 
 # New plot

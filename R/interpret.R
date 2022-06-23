@@ -49,11 +49,11 @@
 #' @field grid.size The number of grid points to plot for a continuous feature. This
 #'                  parameter sets the number of grid points for PDP, ICE, and ALE plots.
 #' @field saved A list that caches the previous calculations for the 1-D ICE plots,
-#'              1-D PDP plots, 2-D PDP plots, and grid points for building the distillery model.
+#'              1-D PDP plots, 2-D PDP plots, and grid points for building the distilled model.
 #'              This saves the uncentered calculations.
 #' @field ale.grid A list that caches the saved predictions for the ALE plots
 #' @examples
-#' library(Distillery)
+#' library(distillML)
 #' library(Rforestry)
 #' set.seed(491)
 #' data <- MASS::crabs

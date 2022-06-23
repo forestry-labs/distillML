@@ -11,7 +11,7 @@ Do not initalize this class on its own. It is automatically created
       by the distill function for the interpreter class.
 }
 \examples{
-library(Distillery)
+library(distillML)
 library(Rforestry)
 set.seed(491)
 data <- MASS::crabs

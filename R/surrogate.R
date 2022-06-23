@@ -19,7 +19,7 @@
 #' @field grid A list of PDPS that determine our prediction.
 #' @field snap.grid Boolean that determines whether we use grid.points
 #' @examples
-#' library(Distillery)
+#' library(distillML)
 #' library(Rforestry)
 #' set.seed(491)
 #' data <- MASS::crabs

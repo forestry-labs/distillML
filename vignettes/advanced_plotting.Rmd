@@ -24,7 +24,7 @@ which consists of the following parameters:
 
 ```{r}
 library(MASS)
-library(Distillery)
+library(distillML)
 library(Rforestry)
 
 # Load in data 

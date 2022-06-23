@@ -17,7 +17,7 @@ model, we first create an `Interpreter` object.
 
 ```{r, include=FALSE, echo = FALSE, results='hide'}
 # Load the required packages
-library(Distillery)
+library(distillML)
 library(Rforestry)
 library(ggplot2)
 library(dplyr)
@@ -25,7 +25,7 @@ library(dplyr)
 
 ```{r, echo = TRUE}
 # Load the required packages
-library(Distillery)
+library(distillML)
 library(Rforestry)
 
 # Load in data 

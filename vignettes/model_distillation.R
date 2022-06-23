@@ -1,6 +1,6 @@
 ## ---- include=FALSE, echo = FALSE, results='hide'-----------------------------
 # Load the required packages
-library(Distillery)
+library(distillML)
 library(Rforestry)
 library(ggplot2)
 library(dplyr)
@@ -8,10 +8,10 @@ library(dplyr)
 
 ## ---- echo = TRUE-------------------------------------------------------------
 # Load the required packages
-library(Distillery)
+library(distillML)
 library(Rforestry)
 
-# Load in data 
+# Load in data
 data("iris")
 set.seed(491)
 data <- iris
@@ -47,8 +47,8 @@ print(distilled_model$weights)
 
 ## -----------------------------------------------------------------------------
 # Sparse Model
-sparse_model <- distill(forest_interpret, 
-                           cv = T, 
+sparse_model <- distill(forest_interpret,
+                           cv = T,
                            params.cv.glmnet = list(lower.limits = 0,
                                                    intercept = F,
                                                    alpha = 1))

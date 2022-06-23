@@ -24,7 +24,7 @@ The class that wraps a machine learning model in order to provide a
 prediction method must be constructed, with optional argument of type
 }
 \examples{
-library(Distillery)
+library(distillML)
 library(Rforestry)
 set.seed(491)
 data <- MASS::crabs

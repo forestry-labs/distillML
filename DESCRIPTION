@@ -1,4 +1,4 @@
-Package: Distillery
+Package: distillML
 Type: Package
 Title: Model Distillation and Interpretability Methods for Machine Learning Models
 Version: 0.1.0.2

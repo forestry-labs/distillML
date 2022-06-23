@@ -1,8 +1,8 @@
 [![R-CMD-check](https://github.com/forestry-labs/Distillery/actions/workflows/check-noncontainerized.yaml/badge.svg)](https://github.com/forestry-labs/Distillery/actions/workflows/check-noncontainerized.yaml)
 
-# Distillery: Interpretable Machine Learning Methods and Surrogate Model Methods
+# distillML: Interpretable Machine Learning Methods and Surrogate Model Methods
 
-`Distillery` provides several methods for model distillation and
+`distillML` provides several methods for model distillation and
 interpretability for general black box machine learning models. This
 package provides implementations of the partial dependence plot (PDP),
 individual conditional expectation (ICE), and accumulated local effect
@@ -34,7 +34,7 @@ of several species of crabs collected at Fremantle, West Australia.
 
 ``` r
 library(MASS)
-library(Distillery)
+library(distillML)
 library(Rforestry)
 library(ggplot2)
 
@@ -143,7 +143,7 @@ print(preds_pdp_2d)
 For univariate and bivariate interpretability methods, we can use the
 `plot` method for the Interpreter class. For univariate summaries of the
 model’s behavior, we have three main options: PDP, ICE, and ALE curves.
-For all univariate plots for a feature, `Distillery` includes a histogram of 
+For all univariate plots for a feature, `distillML` includes a histogram of 
 the marginal distribution of that feature to show the support.
 To plot a specific curve for a given set of feature, we simply specify
 the `method` parameter in `plot` function, as shown below:
