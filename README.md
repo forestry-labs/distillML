@@ -155,7 +155,7 @@ plot(forest_interpret,
      features = c("Frontal Lobe", "Rear Width"))
 ```
 
-![](vignettes/pdp.png)<!-- -->
+![](man/figures/pdp.png)<!-- -->
 
 ``` r
 plot(forest_interpret,
@@ -163,7 +163,7 @@ plot(forest_interpret,
      features = c("Frontal Lobe", "Rear Width"))
 ```
 
-![](vignettes/ice.png)<!-- -->
+![](man/figures/ice.png)<!-- -->
 
 ``` r
 ## default option (does this without specifying method)
@@ -172,7 +172,7 @@ plot(forest_interpret,
      features = c("Frontal Lobe", "Rear Width"))
 ```
 
-![](vignettes/pdp_ice.png)<!-- -->
+![](man/figures/pdp_ice.png)<!-- -->
 
 ``` r
 plot(forest_interpret,
@@ -180,7 +180,7 @@ plot(forest_interpret,
      features = c("Frontal Lobe", "Rear Width"))
 ```
 
-![](vignettes/ale.png)<!-- -->
+![](man/figures/ale.png)<!-- -->
 
 For bivariate summary plots, the package provides two distinct methods.
 Given a continuous and categorical feature, the `plot` function provides
@@ -198,12 +198,12 @@ plot(forest_interpret,
 
     ## $`Frontal Lobe.Sex`
 
-![](vignettes/unnamed-chunk-6-1.png)<!-- -->
+![](man/figures/unnamed-chunk-6-1.png)<!-- -->
 
     ## 
     ## $`Frontal Lobe.Rear Width`
 
-![](vignettes/unnamed-chunk-6-2.png)<!-- -->
+![](man/figures/unnamed-chunk-6-2.png)<!-- -->
 
 For more advanced plotting features, such as clustering ICE curves or
 specifying the number of points plotted, please refer to the article
@@ -228,7 +228,7 @@ plot(local.surr$models$`Frontal Lobe.Sex`)
 plot(local.surr$models$`Frontal Lobe.Rear Width`)
 ```
 
-![](vignettes/local_surr.png)<!-- -->
+![](man/figures/local_surr.png)<!-- -->
 
 
 For additional details on the `localSurrogate` method, such as
@@ -260,7 +260,7 @@ ggplot(data = plot.comparison, aes(x = original, y = surrogate)) +
   geom_point() + geom_abline(col = "red")
 ```
 
-![](vignettes/unnamed-chunk-8-1.png)<!-- -->
+![](man/figures/unnamed-chunk-8-1.png)<!-- -->
 
 For additional details on creating the distilled surrogate models,
 please refer to the article “Distillation Methods”.
