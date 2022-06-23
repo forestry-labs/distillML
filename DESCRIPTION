@@ -9,8 +9,8 @@ Authors@R: c(
     person("Jasjeet", "Sekhon", role = "aut")
     )
 Maintainer: Theo Saarinen <theo_s@berkeley.edu>
-BugReports: https://github.com/forestry-labs/Distillery/issues
-URL: https://github.com/forestry-labs/Distillery
+BugReports: https://github.com/forestry-labs/distillML/issues
+URL: https://github.com/forestry-labs/distillML
 Description: Provides several methods for model distillation and interpretability 
     for general black box machine learning models and treatment effect estimation
     methods.  Brian Cho, Theo F. Saarinen, Jasjeet S. Sekhon, Simon Walter.
