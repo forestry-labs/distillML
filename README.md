@@ -1,4 +1,4 @@
-[![R-CMD-check](https://github.com/forestry-labs/Distillery/actions/workflows/check-noncontainerized.yaml/badge.svg)](https://github.com/forestry-labs/Distillery/actions/workflows/check-noncontainerized.yaml)
+[![R-CMD-check](https://github.com/forestry-labs/distillML/actions/workflows/check-noncontainerized.yaml/badge.svg)](https://github.com/forestry-labs/distillML/actions/workflows/check-noncontainerized.yaml)
 
 # distillML: Interpretable Machine Learning Methods and Surrogate Model Methods
 
@@ -17,7 +17,7 @@ interpretability features, or local surrogate methods, see the articles
 provided on this page.
 
 For documentation, see
-<https://forestry-labs.github.io/Distillery/index.html>
+<https://forestry-labs.github.io/distillML/index.html>
 
 ## A Simple Example: Predicting Carapace Width of Leptograpsus Crabs
 
