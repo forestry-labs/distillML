@@ -16,8 +16,8 @@ package. For further details on surrogate distillation, advanced
 interpretability features, or local surrogate methods, see the articles
 provided on this page.
 
-For documentation, see
-<https://forestry-labs.github.io/distillML/index.html>
+For documentation, see:
+<https://forestry-labs.github.io/distillML/reference/index.html>
 
 ## A Simple Example: Predicting Carapace Width of Leptograpsus Crabs
 
