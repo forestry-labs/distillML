@@ -155,7 +155,7 @@ plot(forest_interpret,
      features = c("Frontal Lobe", "Rear Width"))
 ```
 
-![](vignettes/README_files/figure-gfm/pdp.png)<!-- -->
+![](vignettes/pdp.png)<!-- -->
 
 ``` r
 plot(forest_interpret,
@@ -163,7 +163,7 @@ plot(forest_interpret,
      features = c("Frontal Lobe", "Rear Width"))
 ```
 
-![](vignettes/README_files/figure-gfm/ice.png)<!-- -->
+![](vignettes/ice.png)<!-- -->
 
 ``` r
 ## default option (does this without specifying method)
@@ -172,7 +172,7 @@ plot(forest_interpret,
      features = c("Frontal Lobe", "Rear Width"))
 ```
 
-![](vignettes/README_files/figure-gfm/pdp_ice.png)<!-- -->
+![](vignettes/pdp_ice.png)<!-- -->
 
 ``` r
 plot(forest_interpret,
@@ -180,7 +180,7 @@ plot(forest_interpret,
      features = c("Frontal Lobe", "Rear Width"))
 ```
 
-![](vignettes/README_files/figure-gfm/ale.png)<!-- -->
+![](vignettes/ale.png)<!-- -->
 
 For bivariate summary plots, the package provides two distinct methods.
 Given a continuous and categorical feature, the `plot` function provides
@@ -198,12 +198,12 @@ plot(forest_interpret,
 
     ## $`Frontal Lobe.Sex`
 
-![](vignettes/README_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
+![](vignettes/unnamed-chunk-6-1.png)<!-- -->
 
     ## 
     ## $`Frontal Lobe.Rear Width`
 
-![](vignettes/README_files/figure-gfm/unnamed-chunk-6-2.png)<!-- -->
+![](vignettes/unnamed-chunk-6-2.png)<!-- -->
 
 For more advanced plotting features, such as clustering ICE curves or
 specifying the number of points plotted, please refer to the article
@@ -228,7 +228,7 @@ plot(local.surr$models$`Frontal Lobe.Sex`)
 plot(local.surr$models$`Frontal Lobe.Rear Width`)
 ```
 
-![](vignettes/README_files/figure-gfm/local_surr.png)<!-- -->
+![](vignettes/local_surr.png)<!-- -->
 
 
 For additional details on the `localSurrogate` method, such as
@@ -260,7 +260,7 @@ ggplot(data = plot.comparison, aes(x = original, y = surrogate)) +
   geom_point() + geom_abline(col = "red")
 ```
 
-![](vignettes/README_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+![](vignettes/unnamed-chunk-8-1.png)<!-- -->
 
 For additional details on creating the distilled surrogate models,
 please refer to the article “Distillation Methods”.
