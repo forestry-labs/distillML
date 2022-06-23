@@ -1,7 +1,6 @@
 test_that("Tests that distillation with selected features is working", {
 
   library(Rforestry)
-  library(Distillery)
   set.seed(491)
 
   data <- MASS::crabs

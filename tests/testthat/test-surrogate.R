@@ -1,7 +1,6 @@
 test_that("Tests that the surrogate models are working", {
 
   library(Rforestry)
-  library(Distillery)
   set.seed(491)
 
   data <- MASS::crabs
