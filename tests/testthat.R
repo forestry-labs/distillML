@@ -1,5 +1,5 @@
 library(testthat)
-library(Distillery)
-packageVersion("Distillery")
+library(distillML)
+packageVersion("distillML")
 
-test_check("Distillery")
+test_check("distillML")
