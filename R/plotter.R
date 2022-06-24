@@ -9,6 +9,7 @@
 #' @importFrom stats coef na.omit quantile sd
 #' @importFrom utils head
 #' @importFrom stats kmeans
+#' @importFrom stats ksmooth
 
 
 #' @name set.center.at
@@ -638,6 +639,17 @@ predict_ALE <- function(x, feature, training_data, save = T){
 #'    If the "gradient" option is used, the clusters will be determined by running K
 #'    means on the numerical gradient of the predictions of the ICE functions. If
 #'    this is not NULL, one must use the method "ice".
+#' @param smooth A binary variable to determine whether to smoothen the plots of the
+#'               PDP, ICE, or ALE curves for continuous variables.
+#' @param smooth.binsize The bandwidth for the kernels. They are scaled such that
+#'                       their quartiles are at 0.25 * bandwidth. By default, this
+#'                       is set as the maximum difference between the minimum and
+#'                       maximum of the grid points.
+#' @param smooth.type The type of kernel to be used. Users can input either strings "box"
+#'                    or "normal". The default is "normal".
+#' @param smooth.npoints The number of points returned when using the kernel method. By
+#'                       default, this is twice the number of grid points for that
+#'                       feature.
 #' @param ... Additiional parameters to pass to the plot function
 #' @return A list of plots with 1-d features and 2-d features. For 2-d features with
 #'         one continuous and one categorical feature, the plot is a linear plot of the
@@ -651,6 +663,10 @@ plot.Interpreter = function(x,
                         features.2d = NULL,
                         clusters = NULL,
                         clusterType = "preds",
+                        smooth = FALSE,
+                        smooth.binsize = NULL,
+                        smooth.type = "normal",
+                        smooth.npoints = 2 * x$grid.size,
                         ...)
 {
 
@@ -681,6 +697,7 @@ plot.Interpreter = function(x,
 
         df_all <- predict_ICE.Plotter(x, features = features)
 
+        # bar plot for factor variables
         if (x$feat.class[[feature]]=="factor"){
           # Process Data
           data.factor <- t(df_all[[feature]])[-1,]
@@ -715,6 +732,7 @@ plot.Interpreter = function(x,
           frequency <- ggplot(temp.data, aes(x=vals, y=counts)) +
             geom_bar(stat = "identity") + xlab(feature) + ylab("Counts")
         }
+        # for continuous
         else{
           df_all <- center.preds(x, features = features, plot.type = "ICE")
           df <- df_all[[feature]]
@@ -722,6 +740,43 @@ plot.Interpreter = function(x,
           pdps <- predict_PDP.1D.Plotter(x, features = features)
           pdp.line <- center.preds(x, features = features, plot.type = "PDP.1D")[[feature]][,2]
           df <- cbind(df , pdp = pdp.line)
+
+          # smoothen curves in dataframe
+          if (smooth){
+            if (is.null(smooth.binsize)){
+              smooth.binsize <- apply(df, 2, max) - apply(df, 2, min)
+            }
+            else{
+              smooth.binsize <- rep(smooth.binsize, ncol(df)-1)
+            }
+
+            hold <- ksmooth(x = df$feature,
+                            y = df[, 2],
+                            kernel = smooth.type,
+                            bandwidth = smooth.binsize[2],
+                            n.points = smooth.npoints)
+
+            if (any(is.na(hold$y))){
+              stop("The given kernel bin size returns NA values. Please specify a different bin size.")
+            }
+
+            new.df <- data.frame(hold$x, hold$y)
+
+            for (col.index in 3:ncol(df)){
+              hold <- ksmooth(x = df$feature,
+                              y = df[, col.index],
+                              kernel = smooth.type,
+                              bandwidth = smooth.binsize[2],
+                              n.points = smooth.npoints)
+              new.df <- cbind(new.df, hold$y)
+            }
+
+            colnames(new.df) <- colnames(df)
+            df <- new.df
+          }
+
+
+
           df <- setDT(data.frame(df))
           df.ice <- df[,-"pdp"]
 
@@ -902,6 +957,43 @@ plot.Interpreter = function(x,
     for (feature in features){
       # Calculate the accumulated local effects using ale function
       feat_ale <- predict_ALE(x, feature, training_data, save = T)
+
+      # smoothen if desired
+      if (smooth){
+        temp.binsize <- max(feat_ale$training_data[, 1]) -
+          min(feat_ale$training_data[, 1])
+
+        if (is.null(smooth.binsize)){
+          hold <- ksmooth(x = feat_ale$ale$x,
+                          y = feat_ale$ale$ale,
+                          kernel = smooth.type,
+                          bandwidth = temp.binsize,
+                          n.points = smooth.npoints)
+        }
+
+        else{
+          hold <- ksmooth(x = feat_ale$ale$x,
+                          y = feat_ale$ale$ale,
+                          kernel = smooth.type,
+                          bandwidth = smooth.binsize,
+                          n.points = smooth.npoints)
+        }
+
+        if (any(is.na(hold$y))){
+          stop("Bin size for the kernel method creates NA values. Please specify another bin size.")
+        }
+
+        to.remove <- nrow(feat_ale$ale)
+
+        # add new rows and remove old rows
+        feat_ale$ale <- rbind(feat_ale$ale,
+                              data.frame(x = hold$x,
+                                         ale = hold$y,
+                                         variable = rep(feature, length(hold$x)))
+                              )
+
+        feat_ale$ale <- feat_ale$ale[(to.remove+1):nrow(feat_ale$ale), ]
+      }
 
       # Turn output of ale into a plot
       rugplot_data <-

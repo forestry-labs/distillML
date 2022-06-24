@@ -137,6 +137,19 @@ test_that("Tests that the plotting functions are working", {
   expect_equal(dim(forest_interpret$ale.grid$FrontalLobe$ale), c(50, 3))
   expect_equal(dim(forest_interpret$ale.grid$RearWidth$ale), c(49, 3))
 
+  smooth_ale <- plot(forest_interpret,
+                     features = c("RearWidth"),
+                     smooth = T,
+                     method = "ale",
+                     smooth.binsize = 2,
+                     smooth.type = "box",
+                     smooth.npoints = 500)
+
+  smooth_pdp <- plot(forest_interpret,
+                     features = c("RearWidth"),
+                     smooth = T,
+                     smooth.type = "normal")
+
   rm(list=ls())
 
 

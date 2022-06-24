@@ -12,6 +12,10 @@
   features.2d = NULL,
   clusters = NULL,
   clusterType = "preds",
+  smooth = FALSE,
+  smooth.binsize = NULL,
+  smooth.type = "normal",
+  smooth.npoints = 2 * x$grid.size,
   ...
 )
 }
@@ -39,6 +43,21 @@ will be determined by running K means on the predictions of the ICE functions.
 If the "gradient" option is used, the clusters will be determined by running K
 means on the numerical gradient of the predictions of the ICE functions. If
 this is not NULL, one must use the method "ice".}
+
+\item{smooth}{A binary variable to determine whether to smoothen the plots of the
+PDP, ICE, or ALE curves for continuous variables.}
+
+\item{smooth.binsize}{The bandwidth for the kernels. They are scaled such that
+their quartiles are at 0.25 * bandwidth. By default, this
+is set as the maximum difference between the minimum and
+maximum of the grid points.}
+
+\item{smooth.type}{The type of kernel to be used. Users can input either strings "box"
+or "normal". The default is "normal".}
+
+\item{smooth.npoints}{The number of points returned when using the kernel method. By
+default, this is twice the number of grid points for that
+feature.}
 
 \item{...}{Additiional parameters to pass to the plot function}
 }
