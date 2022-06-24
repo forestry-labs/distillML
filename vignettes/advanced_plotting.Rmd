@@ -160,17 +160,17 @@ parameters correspond to
 
 ```{r}
 # Default smoothening options
-plot(forest_interpret,
-     features = c("RearWidth"),
+plot(forest_interpreter,
+     features = c("Petal.Length"),
      smooth = T)
 
 # unsmoothened plots
-plot(forest_interpret, 
-     features = c("RearWidth"))
+plot(forest_interpreter, 
+     features = c("Petal.Length"))
 
 # With Additional Parameters
-plot(forest_interpret,
-     features = c("RearWidth"),
+plot(forest_interpreter,
+     features = c("Petal.Length"),
      smooth = T,
      method = "ale",
      smooth.binsize = 2,
