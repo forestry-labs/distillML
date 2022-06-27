@@ -183,6 +183,7 @@ model:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Default smoothing options</span>
 <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">forest_interpreter</span>,
+     method <span class="op">=</span> <span class="st">"pdp"</span>,
      features <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Sepal.Width"</span><span class="op">)</span>,
      smooth <span class="op">=</span> <span class="cn">T</span><span class="op">)</span></code></pre></div>
 <pre><code><span class="co">## $Sepal.Width</span></code></pre>
@@ -190,6 +191,7 @@ model:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># compare to unsmoothed plots</span>
 <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">forest_interpreter</span>, 
+     method <span class="op">=</span> <span class="st">"pdp"</span>,
      features <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Sepal.Width"</span><span class="op">)</span><span class="op">)</span></code></pre></div>
 <pre><code><span class="co">## $Sepal.Width</span></code></pre>
 <p><img src="smoothing_files/figure-html/unnamed-chunk-2-2.png" width="700"></p>
@@ -220,6 +222,14 @@ prompt the user to put different values for these parameters.</p>
      smooth.npoints <span class="op">=</span> <span class="fl">500</span><span class="op">)</span></code></pre></div>
 <pre><code><span class="co">## $Sepal.Width</span></code></pre>
 <p><img src="smoothing_files/figure-html/unnamed-chunk-4-1.png" width="700"></p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># Standard ALE plots</span>
+<span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">forest_interpreter</span>,
+     features <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Sepal.Width"</span><span class="op">)</span>,
+     method <span class="op">=</span> <span class="st">"ale"</span>,
+     smooth <span class="op">=</span> <span class="cn">F</span><span class="op">)</span></code></pre></div>
+<pre><code><span class="co">## $Sepal.Width</span></code></pre>
+<p><img src="smoothing_files/figure-html/unnamed-chunk-4-2.png" width="700"></p>
 <p>For further details on these methods, please refer to the
 “References” tab, which contains documentation for each of the methods
 discussed.</p>

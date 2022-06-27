@@ -75,8 +75,6 @@ forest_predictor <- Predictor$new(model = forest,
 
 # We specify grid.size for clarity (grid.size = 50 by default)
 forest_interpreter <- Interpreter$new(forest_predictor)
-
-print(forest_interpreter)
 ```
 
 We can compare the smooth and standard PDP plots for the same model:
@@ -84,11 +82,13 @@ We can compare the smooth and standard PDP plots for the same model:
 ```{r}
 # Default smoothing options
 plot(forest_interpreter,
+     method = "pdp",
      features = c("Sepal.Width"),
      smooth = T)
 
 # compare to unsmoothed plots
 plot(forest_interpreter, 
+     method = "pdp",
      features = c("Sepal.Width"))
 
 
@@ -122,6 +122,12 @@ plot(forest_interpreter,
      method = "ale",
      smooth.binsize = .2,
      smooth.npoints = 500)
+
+# Standard ALE plots
+plot(forest_interpreter,
+     features = c("Sepal.Width"),
+     method = "ale",
+     smooth = F)
 
 ```
 
