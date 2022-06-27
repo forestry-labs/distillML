@@ -112,15 +112,15 @@ Given independent features <span class="math inline">\(x\)</span>, and
 outcomes <span class="math inline">\(y\)</span>, a kernel function <span class="math inline">\(K\)</span> and a bandwidth <span class="math inline">\(h\)</span>, the Nadaraya–Watson kernel regression
 estimator is given by:</p>
 <p><span class="math display">\[
-\widehat{m}_{h}(x)=\frac{\sum_{i=1}^{n} K_{h}\left(x-x_{i}\right)
+\widehat{m}_{h}(x)=\frac{\sum_{i}^{n} K_{h}\left(x-x_{i}\right)
 y_{i}}{\sum_{i=1}^{n} K_{h}\left(x-x_{i}\right)}
 \]</span> Once we have estimated the point wise values of the PDP
 function, we can apply this kernel regression to smooth the estimated
 function. The predictions of the smoothed PDP function are then given
 by: <span class="math display">\[
-\hat{PDP}_{S, smooth}\left(x\right) =\frac{\sum_{i=1}^{n}
-K_{h}\left(x-x_{i}\right) \hat{PDP}_{S}\left(x_i\right) }{\sum_{i=1}^{n}
-K_{h}\left(x-x_{i}\right)}
+\hat{PDP}_{S, smooth}\left(x\right) =\frac{\sum_{i \in X_{train}}
+K_{h}\left(x-x_{i}\right) \hat{PDP}_{S}\left(x_i\right) }{\sum_{i \in
+X_{train}} K_{h}\left(x-x_{i}\right)}
 \]</span> We implement this method and allow the user to specify the
 desired kernel, <span class="math inline">\(K\)</span>, and bandwidth
 <span class="math inline">\(h\)</span>.</p>
@@ -159,28 +159,10 @@ interpolate, and the type of smoothing with the parameters
                                   task <span class="op">=</span> <span class="st">"regression"</span><span class="op">)</span>
 
 <span class="co"># We specify grid.size for clarity (grid.size = 50 by default)</span>
-<span class="va">forest_interpreter</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/Interpreter.html">Interpreter</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="va">forest_predictor</span><span class="op">)</span>
-
-<span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">forest_interpreter</span><span class="op">)</span></code></pre></div>
-<pre><code><span class="co">## &lt;Interpreter&gt;</span>
-<span class="co">##   Public:</span>
-<span class="co">##     ale.grid: list</span>
-<span class="co">##     center.at: list</span>
-<span class="co">##     clone: function (deep = FALSE) </span>
-<span class="co">##     data.points: 67 92 60 69 104 12 24 106 112 18 2 141 64 78 83 10 6 85  ...</span>
-<span class="co">##     feat.class: numeric numeric numeric factor</span>
-<span class="co">##     features: Sepal.Width Petal.Length Petal.Width Species</span>
-<span class="co">##     features.2d: data.frame</span>
-<span class="co">##     grid.points: list</span>
-<span class="co">##     grid.size: 50</span>
-<span class="co">##     initialize: function (predictor = NULL, samples = 1000, data.points = NULL, </span>
-<span class="co">##     pdp.1d: list</span>
-<span class="co">##     pdp.2d: list</span>
-<span class="co">##     predictor: Predictor, R6</span>
-<span class="co">##     saved: list</span></code></pre>
+<span class="va">forest_interpreter</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/Interpreter.html">Interpreter</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="va">forest_predictor</span><span class="op">)</span></code></pre></div>
 <p>We can compare the smooth and standard PDP plots for the same
 model:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Default smoothing options</span>
 <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">forest_interpreter</span>,
      method <span class="op">=</span> <span class="st">"pdp"</span>,
@@ -188,7 +170,7 @@ model:</p>
      smooth <span class="op">=</span> <span class="cn">T</span><span class="op">)</span></code></pre></div>
 <pre><code><span class="co">## $Sepal.Width</span></code></pre>
 <p><img src="smoothing_files/figure-html/unnamed-chunk-2-1.png" width="700"></p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># compare to unsmoothed plots</span>
 <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">forest_interpreter</span>, 
      method <span class="op">=</span> <span class="st">"pdp"</span>,
@@ -202,7 +184,7 @@ grid points. When setting the bandwidth and number of points, one should
 be careful about creating empty kernels. These result in NA values and
 prompt the user to put different values for these parameters.</p>
 <p>We can also smooth ALE and ICE plots in the same way:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Smooth ICE plots</span>
 <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">forest_interpreter</span>,
      features <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Sepal.Width"</span><span class="op">)</span>,
@@ -212,7 +194,7 @@ prompt the user to put different values for these parameters.</p>
      smooth.npoints <span class="op">=</span> <span class="fl">500</span><span class="op">)</span></code></pre></div>
 <pre><code><span class="co">## $Sepal.Width</span></code></pre>
 <p><img src="smoothing_files/figure-html/unnamed-chunk-3-1.png" width="700"></p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Smooth ALE plots</span>
 <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">forest_interpreter</span>,
      features <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Sepal.Width"</span><span class="op">)</span>,
@@ -222,7 +204,7 @@ prompt the user to put different values for these parameters.</p>
      smooth.npoints <span class="op">=</span> <span class="fl">500</span><span class="op">)</span></code></pre></div>
 <pre><code><span class="co">## $Sepal.Width</span></code></pre>
 <p><img src="smoothing_files/figure-html/unnamed-chunk-4-1.png" width="700"></p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Standard ALE plots</span>
 <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">forest_interpreter</span>,
      features <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Sepal.Width"</span><span class="op">)</span>,

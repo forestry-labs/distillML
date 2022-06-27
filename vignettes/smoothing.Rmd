@@ -34,13 +34,13 @@ One option is to use kernel smoothing to smooth the estimated PDP function value
 Given independent features $x$, and outcomes $y$, a kernel function $K$ and a bandwidth $h$, the Nadaraya–Watson kernel regression estimator is given by:
 
 $$
-\widehat{m}_{h}(x)=\frac{\sum_{i=1}^{n} K_{h}\left(x-x_{i}\right) y_{i}}{\sum_{i=1}^{n} K_{h}\left(x-x_{i}\right)}
+\widehat{m}_{h}(x)=\frac{\sum_{i}^{n} K_{h}\left(x-x_{i}\right) y_{i}}{\sum_{i=1}^{n} K_{h}\left(x-x_{i}\right)}
 $$
 Once we have estimated the point wise values of the PDP function, we can apply this kernel regression 
 to smooth the estimated function.
 The predictions of the smoothed PDP function are then given by:
 $$
-\hat{PDP}_{S, smooth}\left(x\right) =\frac{\sum_{i=1}^{n} K_{h}\left(x-x_{i}\right) \hat{PDP}_{S}\left(x_i\right) }{\sum_{i=1}^{n} K_{h}\left(x-x_{i}\right)}
+\hat{PDP}_{S, smooth}\left(x\right) =\frac{\sum_{i \in X_{train}} K_{h}\left(x-x_{i}\right) \hat{PDP}_{S}\left(x_i\right) }{\sum_{i \in X_{train}} K_{h}\left(x-x_{i}\right)}
 $$
 We implement this method and allow the user to specify the desired kernel, $K$, and bandwidth $h$.
 
