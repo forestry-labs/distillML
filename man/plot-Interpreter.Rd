@@ -13,8 +13,8 @@
   clusters = NULL,
   clusterType = "preds",
   smooth = FALSE,
-  smooth.binsize = NULL,
-  smooth.type = "normal",
+  smooth.bandwidth = NULL,
+  smooth.kernel = "normal",
   smooth.npoints = 2 * x$grid.size,
   ...
 )
@@ -47,12 +47,12 @@ this is not NULL, one must use the method "ice".}
 \item{smooth}{A binary variable to determine whether to smoothen the plots of the
 PDP, ICE, or ALE curves for continuous variables.}
 
-\item{smooth.binsize}{The bandwidth for the kernels. They are scaled such that
+\item{smooth.bandwidth}{The bandwidth for the kernels. They are scaled such that
 their quartiles are at 0.25 * bandwidth. By default, this
 is set as the maximum difference between the minimum and
 maximum of the grid points.}
 
-\item{smooth.type}{The type of kernel to be used. Users can input either strings "box"
+\item{smooth.kernel}{The type of kernel to be used. Users can input either strings "box"
 or "normal". The default is "normal".}
 
 \item{smooth.npoints}{The number of points returned when using the kernel method. By

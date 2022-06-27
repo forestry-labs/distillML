@@ -73,7 +73,7 @@ of the key arguments in the `distill` method.
 * `snap.train`: This argument takes a boolean value and determines if we make approximations 
                 through the marginal distribution of the subsampled training data, or the 
                 equally spaced grid points. By default, this is `TRUE`, which means that 
-                the surrogate model uses the marginal distirbution of the subsampled training 
+                the surrogate model uses the marginal distribution of the subsampled training 
                 data. If switched to `FALSE`, the distillation process becomes more computationally 
                 expensive due to having to predict these equally-spaced grid points. 
 
@@ -117,7 +117,7 @@ print(sparse_model$weights)
 ```
 
 While in this case, no coefficient is set to 0, we note that the coefficients in 
-the sparse modell tend to be smaller than in the original distilled model.
+the sparse model tend to be smaller than in the original distilled model.
 
 ### Predictions Using Surrogate Models
 
@@ -157,10 +157,14 @@ plot.data <- data.frame(original.preds,
 # plots for both default distilled model and sparse model
 default.plot <- ggplot(data = plot.data, aes(x = original.preds,
                                              y = distill.preds)) +
+                xlim(min(c(original.preds,distill.preds)),max(c(original.preds,distill.preds)))+
+                ylim(min(c(original.preds,distill.preds)),max(c(original.preds,distill.preds)))+
                 geom_point() + geom_abline(col = "red")
 
 sparse.plot <- ggplot(data = plot.data, aes(x = original.preds,
                                              y = sparse.preds)) +
+                xlim(min(c(original.preds,sparse.preds)),max(c(original.preds,sparse.preds)))+
+                ylim(min(c(original.preds,sparse.preds)),max(c(original.preds,sparse.preds)))+
                 geom_point() + geom_abline(col = "red")
 
 plot(default.plot)

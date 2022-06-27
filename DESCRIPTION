@@ -1,12 +1,12 @@
 Package: distillML
 Type: Package
 Title: Model Distillation and Interpretability Methods for Machine Learning Models
-Version: 0.1.0.3
+Version: 0.1.0.4
 Authors@R: c(
     person("Brian", "Cho", role = "aut"),
     person("Theo", "Saarinen", role = c("aut","cre"), email = "theo_s@berkeley.edu"),
-    person("Simon", "Walter", role = "aut"),
-    person("Jasjeet", "Sekhon", role = "aut")
+    person("Jasjeet", "Sekhon", role = "aut"),
+    person("Simon", "Walter", role = "aut")
     )
 Maintainer: Theo Saarinen <theo_s@berkeley.edu>
 BugReports: https://github.com/forestry-labs/distillML/issues

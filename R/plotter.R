@@ -641,11 +641,11 @@ predict_ALE <- function(x, feature, training_data, save = T){
 #'    this is not NULL, one must use the method "ice".
 #' @param smooth A binary variable to determine whether to smoothen the plots of the
 #'               PDP, ICE, or ALE curves for continuous variables.
-#' @param smooth.binsize The bandwidth for the kernels. They are scaled such that
+#' @param smooth.bandwidth The bandwidth for the kernels. They are scaled such that
 #'                       their quartiles are at 0.25 * bandwidth. By default, this
 #'                       is set as the maximum difference between the minimum and
 #'                       maximum of the grid points.
-#' @param smooth.type The type of kernel to be used. Users can input either strings "box"
+#' @param smooth.kernel The type of kernel to be used. Users can input either strings "box"
 #'                    or "normal". The default is "normal".
 #' @param smooth.npoints The number of points returned when using the kernel method. By
 #'                       default, this is twice the number of grid points for that
@@ -664,8 +664,8 @@ plot.Interpreter = function(x,
                         clusters = NULL,
                         clusterType = "preds",
                         smooth = FALSE,
-                        smooth.binsize = NULL,
-                        smooth.type = "normal",
+                        smooth.bandwidth = NULL,
+                        smooth.kernel = "normal",
                         smooth.npoints = 2 * x$grid.size,
                         ...)
 {
@@ -741,23 +741,23 @@ plot.Interpreter = function(x,
           pdp.line <- center.preds(x, features = features, plot.type = "PDP.1D")[[feature]][,2]
           df <- cbind(df , pdp = pdp.line)
 
-          # smoothen curves in dataframe
+          # smooth curves in dataframe
           if (smooth){
-            if (is.null(smooth.binsize)){
-              smooth.binsize <- apply(df, 2, max) - apply(df, 2, min)
+            if (is.null(smooth.bandwidth)){
+              smooth.bandwidth <- rep(median(diff(df$feature))*5, ncol(df)-1)
             }
             else{
-              smooth.binsize <- rep(smooth.binsize, ncol(df)-1)
+              smooth.bandwidth <- rep(smooth.bandwidth, ncol(df)-1)
             }
 
             hold <- ksmooth(x = df$feature,
                             y = df[, 2],
-                            kernel = smooth.type,
-                            bandwidth = smooth.binsize[2],
+                            kernel = smooth.kernel,
+                            bandwidth = smooth.bandwidth[1],
                             n.points = smooth.npoints)
 
             if (any(is.na(hold$y))){
-              stop("The given kernel bin size returns NA values. Please specify a different bin size.")
+              stop("The given kernel bandwidth returns NA values. Please specify a different bandwidth.")
             }
 
             new.df <- data.frame(hold$x, hold$y)
@@ -765,8 +765,8 @@ plot.Interpreter = function(x,
             for (col.index in 3:ncol(df)){
               hold <- ksmooth(x = df$feature,
                               y = df[, col.index],
-                              kernel = smooth.type,
-                              bandwidth = smooth.binsize[2],
+                              kernel = smooth.kernel,
+                              bandwidth = smooth.bandwidth[1],
                               n.points = smooth.npoints)
               new.df <- cbind(new.df, hold$y)
             }
@@ -963,10 +963,10 @@ plot.Interpreter = function(x,
         temp.binsize <- max(feat_ale$training_data[, 1]) -
           min(feat_ale$training_data[, 1])
 
-        if (is.null(smooth.binsize)){
+        if (is.null(smooth.bandwidth)){
           hold <- ksmooth(x = feat_ale$ale$x,
                           y = feat_ale$ale$ale,
-                          kernel = smooth.type,
+                          kernel = smooth.kernel,
                           bandwidth = temp.binsize,
                           n.points = smooth.npoints)
         }
@@ -974,8 +974,8 @@ plot.Interpreter = function(x,
         else{
           hold <- ksmooth(x = feat_ale$ale$x,
                           y = feat_ale$ale$ale,
-                          kernel = smooth.type,
-                          bandwidth = smooth.binsize,
+                          kernel = smooth.kernel,
+                          bandwidth = smooth.bandwidth,
                           n.points = smooth.npoints)
         }
 

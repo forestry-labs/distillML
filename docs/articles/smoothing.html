@@ -26,7 +26,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">distillML</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0.4</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -135,8 +135,8 @@ want well-behaved curves for plotting and distillation. To do so, we set
 parameter <code>smooth</code> equal to <code>TRUE</code> when calling
 the plot function, and can set the bandwidth, number of points to
 interpolate, and the type of smoothing with the parameters
-<code>smooth.binsize</code>, <code>smooth.npoints</code>, and
-<code>smooth.type</code> respectively.</p>
+<code>smooth.bandwidth</code>, <code>smooth.npoints</code>, and
+<code>smooth.kernel</code> respectively.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://www.stats.ox.ac.uk/pub/MASS4/" class="external-link">MASS</a></span><span class="op">)</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/forestry-labs/distillML" class="external-link">distillML</a></span><span class="op">)</span>
@@ -177,12 +177,13 @@ model:</p>
      features <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Sepal.Width"</span><span class="op">)</span><span class="op">)</span></code></pre></div>
 <pre><code><span class="co">## $Sepal.Width</span></code></pre>
 <p><img src="smoothing_files/figure-html/unnamed-chunk-2-2.png" width="700"></p>
-<p>For the bandwidth, the default is the maximum difference in the grid
-points for the given feature. The type of smoothing done is by default
-uses a Gaussian kernel, and the number of points is double the number of
-grid points. When setting the bandwidth and number of points, one should
-be careful about creating empty kernels. These result in NA values and
-prompt the user to put different values for these parameters.</p>
+<p>For the bandwidth, the default is the 5 times the median difference
+in the grid point spacing for the given feature. The type of smoothing
+done is by default uses a Gaussian kernel, and the number of points is
+double the number of grid points. When setting the bandwidth and number
+of points, one should be careful about creating empty kernels. These
+result in NA values and prompt the user to put different values for
+these parameters.</p>
 <p>We can also smooth ALE and ICE plots in the same way:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Smooth ICE plots</span>
@@ -190,7 +191,7 @@ prompt the user to put different values for these parameters.</p>
      features <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Sepal.Width"</span><span class="op">)</span>,
      smooth <span class="op">=</span> <span class="cn">T</span>,
      method <span class="op">=</span> <span class="st">"pdp+ice"</span>,
-     smooth.binsize <span class="op">=</span> <span class="fl">.1</span>,
+     smooth.bandwidth <span class="op">=</span> <span class="fl">.1</span>,
      smooth.npoints <span class="op">=</span> <span class="fl">500</span><span class="op">)</span></code></pre></div>
 <pre><code><span class="co">## $Sepal.Width</span></code></pre>
 <p><img src="smoothing_files/figure-html/unnamed-chunk-3-1.png" width="700"></p>
@@ -200,7 +201,7 @@ prompt the user to put different values for these parameters.</p>
      features <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Sepal.Width"</span><span class="op">)</span>,
      smooth <span class="op">=</span> <span class="cn">T</span>,
      method <span class="op">=</span> <span class="st">"ale"</span>,
-     smooth.binsize <span class="op">=</span> <span class="fl">.2</span>,
+     smooth.bandwidth <span class="op">=</span> <span class="fl">.2</span>,
      smooth.npoints <span class="op">=</span> <span class="fl">500</span><span class="op">)</span></code></pre></div>
 <pre><code><span class="co">## $Sepal.Width</span></code></pre>
 <p><img src="smoothing_files/figure-html/unnamed-chunk-4-1.png" width="700"></p>
@@ -212,6 +213,28 @@ prompt the user to put different values for these parameters.</p>
      smooth <span class="op">=</span> <span class="cn">F</span><span class="op">)</span></code></pre></div>
 <pre><code><span class="co">## $Sepal.Width</span></code></pre>
 <p><img src="smoothing_files/figure-html/unnamed-chunk-4-2.png" width="700"></p>
+</div>
+<div class="section level2">
+<h2 id="advanced-use-cases">Advanced Use Cases<a class="anchor" aria-label="anchor" href="#advanced-use-cases"></a>
+</h2>
+<p>The ability to smooth the PDP, ALE, and ICE curves can be useful when
+we want to use these curves for further analysis. Below, we show two
+examples: using K Means to cluster the smoothed curves, and using the
+smoothed curves for model distillation.</p>
+<p>When the <code>clusters</code> argument is used in addition to the
+<code>smooth</code> argument, the K means clustering will be run on the
+smoothed features.</p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># Smooth ICE plots</span>
+<span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">forest_interpreter</span>,
+     features <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Sepal.Width"</span><span class="op">)</span>,
+     smooth <span class="op">=</span> <span class="cn">T</span>,
+     clusters <span class="op">=</span> <span class="fl">3</span>,
+     method <span class="op">=</span> <span class="st">"ice"</span>,
+     smooth.bandwidth <span class="op">=</span> <span class="fl">.15</span>,
+     smooth.npoints <span class="op">=</span> <span class="fl">500</span><span class="op">)</span></code></pre></div>
+<pre><code><span class="co">## $Sepal.Width</span></code></pre>
+<p><img src="smoothing_files/figure-html/unnamed-chunk-5-1.png" width="700"></p>
 <p>For further details on these methods, please refer to the
 “References” tab, which contains documentation for each of the methods
 discussed.</p>
@@ -224,7 +247,7 @@ discussed.</p>
 
     <footer><div class="pkgdown-footer-left">
   <p></p>
-<p>Developed by Brian Cho, Theo Saarinen, Simon Walter, Jasjeet Sekhon.</p>
+<p>Developed by Brian Cho, Theo Saarinen, Jasjeet Sekhon, Simon Walter.</p>
 </div>
 
 <div class="pkgdown-footer-right">
