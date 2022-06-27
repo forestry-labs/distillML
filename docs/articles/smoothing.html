@@ -26,7 +26,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">distillML</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0.3</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -81,32 +81,68 @@
     
     
 <div class="section level2">
-<h2 id="advanced-feature-curve-smoothing">Advanced Feature: Curve Smoothing<a class="anchor" aria-label="anchor" href="#advanced-feature-curve-smoothing"></a>
+<h2 id="background">Background<a class="anchor" aria-label="anchor" href="#background"></a>
+</h2>
+<p>The partial dependence function is defined as the expectation of the
+regression function predictions as the value of a single feature is
+marginally perturbed. For a feature <span class="math inline">\(S\)</span> and regression function <span class="math inline">\(f\)</span>, we can write this as:</p>
+<p><span class="math display">\[
+PDP_S(x) := \mathbb{E}_{X}\left[f(X) \mid X_S = x\right]
+\]</span> In practice we estimate the partial dependence function at a
+point <span class="math inline">\(x\)</span> by taking a sample average
+over the predictions of the regression function on the training data set
+with the feature <span class="math inline">\(X_S\)</span> set to the
+desired evaluation point <span class="math inline">\(x\)</span>.</p>
+<p><span class="math display">\[
+\hat{PDP}_{S}\left(x\right)=\frac{1}{n} \sum_{i=1}^{n} {f}\left(X_{i,X_s
+= x }\right)
+\]</span> Where <span class="math inline">\(X_{i,X_s = x }\)</span> is
+the <span class="math inline">\(i\)</span>th training observation with
+feature <span class="math inline">\(S\)</span> set to equal <span class="math inline">\(x\)</span>. If the training samples are drawn from
+an i.i.d. sample from the true distribution of <span class="math inline">\(X\)</span>, that we take expectation with respect
+to in the definition of the PDP, then the above estimate is unbiased for
+the true value of the PDP function of <span class="math inline">\(f\)</span> for the <span class="math inline">\(S\)</span>th feature evaluated at <span class="math inline">\(x\)</span>. Combining these estimates at many grid
+points, we can then plot the estimated PDP function as a function of
+<span class="math inline">\(x\)</span>.</p>
+<p>Sometimes it may be beneficial to introduce some bias into the point
+wise estimates of the PDP function in order to improve the
+interpretability and stability of the entire PDP function. One option is
+to use kernel smoothing to smooth the estimated PDP function values.
+Given independent features <span class="math inline">\(x\)</span>, and
+outcomes <span class="math inline">\(y\)</span>, a kernel function <span class="math inline">\(K\)</span> and a bandwidth <span class="math inline">\(h\)</span>, the Nadaraya–Watson kernel regression
+estimator is given by:</p>
+<p><span class="math display">\[
+\widehat{m}_{h}(x)=\frac{\sum_{i=1}^{n} K_{h}\left(x-x_{i}\right)
+y_{i}}{\sum_{i=1}^{n} K_{h}\left(x-x_{i}\right)}
+\]</span> Once we have estimated the point wise values of the PDP
+function, we can apply this kernel regression to smooth the estimated
+function. The predictions of the smoothed PDP function are then given
+by: <span class="math display">\[
+\hat{PDP}_{S, smooth}\left(x\right) =\frac{\sum_{i=1}^{n}
+K_{h}\left(x-x_{i}\right) \hat{PDP}_{S}\left(x_i\right) }{\sum_{i=1}^{n}
+K_{h}\left(x-x_{i}\right)}
+\]</span> We implement this method and allow the user to specify the
+desired kernel, <span class="math inline">\(K\)</span>, and bandwidth
+<span class="math inline">\(h\)</span>.</p>
+</div>
+<div class="section level2">
+<h2 id="curve-smoothing">Curve Smoothing<a class="anchor" aria-label="anchor" href="#curve-smoothing"></a>
 </h2>
 <p>To get smoothed plots of PDP, ICE, or ALE curves for continuous
 features, we also have options to smooth the curves using the
 <code>stats:ksmooth</code> package. This may be beneficial for users who
 want well-behaved curves for plotting and distillation. To do so, we set
 parameter <code>smooth</code> equal to <code>TRUE</code> when calling
-the plot function, and can set the bin size, number of points to
+the plot function, and can set the bandwidth, number of points to
 interpolate, and the type of smoothing with the parameters
 <code>smooth.binsize</code>, <code>smooth.npoints</code>, and
-<code>smooth.type</code> respectively. These parameters correspond
-to</p>
+<code>smooth.type</code> respectively.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://www.stats.ox.ac.uk/pub/MASS4/" class="external-link">MASS</a></span><span class="op">)</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/forestry-labs/distillML" class="external-link">distillML</a></span><span class="op">)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/forestry-labs/Rforestry" class="external-link">Rforestry</a></span><span class="op">)</span></code></pre></div>
+<span class="fu"><a href="https://rdrr.io/r/base/message.html" class="external-link">suppressMessages</a></span><span class="op">(</span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/forestry-labs/Rforestry" class="external-link">Rforestry</a></span><span class="op">)</span><span class="op">)</span></code></pre></div>
 <pre><code><span class="co">## Warning: package 'Rforestry' was built under R version 4.1.2</span></code></pre>
-<pre><code><span class="co">## ## </span>
-<span class="co">## ##  Rforestry (Version 0.9.0.95, Build Date: R 4.1.2; x86_64-apple-darwin17.0; 2022-03-10 13:19:39 UTC; unix)</span>
-<span class="co">## ##  See https://github.com/forestry-labs for additional documentation.</span>
-<span class="co">## ##  Please cite software as:</span>
-<span class="co">## ##    Soren R. Kunzel, Theo F. Saarinen, Edward W. Liu, Jasjeet S. Sekhon. 2019.</span>
-<span class="co">## ##    ''Linear Aggregation in Tree-based Estimators.'' arXiv preprint </span>
-<span class="co">## ##    arXiv:1906.06463. https://arxiv.org/abs/1906.06463 </span>
-<span class="co">## ##</span></code></pre>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Load in data </span>
 <span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"iris"</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">491</span><span class="op">)</span>
@@ -123,8 +159,8 @@ to</p>
                                   task <span class="op">=</span> <span class="st">"regression"</span><span class="op">)</span>
 
 <span class="co"># We specify grid.size for clarity (grid.size = 50 by default)</span>
-<span class="va">forest_interpreter</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/Interpreter.html">Interpreter</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="va">forest_predictor</span>,
-                                      grid.size <span class="op">=</span> <span class="fl">50</span><span class="op">)</span>
+<span class="va">forest_interpreter</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/Interpreter.html">Interpreter</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="va">forest_predictor</span><span class="op">)</span>
+
 <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">forest_interpreter</span><span class="op">)</span></code></pre></div>
 <pre><code><span class="co">## &lt;Interpreter&gt;</span>
 <span class="co">##   Public:</span>
@@ -142,43 +178,54 @@ to</p>
 <span class="co">##     pdp.2d: list</span>
 <span class="co">##     predictor: Predictor, R6</span>
 <span class="co">##     saved: list</span></code></pre>
-<p>Lets examine some of these in action.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<p>We can compare the smooth and standard PDP plots for the same
+model:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Default smoothing options</span>
 <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">forest_interpreter</span>,
      features <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Sepal.Width"</span><span class="op">)</span>,
      smooth <span class="op">=</span> <span class="cn">T</span><span class="op">)</span></code></pre></div>
 <pre><code><span class="co">## $Sepal.Width</span></code></pre>
 <p><img src="smoothing_files/figure-html/unnamed-chunk-2-1.png" width="700"></p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># compare to unsmoothed plots</span>
 <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">forest_interpreter</span>, 
      features <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Sepal.Width"</span><span class="op">)</span><span class="op">)</span></code></pre></div>
 <pre><code><span class="co">## $Sepal.Width</span></code></pre>
 <p><img src="smoothing_files/figure-html/unnamed-chunk-2-2.png" width="700"></p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># With Additional Parameters</span>
+<p>For the bandwidth, the default is the maximum difference in the grid
+points for the given feature. The type of smoothing done is by default
+uses a Gaussian kernel, and the number of points is double the number of
+grid points. When setting the bandwidth and number of points, one should
+be careful about creating empty kernels. These result in NA values and
+prompt the user to put different values for these parameters.</p>
+<p>We can also smooth ALE and ICE plots in the same way:</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># Smooth ICE plots</span>
+<span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">forest_interpreter</span>,
+     features <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Sepal.Width"</span><span class="op">)</span>,
+     smooth <span class="op">=</span> <span class="cn">T</span>,
+     method <span class="op">=</span> <span class="st">"pdp+ice"</span>,
+     smooth.binsize <span class="op">=</span> <span class="fl">.1</span>,
+     smooth.npoints <span class="op">=</span> <span class="fl">500</span><span class="op">)</span></code></pre></div>
+<pre><code><span class="co">## $Sepal.Width</span></code></pre>
+<p><img src="smoothing_files/figure-html/unnamed-chunk-3-1.png" width="700"></p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># Smooth ALE plots</span>
 <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">forest_interpreter</span>,
      features <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Sepal.Width"</span><span class="op">)</span>,
      smooth <span class="op">=</span> <span class="cn">T</span>,
      method <span class="op">=</span> <span class="st">"ale"</span>,
-     smooth.binsize <span class="op">=</span> <span class="fl">2</span>,
-     smooth.type <span class="op">=</span> <span class="st">"box"</span>,
+     smooth.binsize <span class="op">=</span> <span class="fl">.2</span>,
      smooth.npoints <span class="op">=</span> <span class="fl">500</span><span class="op">)</span></code></pre></div>
 <pre><code><span class="co">## $Sepal.Width</span></code></pre>
-<p><img src="smoothing_files/figure-html/unnamed-chunk-2-3.png" width="700"></p>
-<p>For the bin size, the default is the maximum difference in the grid
-points for the given feature. The type of smoothing done is by default
-uses a Gaussian kernel, and the number of points is double the number of
-grid points. When setting the bin size and number of points, one should
-be careful about creating empty kernels. These result in NA values and
-prompt the user to put different values for these parameters.</p>
-<p>For computing the kernel smoothing, we use the ksmooth function.</p>
+<p><img src="smoothing_files/figure-html/unnamed-chunk-4-1.png" width="700"></p>
 <p>For further details on these methods, please refer to the
 “References” tab, which contains documentation for each of the methods
 discussed.</p>
 </div>
-  </main>
+  </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
+    </nav></aside>
 </div>
 
 
