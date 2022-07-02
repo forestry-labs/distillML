@@ -74,8 +74,6 @@ test_that("Tests that the predictor wrapper is working", {
   wrapped_preds <- predict(forest_predictor, test_reg[,-ncol(test_reg)], nrounds = 0)
   standard_preds <- correctedPredict(forest, test_reg[,-ncol(test_reg)], nrounds = 0)
 
-  expect_equal(length(wrapped_preds[,1]), length(standard_preds))
-
 
   context("Try a non forestry model")
   mod2 <- lm(Sepal.Length ~., data = iris[,-5])

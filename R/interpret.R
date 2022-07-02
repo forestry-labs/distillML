@@ -1,5 +1,6 @@
 #' @include predictor.R
 #' @importFrom R6 R6Class
+#' @importFrom stats median
 
 #' @title Interpreter class description
 #' @description A wrapper class based on a predictor object for examining the
