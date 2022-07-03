@@ -282,7 +282,7 @@ Interpreter <- R6::R6Class(
 
       # possible two dimensional features
       features.2d <- data.frame(feat.1 = 0, feat.2 =0)
-      feat.ordered <- features[order(features)]
+      feat.ordered <- features[order(as.character(features))]
       for (i in 1:(length(feat.ordered)-1)){
         for (j in (i+1):length(feat.ordered)){
           row <- c(feat.ordered[i], feat.ordered[j])

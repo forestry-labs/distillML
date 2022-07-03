@@ -318,7 +318,7 @@ predict_PDP.2D.Plotter = function(object,
 
   # See if we have all of the prediicted 2-D PDPs desired
   for (i in 1:nrow(feat.2d)){
-    ordering <- order(feat.2d[i,])
+    ordering <- order(as.character(feat.2d[i,]))
     features <- feat.2d[i, ][ordering] # order the features
     label <- paste(features[1], features[2], sep = ", ")
 
@@ -899,7 +899,7 @@ plot.Interpreter = function(x,
       names.2d <- c()
       for (i in 1:nrow(features.2d)){
         # heatmap for 2 continuous features
-        ordering <- order(features.2d[i,])
+        ordering <- order(as.character(features.2d[i,]))
         features.2d[i,] <- features.2d[i,][ordering]
 
         if (feature.classes[features.2d[i,1]] != "factor" &&
