@@ -11,6 +11,7 @@ Do not initalize this class on its own. It is automatically created
       by the distill function for the interpreter class.
 }
 \examples{
+\dontrun{
 library(distillML)
 library(Rforestry)
 set.seed(491)
@@ -43,7 +44,7 @@ surrogate.model <- distill(forest_interpret,
                            snap.grid = TRUE,
                            snap.train = TRUE)
 
-
+}
 }
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}

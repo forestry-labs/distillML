@@ -19,6 +19,7 @@
 #' @field grid A list of PDPS that determine our prediction.
 #' @field snap.grid Boolean that determines whether we use grid.points
 #' @examples
+#' \dontrun{
 #' library(distillML)
 #' library(Rforestry)
 #' set.seed(491)
@@ -51,7 +52,7 @@
 #'                            snap.grid = TRUE,
 #'                            snap.train = TRUE)
 #'
-#'
+#'}
 #' @export
 
 Surrogate <- R6::R6Class(
