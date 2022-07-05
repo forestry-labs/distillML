@@ -7,11 +7,11 @@
 \usage{
 distill(
   object,
-  center.mean = T,
+  center.mean = TRUE,
   features = 1:length(object$features),
-  cv = F,
-  snap.grid = T,
-  snap.train = T,
+  cv = FALSE,
+  snap.grid = TRUE,
+  snap.train = TRUE,
   params.glmnet = list(),
   params.cv.glmnet = list()
 )

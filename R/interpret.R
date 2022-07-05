@@ -289,7 +289,7 @@ Interpreter <- R6::R6Class(
           features.2d <- rbind(features.2d, row)
         }
       }
-      features.2d <- features.2d[-1, ,drop = F]
+      features.2d <- features.2d[-1, ,drop = FALSE]
 
       # make ale.grid for continuous/integer features
       cont <- names(which(classes != "factor"))

@@ -32,10 +32,10 @@ test_that("Tests that the surrogate models are working", {
   expect_equal(sum(is.na(forest_interpret$saved$PDP.1D)),
                length(forest_interpret$features))
 
-  snaptogrid <- distill(forest_interpret, snap.train = F)
+  snaptogrid <- distill(forest_interpret, snap.train = FALSE)
   expect_equal(sum(is.na(forest_interpret$saved$PDP.1D)), 0)
 
-  recalculate <- distill(forest_interpret, snap.grid = F)
+  recalculate <- distill(forest_interpret, snap.grid = FALSE)
 
   default.preds <- predict(default,
                            test_reg[, -which(names(test_reg) == "BodyDepth")])
@@ -52,7 +52,7 @@ test_that("Tests that the surrogate models are working", {
   context("Snap.train additional testing")
   feat.index <- which(forest_interpret$features %in% c("Sex", "FrontalLobe", "RearWidth"))
   forest_interpret <- Interpreter$new(predictor = forest_predictor)
-  surr.model <- distill(forest_interpret, features = feat.index, snap.train = F)
+  surr.model <- distill(forest_interpret, features = feat.index, snap.train = FALSE)
 
   expect_equal(sum(is.na(forest_interpret$saved$PDP.1D)),
                length(forest_interpret$features)-3)

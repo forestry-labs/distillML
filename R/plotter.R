@@ -335,7 +335,7 @@ predict_PDP.2D.Plotter = function(object,
       results <- data.frame(results)
       colnames(results) <- c(feat.1, feat.2, "preds")
 
-      # if save == T
+      # if save == TRUE
       if (save){
         object$saved[["PDP.2D"]][[label]] <- results
       }
@@ -597,7 +597,7 @@ ale <- function(predict_function,
 #' @param save Boolean to save the ALE predictions
 #' @return A tibble that contains the ALE predictions for the given values
 #' @export
-predict_ALE <- function(x, feature, training_data, save = T){
+predict_ALE <- function(x, feature, training_data, save = TRUE){
   if (any(is.na(x$ale.grid[[feature]]))){
     # Create prediction function
     predict_function <- function(newdata) {
@@ -956,7 +956,7 @@ plot.Interpreter = function(x,
 
     for (feature in features){
       # Calculate the accumulated local effects using ale function
-      feat_ale <- predict_ALE(x, feature, training_data, save = T)
+      feat_ale <- predict_ALE(x, feature, training_data, save = TRUE)
 
       # smoothen if desired
       if (smooth){

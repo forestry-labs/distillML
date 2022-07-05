@@ -33,7 +33,7 @@ test_that("Tests that the local surrogate wrapper is working", {
   local.surr <- localSurrogate(forest_interpret,
                                features.2d = data.frame(feat.1 = c("FrontalLobe"),
                                                         feat.2 = c("RearWidth")),
-                               interact = F)
+                               interact = FALSE)
 
   expect_equal(names(local.surr$plots), names(local.surr$models))
   expect_equal(names(local.surr$plots), "FrontalLobe.RearWidth")
@@ -44,7 +44,7 @@ test_that("Tests that the local surrogate wrapper is working", {
   local.surr <- localSurrogate(forest_interpret,
                                features.2d = data.frame(feat.1 = c("FrontalLobe"),
                                                         feat.2 = c("RearWidth")),
-                               interact = T)
+                               interact = TRUE)
   expect_equal(names(local.surr$plots), names(local.surr$models))
   expect_equal(names(local.surr$plots), "FrontalLobe.RearWidth")
   expect_equal(local.surr$models[[1]]@ntree, 1)

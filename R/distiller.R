@@ -72,11 +72,11 @@ build.grid = function(object, feat.ind = 1:length(object$features)){
 #' usage examples.
 #' @export
 distill = function(object,
-                   center.mean = T,
+                   center.mean = TRUE,
                    features = 1:length(object$features),
-                   cv = F,
-                   snap.grid = T,
-                   snap.train = T,
+                   cv = FALSE,
+                   snap.grid = TRUE,
+                   snap.train = TRUE,
                    params.glmnet  = list(),
                    params.cv.glmnet = list()
                    ){
@@ -170,7 +170,7 @@ distill = function(object,
       params.glmnet$family <- "gaussian"
       params.glmnet$alpha <- 1
       params.glmnet$lambda <- 0
-      params.glmnet$intercept <- F
+      params.glmnet$intercept <- FALSE
       params.glmnet$lower.limits <- 0
     }
 
@@ -184,7 +184,7 @@ distill = function(object,
     # if no other parameters were specified
     if (length(params.cv.glmnet) == 2){
       params.cv.glmnet$lower.limits <- 0
-      params.cv.glmnet$intercept <- F
+      params.cv.glmnet$intercept <- FALSE
       params.cv.glmnet$alpha <- 1
     }
     # get coefficients for each

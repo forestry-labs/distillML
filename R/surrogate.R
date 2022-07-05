@@ -19,7 +19,7 @@
 #' @field grid A list of PDPS that determine our prediction.
 #' @field snap.grid Boolean that determines whether we use grid.points
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' library(distillML)
 #' library(Rforestry)
 #' set.seed(491)
@@ -180,7 +180,7 @@ predict.Surrogate = function(object,
       }
     }
     else{
-      # if snap.grid is F, then we do not snap to the grid
+      # if snap.grid is FALSE, then we do not snap to the grid
       pred <- object$interpreter$pdp.1d[[feature]](newdata[,feature])
     }
 

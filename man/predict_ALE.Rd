@@ -4,7 +4,7 @@
 \alias{predict_ALE}
 \title{Prediction function for the ALE plots}
 \usage{
-predict_ALE(x, feature, training_data, save = T)
+predict_ALE(x, feature, training_data, save = TRUE)
 }
 \arguments{
 \item{x}{An interpreter object}

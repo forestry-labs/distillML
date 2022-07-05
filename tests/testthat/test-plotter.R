@@ -60,20 +60,20 @@ test_that("Tests that the plotting functions are working", {
   # Check that save == F parameter works
   ice.plots <- predict_ICE.Plotter(forest_interpret,
                                    features = "CarapaceWidth",
-                                   save = F)
+                                   save = FALSE)
   expect_equal(dim(ice.plots$CarapaceWidth), c(3, 161))
   expect_equal(forest_interpret$saved$ICE$CarapaceWidth, NA)
 
   pdp.plots <- predict_PDP.1D.Plotter(forest_interpret,
                                       features = "CarapaceWidth",
-                                      save = F)
+                                      save = FALSE)
   expect_equal(dim(pdp.plots$CarapaceWidth), c(3,2))
   expect_equal(forest_interpret$saved$PDP.1D$CarapaceWidth, NA)
 
   pdp.2d.plots <- predict_PDP.2D.Plotter(forest_interpret,
                                          feat.2d = data.frame(feat1 = "CarapaceWidth",
                                                               feat2 = "RearWidth"),
-                                         save = F)
+                                         save = FALSE)
   expect_equal(dim(pdp.2d.plots$`CarapaceWidth, RearWidth`), c(150, 3))
   expect_equal(forest_interpret$saved$PDP.2D$`CarapaceWidth, RearWidth`,
                NA)
@@ -139,7 +139,7 @@ test_that("Tests that the plotting functions are working", {
 
   smooth_ale <- plot(forest_interpret,
                      features = c("RearWidth"),
-                     smooth = T,
+                     smooth = TRUE,
                      method = "ale",
                      smooth.binsize = 2,
                      smooth.type = "box",
@@ -147,7 +147,7 @@ test_that("Tests that the plotting functions are working", {
 
   smooth_pdp <- plot(forest_interpret,
                      features = c("RearWidth"),
-                     smooth = T,
+                     smooth = TRUE,
                      smooth.type = "normal")
 
   rm(list=ls())

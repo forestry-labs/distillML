@@ -45,7 +45,7 @@ test_that("Tests that distillation with selected features is working", {
 
   # Equal Grid Spacing
   context("Snap.train F for distill")
-  surrogate.model <- distill(forest_interpret, snap.train = F)
+  surrogate.model <- distill(forest_interpret, snap.train = FALSE)
   expect_equal(all.equal(names(surrogate.model$weights),
                          c("Species_Blue", "Species_Orange", "Sex_Male", "Sex_Female", "Index",
                            "FrontalLobe","RearWidth","CarapaceLength","CarapaceWidth")),
@@ -59,8 +59,8 @@ test_that("Tests that distillation with selected features is working", {
                tolerance = 1e4)
 
   # No snapping to grid
-  context("Snap.grid F for distill")
-  surrogate.model <- distill(forest_interpret, snap.grid = F)
+  context("Snap.grid FALSE for distill")
+  surrogate.model <- distill(forest_interpret, snap.grid = FALSE)
   expect_equal(all.equal(names(surrogate.model$weights),
                          c("Species_Blue", "Species_Orange", "Sex_Male", "Sex_Female", "Index",
                            "FrontalLobe","RearWidth","CarapaceLength","CarapaceWidth")),
@@ -83,7 +83,7 @@ test_that("Tests that distillation with selected features is working", {
   surrogate.model <- distill(forest_interpret, params.glmnet = list(family = "gaussian",
                                                                     alpha = 1,
                                                                     lambda = 0,
-                                                                    intercept = F,
+                                                                    intercept = FALSE,
                                                                     upper.limits = 0))
   expect_equal(all.equal(names(surrogate.model$weights),
                          c("Species_Blue", "Species_Orange", "Sex_Male", "Sex_Female", "Index",
@@ -103,7 +103,7 @@ test_that("Tests that distillation with selected features is working", {
 
   surrogate.model <- distill(forest_interpret, cv = TRUE,
                              params.cv.glmnet = list(upper.limits = 0,
-                                                     intercept = F,
+                                                     intercept = FALSE,
                                                      alpha = 1))
   expect_equal(all.equal(names(surrogate.model$weights),
                          c("Species_Blue", "Species_Orange", "Sex_Male", "Sex_Female", "Index",
