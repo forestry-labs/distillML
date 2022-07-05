@@ -29,18 +29,7 @@ test_that("Tests that the local surrogate wrapper is working", {
   expect_equal(all.equal(forest_interpret$features,
                          c( "Species","Sex","Index","FrontalLobe","RearWidth","CarapaceLength","CarapaceWidth")),TRUE)
 
-  # Test Default Settings
-  local.surr <- localSurrogate(forest_interpret,
-                               features.2d = data.frame(feat.1 = c("FrontalLobe"),
-                                                        feat.2 = c("RearWidth")),
-                               interact = FALSE)
-
-  expect_equal(names(local.surr$plots), names(local.surr$models))
-  expect_equal(names(local.surr$plots), "FrontalLobe.RearWidth")
-  expect_equal(local.surr$models[[1]]@ntree, 1)
-  expect_equal(ncol(local.surr$models[[1]]@processed_dta$processed_x), 2)
-
-  # Test interaction term
+  # Test surrogate + interaction term
   local.surr <- localSurrogate(forest_interpret,
                                features.2d = data.frame(feat.1 = c("FrontalLobe"),
                                                         feat.2 = c("RearWidth")),
@@ -50,15 +39,6 @@ test_that("Tests that the local surrogate wrapper is working", {
   expect_equal(local.surr$models[[1]]@ntree, 1)
   expect_equal(ncol(local.surr$models[[1]]@processed_dta$processed_x), 3)
 
-  # Test continuous and categorical variable combination - No interaction terms available yet
-  local.surr <- localSurrogate(forest_interpret,
-                               features.2d = data.frame(feat.1 = c("FrontalLobe"),
-                                                        feat.2 = c("Sex")),
-                               interact = F)
-  expect_equal(names(local.surr$plots), names(local.surr$models))
-  expect_equal(names(local.surr$plots), "FrontalLobe.Sex")
-  expect_equal(local.surr$models[[1]]@ntree, 1)
-  expect_equal(ncol(local.surr$models[[1]]@processed_dta$processed_x), 2)
 
   # Test user-supplied parameters
   local.surr <- localSurrogate(forest_interpret,
