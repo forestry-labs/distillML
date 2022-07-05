@@ -692,7 +692,7 @@ plot.Interpreter = function(x,
     # for 1-D plots
     if (!(is.null(x$features))){
       for (feature in features){
-        hold_feat <- x$predictor$data[x$data.points, feature, drop=F]
+        hold_feat <- x$predictor$data[x$data.points, feature, drop=FALSE]
         names(hold_feat) <- c("feature")
 
         df_all <- predict_ICE.Plotter(x, features = features)
