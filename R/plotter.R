@@ -958,7 +958,7 @@ plot.Interpreter = function(x,
       # Calculate the accumulated local effects using ale function
       feat_ale <- predict_ALE(x, feature, training_data, save = TRUE)
 
-      # smoothen if desired
+      # smooth if desired
       if (smooth){
         temp.binsize <- max(feat_ale$training_data[, 1]) -
           min(feat_ale$training_data[, 1])
@@ -1003,12 +1003,12 @@ plot.Interpreter = function(x,
       plot_data <-
         bind_rows(rugplot_data, feat_ale$ale %>% mutate(grp = "ale"))
 
-      ggplot(plot_data) + geom_line(data = filter)
+
       plt <-
         ggplot(plot_data) +
         geom_line(data = plot_data %>% filter(grp == "ale"), aes(x = x, y = ale)) +
         geom_rug(data = plot_data %>% filter(grp == "rug"), aes(x = x)) +
-        facet_wrap( ~ variable, scales = "free") + theme_bw() + xlab("")
+        labs(x = feature) + theme_bw()
 
       plots <- append(plots, list(plt))
     }

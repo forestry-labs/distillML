@@ -173,6 +173,8 @@ test_that("Tests that the plotting functions are working", {
        method="pdp",
        features="x")
 
+  expect_equal(names(p), "x")
+
   rm(list=ls())
 
 
