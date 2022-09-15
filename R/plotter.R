@@ -171,11 +171,11 @@ predict_ICE.Plotter = function(object,
       for (val in object$grid.points[[index]]) {
         # Get subsampled data, remove y column, set feature
         newdata <- object$predictor$data[object$data.points,]
-        newdata <- newdata[,-which(names(newdata)==object$predictor$y)]
+        newdata <- newdata[-which(names(newdata)==object$predictor$y)]
 
         # necessary fix for factor variables
         if (inherits(val, "character")){
-          newdata[,feature] <- factor(rep(val, nrow(newdata)),
+          newdata[feature] <- factor(rep(val, nrow(newdata)),
                                       levels = levels(object$grid.points[[index]]))
         }
         else{

@@ -150,6 +150,29 @@ test_that("Tests that the plotting functions are working", {
                      smooth = TRUE,
                      smooth.type = "normal")
 
+  x <- iris$Sepal.Length
+  y <- iris$Sepal.Width
+
+
+  rf <- forestry(x = data.frame(x=x
+  ), y = y, seed = 101)
+
+  pdta <- data.frame(x = x,
+                     Y = y)
+
+  p3 <- Predictor$new(model = rf,
+                      data=pdta,
+                      y="Y",
+                      task = "regression")
+
+  fi3 <- Interpreter$new(predictor=p3)
+
+
+  context("Test plot with 1 feature")
+  p <- plot(fi3,
+       method="pdp",
+       features="x")
+
   rm(list=ls())
 
 

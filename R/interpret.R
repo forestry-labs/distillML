@@ -133,12 +133,12 @@ Interpreter <- R6::R6Class(
 
       # find valid features in the data: more than 1 value
       possible <-
-        names(which(apply(predictor$data[, possible], 2,
+        names(which(apply(predictor$data[possible], 2,
                           function(x) length(unique(x))) >1))
 
       # one of the following: int, factor, numeric
       possible <-
-        possible[which(sapply(predictor$data[, possible], class) %in%
+        possible[which(sapply(predictor$data[possible], class) %in%
                          c("numeric", "factor", "integer"))]
       features <- possible
 
