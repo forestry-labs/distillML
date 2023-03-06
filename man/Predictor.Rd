@@ -76,13 +76,13 @@ vector of predictions for each observation in the data frame.}
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
-\item \href{#method-new}{\code{Predictor$new()}}
-\item \href{#method-clone}{\code{Predictor$clone()}}
+\item \href{#method-Predictor-new}{\code{Predictor$new()}}
+\item \href{#method-Predictor-clone}{\code{Predictor$clone()}}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-new"></a>}}
-\if{latex}{\out{\hypertarget{method-new}{}}}
+\if{html}{\out{<a id="method-Predictor-new"></a>}}
+\if{latex}{\out{\hypertarget{method-Predictor-new}{}}}
 \subsection{Method \code{new()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Predictor$new(
@@ -130,8 +130,8 @@ A `Predictor` object.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-clone"></a>}}
-\if{latex}{\out{\hypertarget{method-clone}{}}}
+\if{html}{\out{<a id="method-Predictor-clone"></a>}}
+\if{latex}{\out{\hypertarget{method-Predictor-clone}{}}}
 \subsection{Method \code{clone()}}{
 The objects of this class are cloneable with this method.
 \subsection{Usage}{

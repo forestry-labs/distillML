@@ -71,13 +71,13 @@ data for our predictions}
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
-\item \href{#method-new}{\code{Surrogate$new()}}
-\item \href{#method-clone}{\code{Surrogate$clone()}}
+\item \href{#method-Surrogate-new}{\code{Surrogate$new()}}
+\item \href{#method-Surrogate-clone}{\code{Surrogate$clone()}}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-new"></a>}}
-\if{latex}{\out{\hypertarget{method-new}{}}}
+\if{html}{\out{<a id="method-Surrogate-new"></a>}}
+\if{latex}{\out{\hypertarget{method-Surrogate-new}{}}}
 \subsection{Method \code{new()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Surrogate$new(
@@ -122,8 +122,8 @@ A surrogate model object that we can use for predictions
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-clone"></a>}}
-\if{latex}{\out{\hypertarget{method-clone}{}}}
+\if{html}{\out{<a id="method-Surrogate-clone"></a>}}
+\if{latex}{\out{\hypertarget{method-Surrogate-clone}{}}}
 \subsection{Method \code{clone()}}{
 The objects of this class are cloneable with this method.
 \subsection{Usage}{

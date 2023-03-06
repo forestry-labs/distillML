@@ -98,26 +98,31 @@ parameter sets the number of grid points for PDP, ICE, and ALE plots.}
 This saves the uncentered calculations.}
 
 \item{\code{ale.grid}}{A list that caches the saved predictions for the ALE plots}
+
+\item{\code{pdp.rank}}{A string to select which PDP ranking methodology}
+
+\item{\code{pdp.scores}}{A list containing the PDP scores by feature}
 }
 \if{html}{\out{</div>}}
 }
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
-\item \href{#method-new}{\code{Interpreter$new()}}
-\item \href{#method-clone}{\code{Interpreter$clone()}}
+\item \href{#method-Interpreter-new}{\code{Interpreter$new()}}
+\item \href{#method-Interpreter-clone}{\code{Interpreter$clone()}}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-new"></a>}}
-\if{latex}{\out{\hypertarget{method-new}{}}}
+\if{html}{\out{<a id="method-Interpreter-new"></a>}}
+\if{latex}{\out{\hypertarget{method-Interpreter-new}{}}}
 \subsection{Method \code{new()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Interpreter$new(
   predictor = NULL,
   samples = 1000,
   data.points = NULL,
-  grid.size = 50
+  grid.size = 50,
+  pdp.rank = "Inflection Point"
 )}\if{html}{\out{</div>}}
 }
 
@@ -140,6 +145,8 @@ overwrites the "samples" parameter above.}
 
 \item{\code{grid.size}}{The number of grid points used to create for the PDP, ICE, and ALE
 plots for each feature.}
+
+\item{\code{pdp.rank}}{Which methodology to determine PDP rankings.}
 }
 \if{html}{\out{</div>}}
 }
@@ -148,8 +155,8 @@ An `Interpreter` object.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-clone"></a>}}
-\if{latex}{\out{\hypertarget{method-clone}{}}}
+\if{html}{\out{<a id="method-Interpreter-clone"></a>}}
+\if{latex}{\out{\hypertarget{method-Interpreter-clone}{}}}
 \subsection{Method \code{clone()}}{
 The objects of this class are cloneable with this method.
 \subsection{Usage}{

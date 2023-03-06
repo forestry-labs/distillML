@@ -1,6 +1,7 @@
 #' @include predictor.R
 #' @importFrom R6 R6Class
 #' @importFrom stats median
+#' @importFrom ecp ks.cp3o_delta
 
 #' @title Interpreter class description
 #' @description A wrapper class based on a predictor object for examining the
@@ -53,6 +54,8 @@
 #'              1-D PDP plots, 2-D PDP plots, and grid points for building the distilled model.
 #'              This saves the uncentered calculations.
 #' @field ale.grid A list that caches the saved predictions for the ALE plots
+#' @field pdp.rank A string to select which PDP ranking methodology
+#' @field pdp.scores A list containing the PDP scores by feature
 #' @examples
 #' library(distillML)
 #' library(Rforestry)
@@ -93,7 +96,8 @@ Interpreter <- R6::R6Class(
     grid.size = NULL,
     saved = NULL,
     ale.grid = NULL,
-
+    pdp.rank = NULL,
+    pdp.scores = NULL,
     # initialize an interpreter object
     #' @param predictor The Predictor object that contains the model that the user wants
     #'        to query. This is the only parameter that is required to initialize an
@@ -108,6 +112,7 @@ Interpreter <- R6::R6Class(
     #'                    overwrites the "samples" parameter above.
     #' @param grid.size The number of grid points used to create for the PDP, ICE, and ALE
     #'                  plots for each feature.
+    #' @param pdp.rank Which methodology to determine PDP rankings.
     #'
     #' @return An `Interpreter` object.
     #' @note
@@ -117,7 +122,8 @@ Interpreter <- R6::R6Class(
     initialize = function(predictor = NULL,
                           samples = 1000,
                           data.points = NULL,
-                          grid.size = 50) {
+                          grid.size = 50,
+                          pdp.rank = 'Inflection Point') {
       # check to see if predictor is a valid predictor object
       if (is.null(predictor)) {
         stop("Predictor not given.")
@@ -317,6 +323,42 @@ Interpreter <- R6::R6Class(
                          PDP.1D = PDP.1D.list,
                          PDP.2D = PDP.2D.list)
       self$ale.grid <- ale.grid
+
+      pdp.var.1d <- function(y) {
+        return(sum((y - mean(y))^2)/length(x))
+      }
+      pdp.ip.1d <- function(y) {
+        return(ks.cp3o_delta(Z=matrix(y), K=1, minsize=min(5, length(y)), verbose=FALSE)$estimates)
+      }
+      pdp.pr.1d <- function(y) {
+
+      }
+      pdp.fpr.1d <- function(y) {
+
+      }
+
+      # pdp rankings
+      pdp_methodols <- list(pdp.var.1d, pdp.ip.1d, pdp.pr.1d, pdp.fpr.1d)
+      names(pdp_methodols) <- c('Variance', 'Inflection Point',
+                                'Predicted Risk', 'Feature Predicted Risk')
+      chosen_methodol <- pdp_methodols[[pdp.rank]]
+      pdp_scores <- c()
+      for (feat in features) {
+        if (classes[[feat]] == "factor"){
+          #how to better deal with factors/categorical variables?
+          pdp_scores <- append(pdp_scores, -1)
+        }
+        else {
+          curr_func <- functions.pdp[[feat]]
+          curr_val <- grid.points[[feat]]
+          curr_pdp <- curr_func(curr_val)
+          temp <- chosen_methodol(curr_pdp)
+          pdp_scores <- append(pdp_scores, temp)
+        }
+      }
+      names(pdp_scores) <- features
+      self$pdp.scores <- pdp_scores
+      self$pdp.rank <- pdp.rank
     }
   )
 )

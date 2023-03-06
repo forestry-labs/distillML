@@ -1,7 +1,7 @@
 Package: distillML
 Type: Package
 Title: Model Distillation and Interpretability Methods for Machine Learning Models
-Version: 0.1.0.11
+Version: 0.1.0.12
 Authors@R: c(
     person("Brian", "Cho", role = "aut"),
     person("Theo", "Saarinen", role = c("aut","cre"), email = "theo_s@berkeley.edu"),
@@ -29,7 +29,8 @@ Imports:
     tidyr,
     data.table,
     mltools,
-    gridExtra
+    gridExtra,
+    ecp
 Suggests:
     testthat,
     knitr,
@@ -41,4 +42,4 @@ Collate:
     'distiller.R'
     'plotter.R'
     'surrogate.R'
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.3
