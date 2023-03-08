@@ -54,7 +54,13 @@
 #'              1-D PDP plots, 2-D PDP plots, and grid points for building the distilled model.
 #'              This saves the uncentered calculations.
 #' @field ale.grid A list that caches the saved predictions for the ALE plots
-#' @field pdp.rank A string to select which PDP ranking methodology
+#' @field rank.method A string to select which PDP ranking methodology. Should be one of
+#'        c("Variance","Change.Point.Analysis","FO.Derivative"). When set to "Variance"
+#'        the PDP functions are ranked by variance of the function over the range of grid.points,
+#'        when set to "Change.Point.Analysis" the PDP functions are ranked by change point analysis, when set
+#'        to "FO.Derivative" the PDP functions are ranked by empirical first order derivative.
+#' @field pdp.weight A boolean that indicates whether the PDP functions will be generated
+#'        with weight via the predictor object.
 #' @field pdp.scores A list containing the PDP scores by feature
 #' @examples
 #' library(distillML)
@@ -96,7 +102,8 @@ Interpreter <- R6::R6Class(
     grid.size = NULL,
     saved = NULL,
     ale.grid = NULL,
-    pdp.rank = NULL,
+    rank.method = NULL,
+    pdp.weight = NULL,
     pdp.scores = NULL,
     # initialize an interpreter object
     #' @param predictor The Predictor object that contains the model that the user wants
@@ -112,7 +119,9 @@ Interpreter <- R6::R6Class(
     #'                    overwrites the "samples" parameter above.
     #' @param grid.size The number of grid points used to create for the PDP, ICE, and ALE
     #'                  plots for each feature.
-    #' @param pdp.rank Which methodology to determine PDP rankings.
+    #' @param rank.method Which methodology to determine PDP rankings.
+    #' @param pdp.weight A boolean that indicates whether the PDP functions will be generated
+    #'        with weight via the predictor object.
     #'
     #' @return An `Interpreter` object.
     #' @note
@@ -123,7 +132,8 @@ Interpreter <- R6::R6Class(
                           samples = 1000,
                           data.points = NULL,
                           grid.size = 50,
-                          pdp.rank = 'Inflection Point') {
+                          rank.method = 'Variance',
+                          pdp.weight = FALSE) {
       # check to see if predictor is a valid predictor object
       if (is.null(predictor)) {
         stop("Predictor not given.")
@@ -178,6 +188,15 @@ Interpreter <- R6::R6Class(
           stop("The data points are not in the training data, or having missing values.")
         }
       }
+      #Correctly weight observation predictions depending on pdp.weight
+      if (pdp.weight) {
+        if (class(predictor$model) != "forestry") {
+          stop("Weighted PDP option is not compatible with non-forestry objects")
+        }
+        obs.weight <- predictor$model@observationWeights
+      } else {
+        obs.weight <- 1/nrow(predictor$data)
+      }
 
       # create prediction functions for the features
       # for 1-dimensional functions
@@ -194,7 +213,7 @@ Interpreter <- R6::R6Class(
             else{
               data[, feature] <- v
             }
-            return.vals <- c(return.vals, mean(predict(predictor, data)[, 1]))
+            return.vals <- c(return.vals, sum(predict(predictor, data)[, 1]*obs.weight))
           }
           return.vals
         }
@@ -219,7 +238,7 @@ Interpreter <- R6::R6Class(
           for (i in 1:nrow(values)){
             data[, feature.1] <- values[i,1]
             data[, feature.2] <- values[i,2]
-            results <- c(results, mean(predict(predictor, data)[,1]))
+            results <- c(results, sum(predict(predictor, data)[,1]*obs.weight))
           }
           results
         }
@@ -324,24 +343,32 @@ Interpreter <- R6::R6Class(
                          PDP.2D = PDP.2D.list)
       self$ale.grid <- ale.grid
 
+      methodols <- c('Variance', 'Change.Point.Analysis', 'FO.Derivative')
+
+      if (!(rank.method %in% methodols)) {
+        stop("Method giving for rank.method is not supported, this must be one
+             of \'Variance\', \'Change.Point.Analysis\', \'FO.Derivative\'")
+      }
+
+
       pdp.var.1d <- function(y) {
         return(sum((y - mean(y))^2)/length(x))
       }
-      pdp.ip.1d <- function(y) {
+      pdp.cp.1d <- function(y) {
+        #minsize: hyperparam that must be adjusted
         return(ks.cp3o_delta(Z=matrix(y), K=1, minsize=min(5, length(y)), verbose=FALSE)$estimates)
       }
-      pdp.pr.1d <- function(y) {
-
-      }
-      pdp.fpr.1d <- function(y) {
-
+      pdp.fod.1d <- function(y) {
+        #r: hyperparam that must be adjusted
+        r <- 5
+        return(max(abs(y[1:(length(y)-(2*r))]- y[(1+2*r):length(y)])))
+        #return(max(y[1:length(y)-2*r] - y[1+2*r:length(y)]))
       }
 
       # pdp rankings
-      pdp_methodols <- list(pdp.var.1d, pdp.ip.1d, pdp.pr.1d, pdp.fpr.1d)
-      names(pdp_methodols) <- c('Variance', 'Inflection Point',
-                                'Predicted Risk', 'Feature Predicted Risk')
-      chosen_methodol <- pdp_methodols[[pdp.rank]]
+      pdp_methodols <- list(pdp.var.1d, pdp.cp.1d, pdp.fod.1d)
+      names(pdp_methodols) <- methodols
+      chosen_methodol <- pdp_methodols[[rank.method]]
       pdp_scores <- c()
       for (feat in features) {
         if (classes[[feat]] == "factor"){
@@ -358,7 +385,7 @@ Interpreter <- R6::R6Class(
       }
       names(pdp_scores) <- features
       self$pdp.scores <- pdp_scores
-      self$pdp.rank <- pdp.rank
+      self$rank.method <- rank.method
     }
   )
 )
