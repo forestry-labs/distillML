@@ -55,9 +55,8 @@
 #'              This saves the uncentered calculations.
 #' @field ale.grid A list that caches the saved predictions for the ALE plots
 #' @field rank.method A string to select which PDP ranking methodology. Should be one of
-#'        c("Variance","Change.Point.Analysis","FO.Derivative"). When set to "Variance"
-#'        the PDP functions are ranked by variance of the function over the range of grid.points,
-#'        when set to "Change.Point.Analysis" the PDP functions are ranked by change point analysis, when set
+#'        c("Variance", "FO.Derivative"). When set to "Variance"
+#'        the PDP functions are ranked by variance of the function over the range of grid.points and when set
 #'        to "FO.Derivative" the PDP functions are ranked by empirical first order derivative.
 #' @field pdp.weight A boolean that indicates whether the PDP functions will be generated
 #'        with weight via the predictor object.
@@ -343,30 +342,25 @@ Interpreter <- R6::R6Class(
                          PDP.2D = PDP.2D.list)
       self$ale.grid <- ale.grid
 
-      methodols <- c('Variance', 'Change.Point.Analysis', 'FO.Derivative')
+      methodols <- c('Variance', 'FO.Derivative')
 
       if (!(rank.method %in% methodols)) {
         stop("Method giving for rank.method is not supported, this must be one
-             of \'Variance\', \'Change.Point.Analysis\', \'FO.Derivative\'")
+             of \'Variance\', \'FO.Derivative\'")
       }
 
 
       pdp.var.1d <- function(y) {
         return(sum((y - mean(y))^2)/length(x))
       }
-      pdp.cp.1d <- function(y) {
-        #minsize: hyperparam that must be adjusted
-        return(ks.cp3o_delta(Z=matrix(y), K=1, minsize=min(5, length(y)), verbose=FALSE)$estimates)
-      }
       pdp.fod.1d <- function(y) {
         #r: hyperparam that must be adjusted
         r <- 5
         return(max(abs(y[1:(length(y)-(2*r))]- y[(1+2*r):length(y)])))
-        #return(max(y[1:length(y)-2*r] - y[1+2*r:length(y)]))
       }
 
       # pdp rankings
-      pdp_methodols <- list(pdp.var.1d, pdp.cp.1d, pdp.fod.1d)
+      pdp_methodols <- list(pdp.var.1d, pdp.fod.1d)
       names(pdp_methodols) <- methodols
       chosen_methodol <- pdp_methodols[[rank.method]]
       pdp_scores <- c()
