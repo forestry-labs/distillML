@@ -351,7 +351,7 @@ Interpreter <- R6::R6Class(
 
 
       pdp.var.1d <- function(y) {
-        return(sum((y - mean(y))^2)/length(x))
+        return(sum((y - mean(y))^2)/length(y))
       }
       pdp.fod.1d <- function(y) {
         #r: hyperparam that must be adjusted
