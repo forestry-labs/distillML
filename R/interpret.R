@@ -57,10 +57,10 @@
 #'        c("Variance", "FO.Derivative"). When set to "Variance"
 #'        the PDP functions are ranked by variance of the function over the range of grid.points and when set
 #'        to "FO.Derivative" the PDP functions are ranked by empirical first order derivative.
-#' @field new.obs A vector, with equivalent name features of the training data of the
-#'        predictor parameter, holding information/statistics of an (new) observation of interest.
-#'        A non-empty vector re-weights the PDP function by impact of similar observations
-#'        in the training data.
+#' @field new.obs A data frame with equivalent name/features of the data that trained the
+#'        predictor parameter, holding information/statistics of an observation of interest.
+#'        A non-empty data frame re-weights the PDP function by impact of similar observations
+#'        in the training data on the response variable.
 #' @field pdp.scores A list containing the PDP scores by feature
 #' @examples
 #' library(distillML)
@@ -120,10 +120,10 @@ Interpreter <- R6::R6Class(
     #' @param grid.size The number of grid points used to create for the PDP, ICE, and ALE
     #'                  plots for each feature.
     #' @param rank.method Which methodology to determine PDP rankings.
-    #' @param new.obs A vector of equivalent name features of the data that trained the
+    #' @param new.obs A data frame with equivalent name/features of the data that trained the
     #'        predictor parameter, holding information/statistics of an observation of interest.
-    #'        A non-empty vector re-weights the PDP function by impact of similar observations
-    #'        in the training data.
+    #'        A non-empty data frame re-weights the PDP function by impact of similar observations
+    #'        in the training data on the response variable.
     #'
     #' @return An `Interpreter` object.
     #' @note
@@ -135,13 +135,16 @@ Interpreter <- R6::R6Class(
                           data.points = NULL,
                           grid.size = 50,
                           rank.method = 'Variance',
-                          new.obs = c()) {
+                          new.obs = NULL) {
       # check to see if predictor is a valid predictor object
       if (is.null(predictor)) {
         stop("Predictor not given.")
       }
       if (!(inherits(predictor, "Predictor"))) {
         stop("Predictor given is not of the Predictor class.")
+      }
+      if ((!is.null(new.obs)) & (!is.data.frame(new.obs))){
+        stop("New Observation is not in valid form. Please convert new.obs to a data frame.")
       }
 
       # determine valid features
@@ -191,24 +194,25 @@ Interpreter <- R6::R6Class(
         }
       }
       #Correctly weight observation predictions depending on new.obs
-      if (length(new.obs) != 0) {
-        new.obs <- new.obs[sort(names(new.obs))]
+      if (!is.null(new.obs)) {
+        new.obs <- new.obs[sort(colnames(new.obs))]
         tcn <- colnames(predictor$data)
+        tcn <- tcn[-which(tcn == predictor$y)]
         if (class(predictor$model) != "forestry") {
           stop("Weighted PDP option via new observation is not compatible with non-forestry objects.")
-        } else if (length(new.obs) != (ncol(predictor$data)-1)) {
+        } else if (ncol(new.obs) != length(tcn)) {
           stop("Please set new.obs to the correct size that of the training data.")
-        } else if (all(sort(names(new.obs)) != sort(tcn[-which(tcn == predictor$y)]))){
+        } else if (length(setdiff(colnames(new.obs), tcn)) != 0){
           stop("Please set the names of the new.obs vector to that of the training data.")
         } else {
-          new.obs.df <- data.frame(matrix(new.obs, nrow = 1))
-          colnames(new.obs.df) <- sort(tcn[-which(tcn == predictor$y)])
-          train.classes <- sapply(predictor$data[, -which(colnames(predictor$data)==predictor$y)], class)
-          train.classes <- train.classes[sort(names(train.classes))]
+          #new.obs.df <- data.frame(matrix(new.obs, nrow = 1))
+          #colnames(new.obs.df) <- sort(tcn[-which(tcn == predictor$y)])
+          train.classes <- sapply(predictor$data[, tcn], class)
+          train.classes <- train.classes[colnames(new.obs)]
           num <- which(train.classes == "integer" | train.classes == "numeric")
-          new.obs.df[ , num] <- apply(new.obs.df[ , num,drop=F], 2, function(x) as.numeric(as.character(x)))
-          new.obs.df <- new.obs.df[tcn[-which(tcn == predictor$y)]]
-          obs.weight <- predict(predictor$model, new.obs.df, weightMatrix = TRUE)$weightMatrix
+          new.obs[ , num] <- apply(new.obs[ , num,drop=F], 2, function(x) as.numeric(as.character(x)))
+          new.obs <- new.obs[tcn]
+          obs.weight <- predict(predictor$model, new.obs, weightMatrix = TRUE)$weightMatrix
         }
       } else {
         obs.weight <- 1/nrow(predictor$data)
