@@ -1,7 +1,6 @@
 #' @include predictor.R
 #' @importFrom R6 R6Class
 #' @importFrom stats median
-#' @importFrom ecp ks.cp3o_delta
 
 #' @title Interpreter class description
 #' @description A wrapper class based on a predictor object for examining the
@@ -58,8 +57,10 @@
 #'        c("Variance", "FO.Derivative"). When set to "Variance"
 #'        the PDP functions are ranked by variance of the function over the range of grid.points and when set
 #'        to "FO.Derivative" the PDP functions are ranked by empirical first order derivative.
-#' @field pdp.weight A boolean that indicates whether the PDP functions will be generated
-#'        with weight via the predictor object.
+#' @field new.obs A vector, with equivalent name features of the training data of the
+#'        predictor parameter, holding information/statistics of an (new) observation of interest.
+#'        A non-empty vector re-weights the PDP function by impact of similar observations
+#'        in the training data.
 #' @field pdp.scores A list containing the PDP scores by feature
 #' @examples
 #' library(distillML)
@@ -102,7 +103,7 @@ Interpreter <- R6::R6Class(
     saved = NULL,
     ale.grid = NULL,
     rank.method = NULL,
-    pdp.weight = NULL,
+    new.obs = NULL,
     pdp.scores = NULL,
     # initialize an interpreter object
     #' @param predictor The Predictor object that contains the model that the user wants
@@ -119,8 +120,10 @@ Interpreter <- R6::R6Class(
     #' @param grid.size The number of grid points used to create for the PDP, ICE, and ALE
     #'                  plots for each feature.
     #' @param rank.method Which methodology to determine PDP rankings.
-    #' @param pdp.weight A boolean that indicates whether the PDP functions will be generated
-    #'        with weight via the predictor object.
+    #' @param new.obs A vector of equivalent name features of the data that trained the
+    #'        predictor parameter, holding information/statistics of an observation of interest.
+    #'        A non-empty vector re-weights the PDP function by impact of similar observations
+    #'        in the training data.
     #'
     #' @return An `Interpreter` object.
     #' @note
@@ -132,7 +135,7 @@ Interpreter <- R6::R6Class(
                           data.points = NULL,
                           grid.size = 50,
                           rank.method = 'Variance',
-                          pdp.weight = FALSE) {
+                          new.obs = c()) {
       # check to see if predictor is a valid predictor object
       if (is.null(predictor)) {
         stop("Predictor not given.")
@@ -187,12 +190,26 @@ Interpreter <- R6::R6Class(
           stop("The data points are not in the training data, or having missing values.")
         }
       }
-      #Correctly weight observation predictions depending on pdp.weight
-      if (pdp.weight) {
+      #Correctly weight observation predictions depending on new.obs
+      if (length(new.obs) != 0) {
+        new.obs <- new.obs[sort(names(new.obs))]
+        tcn <- colnames(predictor$data)
         if (class(predictor$model) != "forestry") {
-          stop("Weighted PDP option is not compatible with non-forestry objects")
+          stop("Weighted PDP option via new observation is not compatible with non-forestry objects.")
+        } else if (length(new.obs) != (ncol(predictor$data)-1)) {
+          stop("Please set new.obs to the correct size that of the training data.")
+        } else if (all(sort(names(new.obs)) != sort(tcn[-which(tcn == predictor$y)]))){
+          stop("Please set the names of the new.obs vector to that of the training data.")
+        } else {
+          new.obs.df <- data.frame(matrix(new.obs, nrow = 1))
+          colnames(new.obs.df) <- sort(tcn[-which(tcn == predictor$y)])
+          train.classes <- sapply(predictor$data[, -which(colnames(predictor$data)==predictor$y)], class)
+          train.classes <- train.classes[sort(names(train.classes))]
+          num <- which(train.classes == "integer" | train.classes == "numeric")
+          new.obs.df[ , num] <- apply(new.obs.df[ , num,drop=F], 2, function(x) as.numeric(as.character(x)))
+          new.obs.df <- new.obs.df[tcn[-which(tcn == predictor$y)]]
+          obs.weight <- predict(predictor$model, new.obs.df, weightMatrix = TRUE)$weightMatrix
         }
-        obs.weight <- predictor$model@observationWeights
       } else {
         obs.weight <- 1/nrow(predictor$data)
       }
@@ -351,7 +368,7 @@ Interpreter <- R6::R6Class(
 
 
       pdp.var.1d <- function(y) {
-        return(sum((y - mean(y))^2)/length(y))
+        return(mean((y - mean(y))^2))
       }
       pdp.fod.1d <- function(y) {
         #r: hyperparam that must be adjusted
