@@ -1152,3 +1152,94 @@ localSurrogate = function(object,
 
   return(list("plots" = plots, "models" = surrogates))
 }
+
+# Functions for the PDP risk scores ============================================
+
+#' @name pdpRisk
+#' @title Given an interpreter object with choice of PDP ranking methodology
+#'        (default: 'Variance'), produce 'risk' scores by feature. Optionally,
+#'        permits a new observation to weight the PDP function and rankings.
+#' @description Returns a list of 'risk' scores corresponding to each feature.
+#' @param rank.method A string to select which PDP ranking methodology. Should be one of
+#'        c("Variance", "FO.Derivative"). When set to "Variance" the PDP functions are ranked by variance
+#'        of the function over the range of grid.points and when set to "FO.Derivative" the PDP functions
+#'        are ranked by empirical first order derivative.
+#' @param new.obs A data frame with equivalent name/features of the data that trained the
+#'        predictor parameter, holding information/statistics of an observation of interest.
+#'        A non-empty data frame re-weights the PDP function by impact of similar observations
+#'        in the training data on the response variable.
+#' @return A list of risk scores by feature.
+#' @export
+#'
+pdpRisk = function(object,
+                   rank.method = 'Variance',
+                   new.obs = TRUE)
+{
+
+  if (!(inherits(object, "Interpreter"))){
+    stop("Object given is not of the interpreter class.")
+  }
+  if (!is.null(new.obs)){
+    if (!is.data.frame(new.obs)){
+      stop("New Observation is not in valid form. Please convert new.obs to a data frame.")
+    }
+    if (nrow(new.obs) != 1){
+      stop("Please reduce data frame to one row (i.e. one new observation).")
+    }
+  }
+  if (sum(is.na(object$saved$ICE)) != 0) {
+    predict_ICE.Plotter(object)
+  }
+
+  #Correctly weight observation predictions depending on new.obs
+  if (!is.null(new.obs)) {
+    new.obs <- new.obs[sort(colnames(new.obs))]
+    tcn <- colnames(predictor$data)
+    tcn <- tcn[-which(tcn == predictor$y)]
+    if (class(predictor$model) != "forestry") {
+      stop("Weighted PDP option via new observation is not compatible with non-forestry objects.")
+    } else if (ncol(new.obs) != length(tcn)) {
+      stop("Please set new.obs to the correct size that of the training data.")
+    } else if (length(setdiff(colnames(new.obs), tcn)) != 0){
+      stop("Please set the names of the new.obs vector to that of the training data.")
+    } else {
+      #train.classes <- sapply(predictor$data[, tcn], class)
+      #train.classes <- train.classes[colnames(new.obs)]
+      #num <- which(train.classes == "integer" | train.classes == "numeric")
+      #new.obs[ , num] <- apply(new.obs[ , num,drop=F], 2, function(x) as.numeric(as.character(x)))
+      #new.obs <- new.obs[tcn]
+      obs.weight <- t(predict(predictor$model, new.obs, weightMatrix = TRUE)$weightMatrix)
+    }
+  } else {
+    obs.weight <- rep(1/nrow(predictor$data), nrow(predictor$data))
+  }
+
+  methodols <- c('Variance', 'FO.Derivative')
+
+  if (!(rank.method %in% methodols)) {
+    stop("Method giving for rank.method is not supported, this must be one
+             of \'Variance\', \'FO.Derivative\'")
+  }
+
+  pdp.var.1d <- function(y) {
+    return(mean((y - mean(y))^2))
+  }
+  pdp.fod.1d <- function(y) {
+    #r: hyperparam that must be adjusted
+    r <- 5
+    return(max(abs(y[1:(length(y)-(2*r))]- y[(1+2*r):length(y)])))
+  }
+
+  # pdp rankings
+  pdp_methodols <- list(pdp.var.1d, pdp.fod.1d)
+  names(pdp_methodols) <- methodols
+  chosen_methodol <- pdp_methodols[[rank.method]]
+
+  pdp_scores <- c()
+  for (feat in features) {
+      curr_pdp <- as.matrix(object$saved$ICE$feat[,-1]) %*% obs.weight
+      score <- chosen_methodol(curr_pdp)
+      pdp_scores <- append(pdp_scores, score)
+  }
+  return(pdp_scores)
+}

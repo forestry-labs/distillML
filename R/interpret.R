@@ -53,15 +53,7 @@
 #'              1-D PDP plots, 2-D PDP plots, and grid points for building the distilled model.
 #'              This saves the uncentered calculations.
 #' @field ale.grid A list that caches the saved predictions for the ALE plots
-#' @field rank.method A string to select which PDP ranking methodology. Should be one of
-#'        c("Variance", "FO.Derivative"). When set to "Variance"
-#'        the PDP functions are ranked by variance of the function over the range of grid.points and when set
-#'        to "FO.Derivative" the PDP functions are ranked by empirical first order derivative.
-#' @field new.obs A data frame with equivalent name/features of the data that trained the
-#'        predictor parameter, holding information/statistics of an observation of interest.
-#'        A non-empty data frame re-weights the PDP function by impact of similar observations
-#'        in the training data on the response variable.
-#' @field pdp.scores A list containing the PDP scores by feature
+#'
 #' @examples
 #' library(distillML)
 #' library(Rforestry)
@@ -102,9 +94,6 @@ Interpreter <- R6::R6Class(
     grid.size = NULL,
     saved = NULL,
     ale.grid = NULL,
-    rank.method = NULL,
-    new.obs = NULL,
-    pdp.scores = NULL,
     # initialize an interpreter object
     #' @param predictor The Predictor object that contains the model that the user wants
     #'        to query. This is the only parameter that is required to initialize an
@@ -119,11 +108,6 @@ Interpreter <- R6::R6Class(
     #'                    overwrites the "samples" parameter above.
     #' @param grid.size The number of grid points used to create for the PDP, ICE, and ALE
     #'                  plots for each feature.
-    #' @param rank.method Which methodology to determine PDP rankings.
-    #' @param new.obs A data frame with equivalent name/features of the data that trained the
-    #'        predictor parameter, holding information/statistics of an observation of interest.
-    #'        A non-empty data frame re-weights the PDP function by impact of similar observations
-    #'        in the training data on the response variable.
     #'
     #' @return An `Interpreter` object.
     #' @note
@@ -133,18 +117,13 @@ Interpreter <- R6::R6Class(
     initialize = function(predictor = NULL,
                           samples = 1000,
                           data.points = NULL,
-                          grid.size = 50,
-                          rank.method = 'Variance',
-                          new.obs = NULL) {
+                          grid.size = 50) {
       # check to see if predictor is a valid predictor object
       if (is.null(predictor)) {
         stop("Predictor not given.")
       }
       if (!(inherits(predictor, "Predictor"))) {
         stop("Predictor given is not of the Predictor class.")
-      }
-      if ((!is.null(new.obs)) & (!is.data.frame(new.obs))){
-        stop("New Observation is not in valid form. Please convert new.obs to a data frame.")
       }
 
       # determine valid features
@@ -193,30 +172,6 @@ Interpreter <- R6::R6Class(
           stop("The data points are not in the training data, or having missing values.")
         }
       }
-      #Correctly weight observation predictions depending on new.obs
-      if (!is.null(new.obs)) {
-        new.obs <- new.obs[sort(colnames(new.obs))]
-        tcn <- colnames(predictor$data)
-        tcn <- tcn[-which(tcn == predictor$y)]
-        if (class(predictor$model) != "forestry") {
-          stop("Weighted PDP option via new observation is not compatible with non-forestry objects.")
-        } else if (ncol(new.obs) != length(tcn)) {
-          stop("Please set new.obs to the correct size that of the training data.")
-        } else if (length(setdiff(colnames(new.obs), tcn)) != 0){
-          stop("Please set the names of the new.obs vector to that of the training data.")
-        } else {
-          #new.obs.df <- data.frame(matrix(new.obs, nrow = 1))
-          #colnames(new.obs.df) <- sort(tcn[-which(tcn == predictor$y)])
-          train.classes <- sapply(predictor$data[, tcn], class)
-          train.classes <- train.classes[colnames(new.obs)]
-          num <- which(train.classes == "integer" | train.classes == "numeric")
-          new.obs[ , num] <- apply(new.obs[ , num,drop=F], 2, function(x) as.numeric(as.character(x)))
-          new.obs <- new.obs[tcn]
-          obs.weight <- predict(predictor$model, new.obs, weightMatrix = TRUE)$weightMatrix
-        }
-      } else {
-        obs.weight <- 1/nrow(predictor$data)
-      }
 
       # create prediction functions for the features
       # for 1-dimensional functions
@@ -233,7 +188,7 @@ Interpreter <- R6::R6Class(
             else{
               data[, feature] <- v
             }
-            return.vals <- c(return.vals, sum(predict(predictor, data)[, 1]*obs.weight))
+            return.vals <- c(return.vals, mean(predict(predictor, data)[, 1]))
           }
           return.vals
         }
@@ -258,7 +213,7 @@ Interpreter <- R6::R6Class(
           for (i in 1:nrow(values)){
             data[, feature.1] <- values[i,1]
             data[, feature.2] <- values[i,2]
-            results <- c(results, sum(predict(predictor, data)[,1]*obs.weight))
+            results <- c(results, mean(predict(predictor, data)[,1]))
           }
           results
         }
@@ -362,45 +317,6 @@ Interpreter <- R6::R6Class(
                          PDP.1D = PDP.1D.list,
                          PDP.2D = PDP.2D.list)
       self$ale.grid <- ale.grid
-
-      methodols <- c('Variance', 'FO.Derivative')
-
-      if (!(rank.method %in% methodols)) {
-        stop("Method giving for rank.method is not supported, this must be one
-             of \'Variance\', \'FO.Derivative\'")
-      }
-
-
-      pdp.var.1d <- function(y) {
-        return(mean((y - mean(y))^2))
-      }
-      pdp.fod.1d <- function(y) {
-        #r: hyperparam that must be adjusted
-        r <- 5
-        return(max(abs(y[1:(length(y)-(2*r))]- y[(1+2*r):length(y)])))
-      }
-
-      # pdp rankings
-      pdp_methodols <- list(pdp.var.1d, pdp.fod.1d)
-      names(pdp_methodols) <- methodols
-      chosen_methodol <- pdp_methodols[[rank.method]]
-      pdp_scores <- c()
-      for (feat in features) {
-        if (classes[[feat]] == "factor"){
-          #how to better deal with factors/categorical variables?
-          pdp_scores <- append(pdp_scores, -1)
-        }
-        else {
-          curr_func <- functions.pdp[[feat]]
-          curr_val <- grid.points[[feat]]
-          curr_pdp <- curr_func(curr_val)
-          temp <- chosen_methodol(curr_pdp)
-          pdp_scores <- append(pdp_scores, temp)
-        }
-      }
-      names(pdp_scores) <- features
-      self$pdp.scores <- pdp_scores
-      self$rank.method <- rank.method
     }
   )
 )
