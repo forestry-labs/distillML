@@ -1173,7 +1173,7 @@ localSurrogate = function(object,
 #'
 pdpRisk = function(object,
                    rank.method = 'Variance',
-                   new.obs = TRUE)
+                   new.obs = NULL)
 {
 
   if (!(inherits(object, "Interpreter"))){
@@ -1194,24 +1194,24 @@ pdpRisk = function(object,
   #Correctly weight observation predictions depending on new.obs
   if (!is.null(new.obs)) {
     new.obs <- new.obs[sort(colnames(new.obs))]
-    tcn <- colnames(predictor$data)
-    tcn <- tcn[-which(tcn == predictor$y)]
-    if (class(predictor$model) != "forestry") {
+    tcn <- colnames(object$predictor$data)
+    tcn <- tcn[-which(tcn == object$predictor$y)]
+    if (class(object$predictor$model) != "forestry") {
       stop("Weighted PDP option via new observation is not compatible with non-forestry objects.")
     } else if (ncol(new.obs) != length(tcn)) {
       stop("Please set new.obs to the correct size that of the training data.")
     } else if (length(setdiff(colnames(new.obs), tcn)) != 0){
       stop("Please set the names of the new.obs vector to that of the training data.")
     } else {
-      #train.classes <- sapply(predictor$data[, tcn], class)
-      #train.classes <- train.classes[colnames(new.obs)]
-      #num <- which(train.classes == "integer" | train.classes == "numeric")
-      #new.obs[ , num] <- apply(new.obs[ , num,drop=F], 2, function(x) as.numeric(as.character(x)))
-      #new.obs <- new.obs[tcn]
-      obs.weight <- t(predict(predictor$model, new.obs, weightMatrix = TRUE)$weightMatrix)
+      train.classes <- sapply(object$predictor$data[, tcn], class)
+      train.classes <- train.classes[colnames(new.obs)]
+      num <- which(train.classes == "integer" | train.classes == "numeric")
+      new.obs[ , num] <- apply(new.obs[ , num,drop=F], 2, function(x) as.numeric(as.character(x)))
+      new.obs <- new.obs[tcn]
+      obs.weight <- t(predict(object$predictor$model, new.obs, weightMatrix = TRUE)$weightMatrix)
     }
   } else {
-    obs.weight <- rep(1/nrow(predictor$data), nrow(predictor$data))
+    obs.weight <- rep(1/nrow(object$predictor$data), nrow(object$predictor$data))
   }
 
   methodols <- c('Variance', 'FO.Derivative')
@@ -1234,12 +1234,17 @@ pdpRisk = function(object,
   pdp_methodols <- list(pdp.var.1d, pdp.fod.1d)
   names(pdp_methodols) <- methodols
   chosen_methodol <- pdp_methodols[[rank.method]]
-
   pdp_scores <- c()
-  for (feat in features) {
-      curr_pdp <- as.matrix(object$saved$ICE$feat[,-1]) %*% obs.weight
+  for (feat in object$features) {
+    if ((object$feat.class[[feat]] == "factor") & (rank.method == 'FO.Derivative')){
+      pdp_scores <- append(pdp_scores, -1)
+    }
+    else {
+      curr_pdp <- as.matrix(object$saved$ICE[[feat]][,-1]) %*% obs.weight
       score <- chosen_methodol(curr_pdp)
       pdp_scores <- append(pdp_scores, score)
+    }
   }
+  names(pdp_scores) <- object$features
   return(pdp_scores)
 }

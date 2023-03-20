@@ -98,10 +98,6 @@ parameter sets the number of grid points for PDP, ICE, and ALE plots.}
 This saves the uncentered calculations.}
 
 \item{\code{ale.grid}}{A list that caches the saved predictions for the ALE plots}
-
-\item{\code{pdp.rank}}{A string to select which PDP ranking methodology}
-
-\item{\code{pdp.scores}}{A list containing the PDP scores by feature}
 }
 \if{html}{\out{</div>}}
 }
@@ -121,8 +117,7 @@ This saves the uncentered calculations.}
   predictor = NULL,
   samples = 1000,
   data.points = NULL,
-  grid.size = 50,
-  pdp.rank = "Inflection Point"
+  grid.size = 50
 )}\if{html}{\out{</div>}}
 }
 
@@ -145,8 +140,6 @@ overwrites the "samples" parameter above.}
 
 \item{\code{grid.size}}{The number of grid points used to create for the PDP, ICE, and ALE
 plots for each feature.}
-
-\item{\code{pdp.rank}}{Which methodology to determine PDP rankings.}
 }
 \if{html}{\out{</div>}}
 }
