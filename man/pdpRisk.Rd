@@ -6,9 +6,11 @@
        (default: 'Variance'), produce 'risk' scores by feature. Optionally,
        permits a new observation to weight the PDP function and rankings.}
 \usage{
-pdpRisk(object, rank.method = "Variance", new.obs = TRUE)
+pdpRisk(object, rank.method = "Variance", new.obs = NULL)
 }
 \arguments{
+\item{object}{The Interpreter class that we want understand the risk scores of.}
+
 \item{rank.method}{A string to select which PDP ranking methodology. Should be one of
 c("Variance", "FO.Derivative"). When set to "Variance" the PDP functions are ranked by variance
 of the function over the range of grid.points and when set to "FO.Derivative" the PDP functions
