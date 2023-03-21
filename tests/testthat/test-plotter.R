@@ -51,6 +51,14 @@ test_that("Tests that the plotting functions are working", {
   expect_equal(forest_interpret$saved$PDP.2D$`CarapaceWidth, RearWidth`,
                pdp.2d.plots$`CarapaceWidth, RearWidth`)
 
+  context("Check PDP ranking methodologies")
+  # Check the pdpRank method
+  new.obs <- data[test_ind[1], -which(names(data)=="CarapaceWidth")]
+  pdpRank(forest_interpret)
+  pdpRank(forest_interpret, rank.method = 'FO.Derivative')
+  pdpRank(forest_interpret, rank.method = 'Variance', new.obs = new.obs)
+  pdpRank(forest_interpret, rank.method = 'FO.Derivative', new.obs = new.obs)
+
   # Should delete previously done calculations
   set.grid.points(forest_interpret, "CarapaceWidth", c(1.5, 2.5, 3.5))
   expect_equal(all(is.na(forest_interpret$saved$ICE)), TRUE)
