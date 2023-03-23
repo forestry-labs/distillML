@@ -1153,9 +1153,9 @@ localSurrogate = function(object,
   return(list("plots" = plots, "models" = surrogates))
 }
 
-# Functions for the PDP risk scores ============================================
+# Functions for the PDP ranking scores =========================================
 
-#' @name pdpRisk
+#' @name pdpRank
 #' @title Given an interpreter object with choice of PDP ranking methodology
 #'        (default: 'Variance'), produce 'risk' scores by feature. Optionally,
 #'        permits a new observation to weight the PDP function and rankings.
@@ -1171,8 +1171,7 @@ localSurrogate = function(object,
 #'        in the training data on the response variable.
 #' @return A list of risk scores by feature.
 #' @export
-#'
-pdpRisk = function(object,
+pdpRank = function(object,
                    rank.method = 'Variance',
                    new.obs = NULL)
 {
@@ -1197,11 +1196,11 @@ pdpRisk = function(object,
     new.obs <- new.obs[sort(colnames(new.obs))]
     tcn <- colnames(object$predictor$data)
     tcn <- tcn[-which(tcn == object$predictor$y)]
-    if (class(object$predictor$model) != "forestry") {
+    if (!inherits(object$predictor$model, "forestry")) {
       stop("Weighted PDP option via new observation is not compatible with non-forestry objects.")
     } else if (ncol(new.obs) != length(tcn)) {
-      stop("Please set new.obs to the correct size that of the training data.")
-    } else if (length(setdiff(colnames(new.obs), tcn)) != 0){
+      stop("Please set new.obs to the correct number of features that of the training data.")
+    } else if ((length(setdiff(colnames(new.obs), tcn)) != 0) | (length(setdiff(tcn, colnames(new.obs))) != 0)){
       stop("Please set the names of the new.obs vector to that of the training data.")
     } else {
       train.classes <- sapply(object$predictor$data[, tcn], class)
@@ -1225,9 +1224,10 @@ pdpRisk = function(object,
   pdp.var.1d <- function(y) {
     return(mean((y - mean(y))^2))
   }
-  pdp.fod.1d <- function(y) {
-    #r: hyperparam that must be adjusted
-    r <- 5
+  pdp.fod.1d <- function(y, r=2) {
+    if ((length(y) - 2*r) < 1){
+      return(max(abs(diff(y))))
+    }
     return(max(abs(y[1:(length(y)-(2*r))]- y[(1+2*r):length(y)])))
   }
 

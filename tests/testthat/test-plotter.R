@@ -12,7 +12,6 @@ test_that("Tests that the plotting functions are working", {
   test_ind <- sample(1:nrow(data), nrow(data)%/%5)
   train_reg <- data[-test_ind,]
   test_reg <- data[test_ind,]
-
   # Train a random forest on the data set
   forest <- forestry(x=train_reg[,-ncol(train_reg)],
                      y=train_reg[,ncol(train_reg)])
@@ -52,8 +51,7 @@ test_that("Tests that the plotting functions are working", {
                pdp.2d.plots$`CarapaceWidth, RearWidth`)
 
   context("Check PDP ranking methodologies")
-  # Check the pdpRank method
-  new.obs <- data[test_ind[1], -which(names(data)=="CarapaceWidth")]
+  new.obs <- data[test_ind[1], -which(names(data)==forest_predictor$y)]
   pdpRank(forest_interpret)
   pdpRank(forest_interpret, rank.method = 'FO.Derivative')
   pdpRank(forest_interpret, rank.method = 'Variance', new.obs = new.obs)
