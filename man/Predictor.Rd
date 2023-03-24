@@ -24,27 +24,22 @@ The class that wraps a machine learning model in order to provide a
 prediction method must be constructed, with optional argument of type
 }
 \examples{
+
 library(distillML)
 library(Rforestry)
 set.seed(491)
-data <- MASS::crabs
-
-levels(data$sex) <- list(Male = "M", Female = "F")
-levels(data$sp) <- list(Orange = "O", Blue = "B")
-colnames(data) <- c("Species","Sex","Index","Frontal Lobe",
-"Rear Width", "Carapace Length","Carapace Width","Body Depth")
+data <- iris
 
 test_ind <- sample(1:nrow(data), nrow(data)\%/\%5)
 train_reg <- data[-test_ind,]
 test_reg <- data[test_ind,]
 
 
-forest <- forestry(x=train_reg[,-which(names(train_reg)=="Carapace Width")],
-y=train_reg[,which(names(train_reg)=="Carapace Width")])
+forest <- forestry(x=data[,-1],
+                   y=data[,1])
 
 forest_predictor <- Predictor$new(model = forest, data=train_reg,
-y="Carapace Width", task = "regression")
-
+                                  y="Sepal.Length", task = "regression")
 
 }
 \section{Public fields}{
@@ -76,13 +71,13 @@ vector of predictions for each observation in the data frame.}
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
-\item \href{#method-new}{\code{Predictor$new()}}
-\item \href{#method-clone}{\code{Predictor$clone()}}
+\item \href{#method-Predictor-new}{\code{Predictor$new()}}
+\item \href{#method-Predictor-clone}{\code{Predictor$clone()}}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-new"></a>}}
-\if{latex}{\out{\hypertarget{method-new}{}}}
+\if{html}{\out{<a id="method-Predictor-new"></a>}}
+\if{latex}{\out{\hypertarget{method-Predictor-new}{}}}
 \subsection{Method \code{new()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Predictor$new(
@@ -130,8 +125,8 @@ A `Predictor` object.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-clone"></a>}}
-\if{latex}{\out{\hypertarget{method-clone}{}}}
+\if{html}{\out{<a id="method-Predictor-clone"></a>}}
+\if{latex}{\out{\hypertarget{method-Predictor-clone}{}}}
 \subsection{Method \code{clone()}}{
 The objects of this class are cloneable with this method.
 \subsection{Usage}{

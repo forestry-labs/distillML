@@ -15,23 +15,18 @@ Do not initalize this class on its own. It is automatically created
 library(distillML)
 library(Rforestry)
 set.seed(491)
-data <- MASS::crabs
+data <- iris
 
-levels(data$sex) <- list(Male = "M", Female = "F")
-levels(data$sp) <- list(Orange = "O", Blue = "B")
-colnames(data) <- c("Species","Sex","Index","Frontal Lobe",
-"Rear Width", "Carapace Length","Carapace Width","Body Depth")
-
-test_ind <- sample(1:nrow(data), 180)
+test_ind <- sample(1:nrow(data), nrow(data)\%/\%5)
 train_reg <- data[-test_ind,]
 test_reg <- data[test_ind,]
 
 
-forest <- forestry(x=train_reg[,-which(names(train_reg)=="Carapace Width")],
-y=train_reg[,which(names(train_reg)=="Carapace Width")])
+forest <- forestry(x=data[,-1],
+                   y=data[,1])
 
 forest_predictor <- Predictor$new(model = forest, data=train_reg,
-y="Carapace Width", task = "regression")
+                                  y="Sepal.Length", task = "regression")
 
 forest_interpret <- Interpreter$new(predictor = forest_predictor)
 
@@ -71,13 +66,13 @@ data for our predictions}
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
-\item \href{#method-new}{\code{Surrogate$new()}}
-\item \href{#method-clone}{\code{Surrogate$clone()}}
+\item \href{#method-Surrogate-new}{\code{Surrogate$new()}}
+\item \href{#method-Surrogate-clone}{\code{Surrogate$clone()}}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-new"></a>}}
-\if{latex}{\out{\hypertarget{method-new}{}}}
+\if{html}{\out{<a id="method-Surrogate-new"></a>}}
+\if{latex}{\out{\hypertarget{method-Surrogate-new}{}}}
 \subsection{Method \code{new()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Surrogate$new(
@@ -122,8 +117,8 @@ A surrogate model object that we can use for predictions
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-clone"></a>}}
-\if{latex}{\out{\hypertarget{method-clone}{}}}
+\if{html}{\out{<a id="method-Surrogate-clone"></a>}}
+\if{latex}{\out{\hypertarget{method-Surrogate-clone}{}}}
 \subsection{Method \code{clone()}}{
 The objects of this class are cloneable with this method.
 \subsection{Usage}{

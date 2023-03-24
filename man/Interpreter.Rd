@@ -33,23 +33,18 @@ document.
 library(distillML)
 library(Rforestry)
 set.seed(491)
-data <- MASS::crabs
-
-levels(data$sex) <- list(Male = "M", Female = "F")
-levels(data$sp) <- list(Orange = "O", Blue = "B")
-colnames(data) <- c("Species","Sex","Index","Frontal Lobe",
-"Rear Width", "Carapace Length","Carapace Width","Body Depth")
+data <- iris
 
 test_ind <- sample(1:nrow(data), nrow(data)\%/\%5)
 train_reg <- data[-test_ind,]
 test_reg <- data[test_ind,]
 
 
-forest <- forestry(x=train_reg[,-which(names(train_reg)=="Carapace Width")],
-y=train_reg[,which(names(train_reg)=="Carapace Width")])
+forest <- forestry(x=data[,-1],
+                   y=data[,1])
 
 forest_predictor <- Predictor$new(model = forest, data=train_reg,
-y="Carapace Width", task = "regression")
+                                  y="Sepal.Length", task = "regression")
 
 forest_interpret <- Interpreter$new(predictor = forest_predictor)
 
@@ -104,13 +99,13 @@ This saves the uncentered calculations.}
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
-\item \href{#method-new}{\code{Interpreter$new()}}
-\item \href{#method-clone}{\code{Interpreter$clone()}}
+\item \href{#method-Interpreter-new}{\code{Interpreter$new()}}
+\item \href{#method-Interpreter-clone}{\code{Interpreter$clone()}}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-new"></a>}}
-\if{latex}{\out{\hypertarget{method-new}{}}}
+\if{html}{\out{<a id="method-Interpreter-new"></a>}}
+\if{latex}{\out{\hypertarget{method-Interpreter-new}{}}}
 \subsection{Method \code{new()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Interpreter$new(
@@ -148,8 +143,8 @@ An `Interpreter` object.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-clone"></a>}}
-\if{latex}{\out{\hypertarget{method-clone}{}}}
+\if{html}{\out{<a id="method-Interpreter-clone"></a>}}
+\if{latex}{\out{\hypertarget{method-Interpreter-clone}{}}}
 \subsection{Method \code{clone()}}{
 The objects of this class are cloneable with this method.
 \subsection{Usage}{

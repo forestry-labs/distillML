@@ -23,23 +23,18 @@
 #' library(distillML)
 #' library(Rforestry)
 #' set.seed(491)
-#' data <- MASS::crabs
+#' data <- iris
 #'
-#' levels(data$sex) <- list(Male = "M", Female = "F")
-#' levels(data$sp) <- list(Orange = "O", Blue = "B")
-#' colnames(data) <- c("Species","Sex","Index","Frontal Lobe",
-#' "Rear Width", "Carapace Length","Carapace Width","Body Depth")
-#'
-#' test_ind <- sample(1:nrow(data), 180)
+#' test_ind <- sample(1:nrow(data), nrow(data)%/%5)
 #' train_reg <- data[-test_ind,]
 #' test_reg <- data[test_ind,]
 #'
 #'
-#' forest <- forestry(x=train_reg[,-which(names(train_reg)=="Carapace Width")],
-#' y=train_reg[,which(names(train_reg)=="Carapace Width")])
+#' forest <- forestry(x=data[,-1],
+#'                    y=data[,1])
 #'
 #' forest_predictor <- Predictor$new(model = forest, data=train_reg,
-#' y="Carapace Width", task = "regression")
+#'                                   y="Sepal.Length", task = "regression")
 #'
 #' forest_interpret <- Interpreter$new(predictor = forest_predictor)
 #'

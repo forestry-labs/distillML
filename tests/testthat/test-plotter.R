@@ -3,79 +3,80 @@ test_that("Tests that the plotting functions are working", {
   library(Rforestry)
   set.seed(491)
 
-  data <- MASS::crabs
-  levels(data$sex) <- list(Male = "M", Female = "F")
-  levels(data$sp) <- list(Orange = "O", Blue = "B")
-  colnames(data) <- c("Species","Sex","Index","FrontalLobe",
-                      "RearWidth", "CarapaceLength","CarapaceWidth","BodyDepth")
+  data <-iris
+
+
 
   test_ind <- sample(1:nrow(data), nrow(data)%/%5)
   train_reg <- data[-test_ind,]
   test_reg <- data[test_ind,]
 
   # Train a random forest on the data set
-  forest <- forestry(x=train_reg[,-ncol(train_reg)],
-                     y=train_reg[,ncol(train_reg)])
+  forest <- forestry(x=train_reg[,-1],
+                     y=train_reg[,1])
 
   # Create a predictor wrapper for the forest
   forest_predictor <- Predictor$new(model = forest,
                                     data=train_reg,
-                                    y="BodyDepth",
+                                    y="Sepal.Length",
                                     task = "regression")
+
 
   # Initialize an interpreter
   forest_interpret <- Interpreter$new(predictor = forest_predictor)
 
   context("Check plotting method subroutines")
   # Check the set.center method
-  set.center.at(forest_interpret, "CarapaceWidth", 2)
-  expect_equal(forest_interpret$center.at$CarapaceWidth, 2)
+  set.center.at(forest_interpret, "Sepal.Width", 2)
+  expect_equal(forest_interpret$center.at$Sepal.Width, 2)
 
   # Check the set.grid.points method
-  set.grid.points(forest_interpret, "CarapaceWidth", c(1,2,3))
-  expect_equal(forest_interpret$grid.points$CarapaceWidth,  c(1,2,3))
+  set.grid.points(forest_interpret, "Petal.Length", c(1,2,3))
+  expect_equal(forest_interpret$grid.points$Petal.Length,  c(1,2,3))
 
   # Check ICE plots, PDP plots, 2-D PDP plots and "save" feature
-  ice.plots <- predict_ICE.Plotter(forest_interpret, features = "CarapaceWidth")
-  expect_equal(dim(ice.plots$CarapaceWidth), c(3, 161))
-  expect_equal(forest_interpret$saved$ICE$CarapaceWidth, ice.plots$CarapaceWidth)
+  ice.plots <- predict_ICE.Plotter(forest_interpret, features = "Petal.Length")
+  expect_equal(dim(ice.plots$Petal.Length), c(3, 121))
+  expect_equal(forest_interpret$saved$ICE$Petal.Length, ice.plots$Petal.Length)
 
-  pdp.plots <- predict_PDP.1D.Plotter(forest_interpret, features = "CarapaceWidth")
-  expect_equal(dim(pdp.plots$CarapaceWidth), c(3,2))
-  expect_equal(forest_interpret$saved$PDP.1D$CarapaceWidth, pdp.plots$CarapaceWidth)
+  pdp.plots <- predict_PDP.1D.Plotter(forest_interpret, features = "Petal.Width")
+  expect_equal(dim(pdp.plots$Petal.Width), c(50,2))
+  expect_equal(forest_interpret$saved$PDP.1D$Petal.Width, pdp.plots$Petal.Width)
 
   pdp.2d.plots <- predict_PDP.2D.Plotter(forest_interpret,
-                                         feat.2d = data.frame(feat1 = "CarapaceWidth",
-                                                              feat2 = "RearWidth"))
-  expect_equal(dim(pdp.2d.plots$`CarapaceWidth, RearWidth`), c(150, 3))
-  expect_equal(forest_interpret$saved$PDP.2D$`CarapaceWidth, RearWidth`,
-               pdp.2d.plots$`CarapaceWidth, RearWidth`)
+                                         feat.2d = data.frame(feat1 = "Petal.Width",
+                                                              feat2 = "Petal.Length"))
+  expect_equal(dim(pdp.2d.plots$`Petal.Length, Petal.Width`), c(150, 3))
+  expect_equal(forest_interpret$saved$PDP.2D$`Petal.Length, Petal.Width`,
+               pdp.2d.plots$`Petal.Length, Petal.Width`)
 
   # Should delete previously done calculations
-  set.grid.points(forest_interpret, "CarapaceWidth", c(1.5, 2.5, 3.5))
+  set.grid.points(forest_interpret, "Petal.Width", c(0,1.5,2.0))
+  set.grid.points(forest_interpret, "Petal.Length", c(0,1.5,2.0))
+
   expect_equal(all(is.na(forest_interpret$saved$ICE)), TRUE)
   expect_equal(all(is.na(forest_interpret$saved$PDP.1D)), TRUE)
   expect_equal(all(is.na(forest_interpret$saved$PDP.2D)), TRUE)
 
   # Check that save == F parameter works
   ice.plots <- predict_ICE.Plotter(forest_interpret,
-                                   features = "CarapaceWidth",
+                                   features = "Petal.Width",
                                    save = FALSE)
-  expect_equal(dim(ice.plots$CarapaceWidth), c(3, 161))
-  expect_equal(forest_interpret$saved$ICE$CarapaceWidth, NA)
+  expect_equal(dim(ice.plots$Petal.Width), c(3, 121))
+  expect_equal(forest_interpret$saved$ICE$Petal.Width, NA)
 
   pdp.plots <- predict_PDP.1D.Plotter(forest_interpret,
-                                      features = "CarapaceWidth",
+                                      features = "Petal.Width",
                                       save = FALSE)
-  expect_equal(dim(pdp.plots$CarapaceWidth), c(3,2))
-  expect_equal(forest_interpret$saved$PDP.1D$CarapaceWidth, NA)
+  expect_equal(dim(pdp.plots$Petal.Width), c(3,2))
+  expect_equal(forest_interpret$saved$PDP.1D$Petal.Width, NA)
 
   pdp.2d.plots <- predict_PDP.2D.Plotter(forest_interpret,
-                                         feat.2d = data.frame(feat1 = "CarapaceWidth",
-                                                              feat2 = "RearWidth"),
+                                         feat.2d = data.frame(feat1 = "Petal.Width",
+                                                              feat2 = "Petal.Length"),
                                          save = FALSE)
-  expect_equal(dim(pdp.2d.plots$`CarapaceWidth, RearWidth`), c(150, 3))
-  expect_equal(forest_interpret$saved$PDP.2D$`CarapaceWidth, RearWidth`,
+  expect_equal(dim(pdp.2d.plots$`Petal.Length, Petal.Width`), c(9, 3))
+  expect_equal(forest_interpret$saved$PDP.2D$`Petal.Length, Petal.Width`,
                NA)
 
 
@@ -83,62 +84,62 @@ test_that("Tests that the plotting functions are working", {
   # Initialize a plotter
   context("Try PDP plotting")
 
-  forest_plot <- plot(forest_interpret, method = "pdp+ice",features = "FrontalLobe")
-  expect_equal(names(forest_plot), "FrontalLobe")
-  expect_equal(predict_ICE.Plotter(forest_interpret, features = "FrontalLobe")[[1]],
-               forest_interpret$saved$ICE$FrontalLobe)
-  expect_equal(predict_PDP.1D.Plotter(forest_interpret, features = "FrontalLobe")[[1]],
-               forest_interpret$saved$PDP.1D$FrontalLobe)
+  forest_plot <- plot(forest_interpret, method = "pdp+ice",features = "Petal.Length")
+  expect_equal(names(forest_plot), "Petal.Length")
+  expect_equal(predict_ICE.Plotter(forest_interpret, features = "Petal.Length")[[1]],
+               forest_interpret$saved$ICE$Petal.Length)
+  expect_equal(predict_PDP.1D.Plotter(forest_interpret, features = "Petal.Length")[[1]],
+               forest_interpret$saved$PDP.1D$Petal.Length)
 
   multiple_plot <- plot(forest_interpret, method = "pdp+ice",
-                        features = c("FrontalLobe", "RearWidth"))
-  expect_equal(names(multiple_plot), c("FrontalLobe", "RearWidth"))
+                        features = c("Petal.Length", "Sepal.Width"))
+  expect_equal(names(multiple_plot), c("Petal.Length", "Sepal.Width"))
 
   ice_plot <- plot(forest_interpret,
                    method = "ice",
-                   features = "FrontalLobe",
+                   features = "Petal.Length",
                    clusters = 4,
                    clusterType = "preds")
   ice_plot <- plot(forest_interpret,
                    method = "ice",
-                   features = "FrontalLobe",
+                   features = "Petal.Length",
                    clusters = 4,
                    clusterType = "gradient")
-  expect_equal(names(ice_plot), "FrontalLobe")
+  expect_equal(names(ice_plot), "Petal.Length")
 
 
   twodim_plot <- plot(forest_interpret,
-                      features.2d = data.frame(feat1 = c("FrontalLobe", "FrontalLobe"),
-                                               feat2 = c("Sex", "RearWidth")))
-  expect_equal(names(twodim_plot), c("FrontalLobe.Sex", "FrontalLobe.RearWidth"))
-  expect_equal(forest_interpret$saved$PDP.2D$`FrontalLobe, Sex`,
+                      features.2d = data.frame(feat1 = c("Petal.Length", "Petal.Length"),
+                                               feat2 = c("Sepal.Width", "Petal.Width")))
+  expect_equal(names(twodim_plot), c("Petal.Length.Sepal.Width", "Petal.Length.Petal.Width"))
+  expect_equal(forest_interpret$saved$PDP.2D$`Petal.Length, Sepal.Width`,
                predict_PDP.2D.Plotter(forest_interpret,
-                                      feat.2d = data.frame(feat1 = c("FrontalLobe"),
-                                                               feat2 = c("Sex")))[[1]])
-  expect_equal(forest_interpret$saved$PDP.2D$`FrontalLobe, RearWidth`,
+                                      feat.2d = data.frame(feat1 = c("Petal.Length"),
+                                                               feat2 = c("Sepal.Width")))[[1]])
+  expect_equal(forest_interpret$saved$PDP.2D$`Petal.Length, Petal.Width`,
                predict_PDP.2D.Plotter(forest_interpret,
-                                      feat.2d = data.frame(feat1 = c("FrontalLobe"),
-                                                               feat2 = c("RearWidth")))[[1]])
+                                      feat.2d = data.frame(feat1 = c("Petal.Length"),
+                                                               feat2 = c("Petal.Width")))[[1]])
 
   combined_plot <- plot(forest_interpret,
                         method = "pdp+ice",
-                        features = c("FrontalLobe", "CarapaceWidth"),
-                        features.2d = data.frame(feat1 = c("FrontalLobe", "FrontalLobe"),
-                                                 feat2 = c("Sex", "RearWidth")))
+                        features = c("Petal.Length", "Petal.Width"),
+                        features.2d = data.frame(feat1 = c("Petal.Length", "Petal.Length"),
+                                                 feat2 = c("Sepal.Width", "Petal.Width")))
   expect_equal(names(combined_plot),
-               c("FrontalLobe", "CarapaceWidth",
-                 "FrontalLobe.Sex", "FrontalLobe.RearWidth"))
+               c("Petal.Length", "Petal.Width",
+                 "Petal.Length.Sepal.Width", "Petal.Length.Petal.Width"))
 
   context("Try ALE plotting")
 
   ale.plots <- plot(forest_interpret, method = "ale",
-                    features = c("FrontalLobe", "RearWidth"))
-  expect_equal(names(ale.plots), c("FrontalLobe", "RearWidth"))
-  expect_equal(dim(forest_interpret$ale.grid$FrontalLobe$ale), c(50, 3))
-  expect_equal(dim(forest_interpret$ale.grid$RearWidth$ale), c(49, 3))
+                    features = c("Petal.Length", "Petal.Width"))
+  expect_equal(names(ale.plots), c("Petal.Length", "Petal.Width"))
+  expect_equal(dim(forest_interpret$ale.grid$Petal.Length$ale), c(38, 3))
+  expect_equal(dim(forest_interpret$ale.grid$Petal.Width$ale), c(26, 3))
 
   smooth_ale <- plot(forest_interpret,
-                     features = c("RearWidth"),
+                     features = c("Petal.Width"),
                      smooth = TRUE,
                      method = "ale",
                      smooth.binsize = 2,
@@ -146,7 +147,7 @@ test_that("Tests that the plotting functions are working", {
                      smooth.npoints = 500)
 
   smooth_pdp <- plot(forest_interpret,
-                     features = c("RearWidth"),
+                     features = c("Petal.Width"),
                      smooth = TRUE,
                      smooth.type = "normal")
 
