@@ -1,4 +1,4 @@
-test_that("Tests the PDP ranking functions are working", {
+test_that("Tests if the PDP ranking function is working", {
 
   library(Rforestry)
   set.seed(491)
