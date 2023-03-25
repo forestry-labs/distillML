@@ -27,12 +27,12 @@ test_that("Tests the PDP ranking functions are working", {
 
   context("Check PDP ranking methodologies without new observation")
   skip_if_not_mac()
-  expect_equal(names(sort(pdpRank(forest_interpret))),
+  expect_equal(names(sort(pdp.rank(forest_interpret))),
                c("Sex", "Index", "Species", "RearWidth", "CarapaceWidth",
                  "CarapaceLength", "FrontalLobe"))
 
   skip_if_not_mac()
-  expect_equal(names(sort(pdpRank(forest_interpret, rank.method = "FO.Derivative"))),
+  expect_equal(names(sort(pdp.rank(forest_interpret, rank.method = "FO.Derivative"))),
                c("Species", "Sex", "Index", "RearWidth", "FrontalLobe",
                  "CarapaceWidth", "CarapaceLength"))
 
@@ -40,12 +40,12 @@ test_that("Tests the PDP ranking functions are working", {
   new.obs1 <- data[test_ind[1], -which(names(data)==forest_predictor$y)]
 
   skip_if_not_mac()
-  expect_equal(names(sort(pdpRank(forest_interpret, rank.method = 'Variance',
+  expect_equal(names(sort(pdp.rank(forest_interpret, rank.method = 'Variance',
                                   new.obs = new.obs1))),
                c("Sex", "Index", "Species" , "RearWidth", "CarapaceWidth",
                  "FrontalLobe", "CarapaceLength"))
   skip_if_not_mac()
-  expect_equal(names(sort(pdpRank(forest_interpret, rank.method = 'FO.Derivative',
+  expect_equal(names(sort(pdp.rank(forest_interpret, rank.method = 'FO.Derivative',
                                   new.obs = new.obs1))),
                c("Species", "Sex", "Index", "RearWidth", "FrontalLobe",
                  "CarapaceWidth", "CarapaceLength"))
@@ -53,13 +53,13 @@ test_that("Tests the PDP ranking functions are working", {
   new.obs2 <- data[test_ind[2], -which(names(data)==forest_predictor$y)]
 
   skip_if_not_mac()
-  expect_equal(all((pdpRank(forest_interpret, rank.method = 'FO.Derivative',
+  expect_equal(all((pdp.rank(forest_interpret, rank.method = 'FO.Derivative',
                             new.obs = new.obs2)
                     - c(-1, -1, 0.1485, 0.6345, 0.3823, 0.8468, 0.7364)) < 0.001),
                TRUE)
 
   skip_if_not_mac()
-  expect_equal(all((pdpRank(forest_interpret, rank.method = 'Variance',
+  expect_equal(all((pdp.rank(forest_interpret, rank.method = 'Variance',
                             new.obs = new.obs2)
                     - c(0.0496, 0.0004, 0.0444, 1.3000, 0.1870, 1.2186, 0.6162)) < 0.001),
                TRUE)
@@ -75,22 +75,22 @@ test_that("Tests the PDP ranking functions are working", {
                                     task = "regression")
   linear_interpret <- Interpreter$new(predictor = linear_predictor)
 
-  expect_error(pdpRank(linear),
+  expect_error(pdp.rank(linear),
                "Object given is not of the interpreter class.",
                fixed = TRUE)
-  expect_error(pdpRank(forest_interpret, new.obs = as.matrix(new.obs1)),
+  expect_error(pdp.rank(forest_interpret, new.obs = as.matrix(new.obs1)),
                "New Observation is not in valid form. Please convert new.obs to a data frame.",
                fixed = TRUE)
-  expect_error(pdpRank(forest_interpret, new.obs = two.obs),
+  expect_error(pdp.rank(forest_interpret, new.obs = two.obs),
                "Please reduce data frame to one row (i.e. one new observation).",
                fixed = TRUE)
-  expect_error(pdpRank(linear_interpret, new.obs = new.obs1),
+  expect_error(pdp.rank(linear_interpret, new.obs = new.obs1),
                "Weighted PDP option via new observation is not compatible with non-forestry objects.",
                fixed = TRUE)
-  expect_error(pdpRank(forest_interpret, new.obs = withy.obs),
+  expect_error(pdp.rank(forest_interpret, new.obs = withy.obs),
                "Please set new.obs to the correct number of features that of the training data.",
                fixed = TRUE)
-  expect_error(pdpRank(forest_interpret, new.obs = off.obs),
+  expect_error(pdp.rank(forest_interpret, new.obs = off.obs),
                "Please set the names of the new.obs vector to that of the training data.",
                fixed = TRUE)
 

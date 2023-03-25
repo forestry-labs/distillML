@@ -1155,7 +1155,7 @@ localSurrogate = function(object,
 
 # Functions for the PDP ranking scores =========================================
 
-#' @name pdpRank
+#' @name pdp.rank
 #' @title Given an interpreter object with choice of PDP ranking methodology
 #'        (default: 'Variance'), produce 'risk' scores by feature. Optionally,
 #'        permits a new observation to weight the PDP function and rankings.
@@ -1171,7 +1171,7 @@ localSurrogate = function(object,
 #'        in the training data on the response variable.
 #' @return A list of risk scores by feature.
 #' @export
-pdpRank = function(object,
+pdp.rank = function(object,
                    rank.method = 'Variance',
                    new.obs = NULL)
 {
