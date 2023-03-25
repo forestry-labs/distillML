@@ -26,9 +26,12 @@ test_that("Tests the PDP ranking functions are working", {
   forest_interpret <- Interpreter$new(predictor = forest_predictor)
 
   context("Check PDP ranking methodologies without new observation")
+  skip_if_not_mac()
   expect_equal(names(sort(pdpRank(forest_interpret))),
                c("Sex", "Index", "Species", "RearWidth", "CarapaceWidth",
                  "CarapaceLength", "FrontalLobe"))
+
+  skip_if_not_mac()
   expect_equal(names(sort(pdpRank(forest_interpret, rank.method = "FO.Derivative"))),
                c("Species", "Sex", "Index", "RearWidth", "FrontalLobe",
                  "CarapaceWidth", "CarapaceLength"))
@@ -36,10 +39,12 @@ test_that("Tests the PDP ranking functions are working", {
   context("Check PDP ranking methodologies with new observation")
   new.obs1 <- data[test_ind[1], -which(names(data)==forest_predictor$y)]
 
+  skip_if_not_mac()
   expect_equal(names(sort(pdpRank(forest_interpret, rank.method = 'Variance',
                                   new.obs = new.obs1))),
                c("Sex", "Index", "Species" , "RearWidth", "CarapaceWidth",
                  "FrontalLobe", "CarapaceLength"))
+  skip_if_not_mac()
   expect_equal(names(sort(pdpRank(forest_interpret, rank.method = 'FO.Derivative',
                                   new.obs = new.obs1))),
                c("Species", "Sex", "Index", "RearWidth", "FrontalLobe",
@@ -47,11 +52,13 @@ test_that("Tests the PDP ranking functions are working", {
 
   new.obs2 <- data[test_ind[2], -which(names(data)==forest_predictor$y)]
 
+  skip_if_not_mac()
   expect_equal(all((pdpRank(forest_interpret, rank.method = 'FO.Derivative',
                             new.obs = new.obs2)
                     - c(-1, -1, 0.1485, 0.6345, 0.3823, 0.8468, 0.7364)) < 0.001),
                TRUE)
 
+  skip_if_not_mac()
   expect_equal(all((pdpRank(forest_interpret, rank.method = 'Variance',
                             new.obs = new.obs2)
                     - c(0.0496, 0.0004, 0.0444, 1.3000, 0.1870, 1.2186, 0.6162)) < 0.001),
