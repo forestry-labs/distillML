@@ -31,27 +31,22 @@
 #'        vector of predictions for each observation in the data frame.
 #' @field y The name of the outcome feature in the `data` data frame.
 #' @examples
+#'
 #' library(distillML)
 #' library(Rforestry)
 #' set.seed(491)
-#' data <- MASS::crabs
-#'
-#' levels(data$sex) <- list(Male = "M", Female = "F")
-#' levels(data$sp) <- list(Orange = "O", Blue = "B")
-#' colnames(data) <- c("Species","Sex","Index","Frontal Lobe",
-#' "Rear Width", "Carapace Length","Carapace Width","Body Depth")
+#' data <- iris
 #'
 #' test_ind <- sample(1:nrow(data), nrow(data)%/%5)
 #' train_reg <- data[-test_ind,]
 #' test_reg <- data[test_ind,]
 #'
 #'
-#' forest <- forestry(x=train_reg[,-which(names(train_reg)=="Carapace Width")],
-#' y=train_reg[,which(names(train_reg)=="Carapace Width")])
+#' forest <- forestry(x=data[,-1],
+#'                    y=data[,1])
 #'
 #' forest_predictor <- Predictor$new(model = forest, data=train_reg,
-#' y="Carapace Width", task = "regression")
-#'
+#'                                   y="Sepal.Length", task = "regression")
 #'
 #' @export
 Predictor <- R6::R6Class("Predictor",

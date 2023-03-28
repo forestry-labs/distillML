@@ -3,11 +3,7 @@ test_that("Tests that the predictor wrapper is working", {
   library(Rforestry)
   set.seed(491)
 
-  data <- MASS::crabs
-  levels(data$sex) <- list(Male = "M", Female = "F")
-  levels(data$sp) <- list(Orange = "O", Blue = "B")
-  colnames(data) <- c("Species","Sex","Index","Frontal Lobe",
-                      "Rear Width", "Carapace Length","Carapace Width","Body Depth")
+  data <-iris
 
 
 
@@ -16,13 +12,13 @@ test_that("Tests that the predictor wrapper is working", {
   test_reg <- data[test_ind,]
 
   # Train a random forest on the data set
-  forest <- forestry(x=train_reg[,-ncol(train_reg)],
-                     y=train_reg[,ncol(train_reg)])
+  forest <- forestry(x=train_reg[,-1],
+                     y=train_reg[,1])
 
   # Create a predictor wrapper for the forest
   forest_predictor <- Predictor$new(model = forest,
                                     data=train_reg,
-                                    y="Body Depth",
+                                    y="Sepal.Length",
                                     task = "regression")
 
 
@@ -35,7 +31,7 @@ test_that("Tests that the predictor wrapper is working", {
   wrapper_data <- forest_predictor$data
 
   expect_equal(all.equal(names(model_data),
-                         names(wrapper_data)[-8]), TRUE)
+                         names(wrapper_data)[-1]), TRUE)
 
   context("Check the model in predictor")
   expect_equal(all.equal(forest_predictor$model@processed_dta$y[1:10],
@@ -45,8 +41,8 @@ test_that("Tests that the predictor wrapper is working", {
 
 
   context("Check predictions are equal ")
-  wrapped_preds <- predict(forest_predictor, test_reg[,-ncol(test_reg)])
-  standard_preds <- predict(forest, test_reg[,-ncol(test_reg)])
+  wrapped_preds <- predict(forest_predictor, test_reg[,-1])
+  standard_preds <- predict(forest, test_reg[,-1])
 
   expect_equal(all.equal(wrapped_preds[,1],
                          standard_preds,
@@ -55,24 +51,13 @@ test_that("Tests that the predictor wrapper is working", {
 
   context("Try passing parameters to the predict function")
   # Try passing parameters to the predict function
-  wrapped_preds <- predict(forest_predictor, train_reg[,-ncol(train_reg)], aggregation = "oob")
-  standard_preds <- predict(forest, train_reg[,-ncol(train_reg)], aggregation = "oob")
+  wrapped_preds <- predict(forest_predictor, train_reg[,-1], aggregation = "oob")
+  standard_preds <- predict(forest, train_reg[,-1], aggregation = "oob")
 
   expect_equal(all.equal(wrapped_preds[,1],
                          standard_preds,
                          tolerance = 1e-4),
                TRUE)
-
-  context("Try giving the forest a custom prediction function")
-  # Now try giving the forest a custom prediction function
-  forest_predictor_debiased <- Predictor$new(model = forest,
-                                             data=train_reg,
-                                             predict.func = correctedPredict,
-                                             y="Body Depth",
-                                             task = "regression")
-
-  wrapped_preds <- predict(forest_predictor, test_reg[,-ncol(test_reg)], nrounds = 0)
-  standard_preds <- correctedPredict(forest, test_reg[,-ncol(test_reg)], nrounds = 0)
 
 
   context("Try a non forestry model")

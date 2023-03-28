@@ -3,25 +3,20 @@ test_that("Tests that the interpreter wrapper is working", {
   library(Rforestry)
   set.seed(491)
 
-  data <- MASS::crabs
-  levels(data$sex) <- list(Male = "M", Female = "F")
-  levels(data$sp) <- list(Orange = "O", Blue = "B")
-  colnames(data) <- c("Species","Sex","Index","FrontalLobe",
-                      "RearWidth", "CarapaceLength","CarapaceWidth","BodyDepth")
-
+  data <-iris
 
   test_ind <- sample(1:nrow(data), nrow(data)%/%5)
   train_reg <- data[-test_ind,]
   test_reg <- data[test_ind,]
 
   # Train a random forest on the data set
-  forest <- forestry(x=train_reg[,-ncol(train_reg)],
-                     y=train_reg[,ncol(train_reg)])
+  forest <- forestry(x=train_reg[,-c(1)],
+                     y=train_reg[,1])
 
   # Create a predictor wrapper for the forest
   forest_predictor <- Predictor$new(model = forest,
                                     data=train_reg,
-                                    y="BodyDepth",
+                                    y="Sepal.Length",
                                     task = "regression")
 
   # Initialize an interpreter
@@ -36,8 +31,8 @@ test_that("Tests that the interpreter wrapper is working", {
                50)
 
   expect_equal(forest_interpret$features,
-               c("Species", "Sex", "Index", "FrontalLobe",
-                 "RearWidth", "CarapaceLength", "CarapaceWidth"))
+               c("Sepal.Width",  "Petal.Length",
+                 "Petal.Width",  "Species"     ))
 
   expect_equal(nrow(forest_interpret$features.2d),
                choose(length(forest_interpret$features), 2))
@@ -71,20 +66,20 @@ test_that("Tests that the interpreter wrapper is working", {
   func_names <- names(forest_interpret$functions.1d)
   expect_equal(func_names, NULL)
 
-  pred_pdp <- forest_interpret$pdp.1d$`RearWidth`(c(10,11,12,14,15))
-  pred_pdp_alt <- forest_interpret$pdp.1d[[5]](c(10,11,12,14,15))
+  pred_pdp <- forest_interpret$pdp.1d$`Petal.Length`(c(10,11,12,14,15))
+  pred_pdp_alt <- forest_interpret$pdp.1d[[2]](c(10,11,12,14,15))
 
-  pred_pdp_2 <- forest_interpret$pdp.2d$Species$Sex(data.frame(col1 = data$Species,
-                                                               col2 = data$Sex))
+  pred_pdp_2 <- forest_interpret$pdp.2d$Species$Petal.Length(data.frame(col1 = data$Species,
+                                                                        col2 = data$Petal.Length))
 
-  pred_pdp_2_alt <- forest_interpret$pdp.2d[[1]][[2]](data.frame(col1 = data$Species,
-                                                               col2 = data$Sex))
+  pred_pdp_2_alt <- forest_interpret$pdp.2d[[4]][[2]](data.frame(col1 = data$Species,
+                                                               col2 = data$Petal.Length))
 
   expect_equal(all.equal(pred_pdp,pred_pdp_alt, tolerance = 1e-8), TRUE)
   expect_equal(all.equal(pred_pdp_2,pred_pdp_2_alt, tolerance = 1e-8), TRUE)
 
   expect_equal(length(pred_pdp), 5)
-  expect_equal(length(pred_pdp_2), 200)
+  expect_equal(length(pred_pdp_2), 150)
 
   rm(list=ls())
 })

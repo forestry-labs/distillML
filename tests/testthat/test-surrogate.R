@@ -3,24 +3,20 @@ test_that("Tests that the surrogate models are working", {
   library(Rforestry)
   set.seed(491)
 
-  data <- MASS::crabs
-  levels(data$sex) <- list(Male = "M", Female = "F")
-  levels(data$sp) <- list(Orange = "O", Blue = "B")
-  colnames(data) <- c("Species","Sex","Index","FrontalLobe",
-                      "RearWidth", "CarapaceLength","CarapaceWidth","BodyDepth")
+  data <-iris
 
-  test_ind <- sample(1:nrow(data), 180)
+  test_ind <- sample(1:nrow(data), nrow(data)%/%5)
   train_reg <- data[-test_ind,]
   test_reg <- data[test_ind,]
 
   # Train a random forest on the data set
-  forest <- forestry(x=train_reg[,-ncol(train_reg)],
-                     y=train_reg[,ncol(train_reg)])
+  forest <- forestry(x=train_reg[,-1],
+                     y=train_reg[,1])
 
   # Create a predictor wrapper for the forest
   forest_predictor <- Predictor$new(model = forest,
                                     data=train_reg,
-                                    y="BodyDepth",
+                                    y="Sepal.Length",
                                     task = "regression")
 
   # Initialize an interpreter
@@ -38,11 +34,11 @@ test_that("Tests that the surrogate models are working", {
   recalculate <- distill(forest_interpret, snap.grid = FALSE)
 
   default.preds <- predict(default,
-                           test_reg[, -which(names(test_reg) == "BodyDepth")])
+                           test_reg[, -1])
   snaptogrid.preds <- predict(snaptogrid,
-                           test_reg[, -which(names(test_reg) == "BodyDepth")])
+                           test_reg[, -1])
   recalculate.preds <- predict(recalculate,
-                           test_reg[, -which(names(test_reg) == "BodyDepth")])
+                           test_reg[, -1])
 
   expect_equal(dim(default.preds), c(nrow(test_reg), 1))
   expect_equal(dim(snaptogrid.preds), c(nrow(test_reg), 1))
@@ -50,7 +46,7 @@ test_that("Tests that the surrogate models are working", {
 
   # Check that the snap.grid option only calculates the features selected
   context("Snap.train additional testing")
-  feat.index <- which(forest_interpret$features %in% c("Sex", "FrontalLobe", "RearWidth"))
+  feat.index <- which(forest_interpret$features %in% c("Species", "Petal.Length", "Petal.Width"))
   forest_interpret <- Interpreter$new(predictor = forest_predictor)
   surr.model <- distill(forest_interpret, features = feat.index, snap.train = FALSE)
 
