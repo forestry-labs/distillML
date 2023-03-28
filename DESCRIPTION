@@ -28,8 +28,7 @@ Imports:
     tidyr,
     data.table,
     mltools,
-    gridExtra,
-    ecp
+    gridExtra
 Suggests:
     testthat,
     knitr,
