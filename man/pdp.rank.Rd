@@ -6,7 +6,13 @@
        (default: 'Variance'), produce 'risk' scores by feature. Optionally,
        permits a new observation to weight the PDP function and rankings.}
 \usage{
-pdp.rank(object, rank.method = "Variance", new.obs = NULL)
+pdp.rank(
+  object,
+  rank.method = "Variance",
+  new.obs = NULL,
+  feature = NULL,
+  eps = 0.5
+)
 }
 \arguments{
 \item{object}{The Interpreter class that we want understand the risk scores of.}
@@ -20,6 +26,14 @@ are ranked by empirical first order derivative.}
 predictor parameter, holding information/statistics of an observation of interest.
 A non-empty data frame re-weights the PDP function by impact of similar observations
 in the training data on the response variable.}
+
+\item{feature}{A feature of interest within a new observation to filter out observations within the
+train data from the ICE/PDP plots if the difference between feature value is greater than or equal
+to a bound (eps paramater). Note that if the feature is a factor within the train data, observations
+within the train data will be filtered out if they are not equivalent to the feature of interest.}
+
+\item{eps}{A bound used to assess the similarity/closeness between a selected feature in a new observation and
+the same selected feature in each entry of the train data.}
 }
 \value{
 A list of risk scores by feature.
