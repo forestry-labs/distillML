@@ -650,7 +650,7 @@ predict_ALE <- function(x, feature, training_data, save = TRUE){
 #' @param smooth.npoints The number of points returned when using the kernel method. By
 #'                       default, this is twice the number of grid points for that
 #'                       feature.
-#' @param ... Additiional parameters to pass to the plot function
+#' @param ... Additional parameters to pass to the plot function
 #' @return A list of plots with 1-d features and 2-d features. For 2-d features with
 #'         one continuous and one categorical feature, the plot is a linear plot of the
 #'         continuous feature with group colors representing the categorical feature.
@@ -1169,15 +1169,39 @@ localSurrogate = function(object,
 #'        predictor parameter, holding information/statistics of an observation of interest.
 #'        A non-empty data frame re-weights the PDP function by impact of similar observations
 #'        in the training data on the response variable.
+#' @param feature A feature of interest within a new observation to filter out observations within the
+#'        train data from the ICE/PDP plots if the difference between feature value is greater than or equal
+#'        to a bound (eps paramater). Note that if the feature is a factor within the train data, observations
+#'        within the train data will be filtered out if they are not equivalent to the feature of interest.
+#' @param eps A bound used to assess the similarity/closeness between a selected feature in a new observation and
+#'        the same selected feature in each entry of the train data.
 #' @return A list of risk scores by feature.
 #' @export
 pdp.rank = function(object,
                    rank.method = 'Variance',
-                   new.obs = NULL)
+                   new.obs = NULL,
+                   feature = NULL,
+                   eps = 0.5)
 {
 
   if (!(inherits(object, "Interpreter"))){
     stop("Object given is not of the interpreter class.")
+  }
+
+  methodols <- c('Variance', 'FO.Derivative')
+  tcn <- colnames(object$predictor$data)
+  tcn <- tcn[-which(tcn == object$predictor$y)]
+
+  if (!(rank.method %in% methodols)) {
+    stop("rank.method must be \'Variance\' or \'FO.Derivative\'")
+  }
+  if (!is.null(feature)) {
+    if (is.null(new.obs)) {
+      stop("Feature based PDP ranking method requires a new observation.")
+    }
+    if (!(feature %in% tcn)) {
+      stop("Feature based PDP ranking method requires a valid feature.")
+    }
   }
   if (!is.null(new.obs)){
     if (!is.data.frame(new.obs)){
@@ -1187,15 +1211,18 @@ pdp.rank = function(object,
       stop("Please reduce data frame to one row (i.e. one new observation).")
     }
   }
+  if (eps <= 0) {
+    stop("Please set eps to a value greater than 0.")
+  }
   if (sum(is.na(object$saved$ICE)) != 0) {
     predict_ICE.Plotter(object)
   }
 
+  design <- object$saved$ICE
+
   #Correctly weight observation predictions depending on new.obs
   if (!is.null(new.obs)) {
     new.obs <- new.obs[sort(colnames(new.obs))]
-    tcn <- colnames(object$predictor$data)
-    tcn <- tcn[-which(tcn == object$predictor$y)]
     if (!inherits(object$predictor$model, "forestry")) {
       stop("Weighted PDP option via new observation is not compatible with non-forestry objects.")
     } else if (ncol(new.obs) != length(tcn)) {
@@ -1203,22 +1230,24 @@ pdp.rank = function(object,
     } else if ((length(setdiff(colnames(new.obs), tcn)) != 0) | (length(setdiff(tcn, colnames(new.obs))) != 0)){
       stop("Please set the names of the new.obs vector to that of the training data.")
     } else {
-      train.classes <- sapply(object$predictor$data[, tcn], class)
-      train.classes <- train.classes[colnames(new.obs)]
-      num <- which(train.classes == "integer" | train.classes == "numeric")
-      new.obs[ , num] <- apply(new.obs[ , num,drop=F], 2, function(x) as.numeric(as.character(x)))
-      new.obs <- new.obs[tcn]
-      obs.weight <- t(predict(object$predictor$model, new.obs, weightMatrix = TRUE)$weightMatrix)
+      if (!is.null(feature)) {
+        if (object$feat.class[[feature]] == "factor") {
+          idx <- object$predictor$data[[feature]] == new.obs[[feature]]
+        } else {
+          idx <- abs(object$predictor$data[[feature]] - new.obs[[feature]]) < eps
+        }
+        obs.weight <- rep(1/sum(idx), sum(idx))
+      } else {
+        train.classes <- sapply(object$predictor$data[, tcn], class)
+        train.classes <- train.classes[colnames(new.obs)]
+        num <- which(train.classes == "integer" | train.classes == "numeric")
+        new.obs[ , num] <- apply(new.obs[ , num,drop=F], 2, function(x) as.numeric(as.character(x)))
+        new.obs <- new.obs[tcn]
+        obs.weight <- t(predict(object$predictor$model, new.obs, weightMatrix = TRUE)$weightMatrix)
+      }
     }
   } else {
     obs.weight <- rep(1/nrow(object$predictor$data), nrow(object$predictor$data))
-  }
-
-  methodols <- c('Variance', 'FO.Derivative')
-
-  if (!(rank.method %in% methodols)) {
-    stop("Method giving for rank.method is not supported, this must be one
-             of \'Variance\', \'FO.Derivative\'")
   }
 
   pdp.var.1d <- function(y) {
@@ -1241,7 +1270,11 @@ pdp.rank = function(object,
       pdp_scores <- append(pdp_scores, -1)
     }
     else {
-      curr_pdp <- as.matrix(object$saved$ICE[[feat]][,-1]) %*% obs.weight
+      if (!is.null(feature)) {
+        curr_pdp <- as.matrix(design[[feat]][, -1][, idx]) %*% obs.weight
+      } else {
+        curr_pdp <- as.matrix(design[[feat]][,-1]) %*% obs.weight
+      }
       score <- chosen_methodol(curr_pdp)
       pdp_scores <- append(pdp_scores, score)
     }
