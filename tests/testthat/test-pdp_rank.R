@@ -57,6 +57,7 @@ test_that("Tests if the PDP ranking function is working", {
                              new.obs = new.obs2)
                     - c(0.1027, 0.2607, 0.2830, -1)) < 0.001), TRUE)
 
+  ### START NEED CHANGE ###
   context("Check feature based PDP ranking methodologies")
   skip_if_not_mac()
   expect_equal(names(sort(pdp.rank(forest_interpret, new.obs = new.obs1,
@@ -81,12 +82,24 @@ test_that("Tests if the PDP ranking function is working", {
   skip_if_not_mac()
   expect_equal(all((pdp.rank(forest_interpret, rank.method = 'Variance',
                              new.obs = new.obs2, feature = 'Petal.Width')
-                    - c(0.0266, 0.1254, 0.0594, 0.0309)) < 0.001), TRUE)
+                    - c(0.0280, 0.1328, 0.0726, 0.0354)) < 0.001), TRUE)
 
   skip_if_not_mac()
   expect_equal(all((pdp.rank(forest_interpret, rank.method = 'FO.Derivative',
                              new.obs = new.obs2, feature = 'Petal.Width')
-                    - c(0.1067, 0.2709, 0.2717, -1)) < 0.001), TRUE)
+                    - c(0.1084, 0.2846, 0.2945, -1)) < 0.001), TRUE)
+
+  skip_if_not_mac()
+  expect_equal(all((pdp.rank(forest_interpret, rank.method = 'Variance',
+                             new.obs = new.obs2, feature = 'Petal.Width', qt = 20)
+                    - c(0.0270, 0.1306, 0.0582, 0.0306)) < 0.001), TRUE)
+
+  skip_if_not_mac()
+  expect_equal(all((pdp.rank(forest_interpret, rank.method = 'FO.Derivative',
+                             new.obs = new.obs2, feature = 'Petal.Width', qt = 40)
+                    - c(0.1077, 0.2860, 0.2593, -1)) < 0.001), TRUE)
+
+  ### END NEED CHANGE ###
 
   context("Check PDP ranking stopping mechanisms")
   off.obs <- data[test_ind[1], -c(2)]
@@ -98,6 +111,8 @@ test_that("Tests if the PDP ranking function is working", {
                                     y="Sepal.Length",
                                     task = "regression")
   linear_interpret <- Interpreter$new(predictor = linear_predictor)
+
+  samples_interpret <- Interpreter$new(predictor = forest_predictor, samples = 100)
 
   expect_error(pdp.rank(linear),
                "Object given is not of the interpreter class.",
@@ -123,7 +138,7 @@ test_that("Tests if the PDP ranking function is working", {
   expect_error(pdp.rank(forest_interpret, new.obs = new.obs1, feature = 'species'),
                "Feature based PDP ranking method requires a valid feature.",
                fixed = TRUE)
-  expect_error(pdp.rank(forest_interpret, eps = -1),
-               "Please set eps to a value greater than 0.",
+  expect_error(pdp.rank(samples_interpret),
+               "Please set the \'samples\' parameter in the Interpreter object passed in as pdp.rank's \'object\' parameter as the number of rows in the train data.",
                fixed = TRUE)
 })

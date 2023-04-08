@@ -3,7 +3,7 @@
 \name{pdp.rank}
 \alias{pdp.rank}
 \title{Given an interpreter object with choice of PDP ranking methodology
-       (default: 'Variance'), produce 'risk' scores by feature. Optionally,
+       (default: 'Variance'), produce PDP 'ranking' scores by feature. Optionally,
        permits a new observation to weight the PDP function and rankings.}
 \usage{
 pdp.rank(
@@ -11,11 +11,11 @@ pdp.rank(
   rank.method = "Variance",
   new.obs = NULL,
   feature = NULL,
-  eps = 0.5
+  qt = 5
 )
 }
 \arguments{
-\item{object}{The Interpreter class that we want understand the risk scores of.}
+\item{object}{The Interpreter class that we want understand the PDP ranking scores of.}
 
 \item{rank.method}{A string to select which PDP ranking methodology. Should be one of
 c("Variance", "FO.Derivative"). When set to "Variance" the PDP functions are ranked by variance
@@ -28,16 +28,17 @@ A non-empty data frame re-weights the PDP function by impact of similar observat
 in the training data on the response variable.}
 
 \item{feature}{A feature of interest within a new observation to filter out observations within the
-train data from the ICE/PDP plots if the difference between feature value is greater than or equal
-to a bound (eps paramater). Note that if the feature is a factor within the train data, observations
-within the train data will be filtered out if they are not equivalent to the feature of interest.}
+train data from the ICE/PDP plots if the feature value is within a quantile bound set by the qt
+parameter. Note that if the feature is a factor within the train data, observations
+within the train data will be filtered out if they are not equivalent to the new observations'
+feature of interest value.}
 
-\item{eps}{A bound used to assess the similarity/closeness between a selected feature in a new observation and
-the same selected feature in each entry of the train data.}
+\item{qt}{A positive value that dictates how many quantiles above and below a new observation's selected
+feature value of the training data will be incorporated into PDP rankings.}
 }
 \value{
-A list of risk scores by feature.
+A list of PDP ranking scores by feature.
 }
 \description{
-Returns a list of 'risk' scores corresponding to each feature.
+Returns a list of PDP 'ranking' scores corresponding to each feature.
 }

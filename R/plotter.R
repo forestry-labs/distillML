@@ -1157,10 +1157,10 @@ localSurrogate = function(object,
 
 #' @name pdp.rank
 #' @title Given an interpreter object with choice of PDP ranking methodology
-#'        (default: 'Variance'), produce 'risk' scores by feature. Optionally,
+#'        (default: 'Variance'), produce PDP 'ranking' scores by feature. Optionally,
 #'        permits a new observation to weight the PDP function and rankings.
-#' @description Returns a list of 'risk' scores corresponding to each feature.
-#' @param object The Interpreter class that we want understand the risk scores of.
+#' @description Returns a list of PDP 'ranking' scores corresponding to each feature.
+#' @param object The Interpreter class that we want understand the PDP ranking scores of.
 #' @param rank.method A string to select which PDP ranking methodology. Should be one of
 #'        c("Variance", "FO.Derivative"). When set to "Variance" the PDP functions are ranked by variance
 #'        of the function over the range of grid.points and when set to "FO.Derivative" the PDP functions
@@ -1170,18 +1170,19 @@ localSurrogate = function(object,
 #'        A non-empty data frame re-weights the PDP function by impact of similar observations
 #'        in the training data on the response variable.
 #' @param feature A feature of interest within a new observation to filter out observations within the
-#'        train data from the ICE/PDP plots if the difference between feature value is greater than or equal
-#'        to a bound (eps paramater). Note that if the feature is a factor within the train data, observations
-#'        within the train data will be filtered out if they are not equivalent to the feature of interest.
-#' @param eps A bound used to assess the similarity/closeness between a selected feature in a new observation and
-#'        the same selected feature in each entry of the train data.
-#' @return A list of risk scores by feature.
+#'        train data from the ICE/PDP plots if the feature value is within a quantile bound set by the qt
+#'        parameter. Note that if the feature is a factor within the train data, observations
+#'        within the train data will be filtered out if they are not equivalent to the new observations'
+#'        feature of interest value.
+#' @param qt A positive value that dictates how many quantiles above and below a new observation's selected
+#'        feature value of the training data will be incorporated into PDP rankings.
+#' @return A list of PDP ranking scores by feature.
 #' @export
 pdp.rank = function(object,
                    rank.method = 'Variance',
                    new.obs = NULL,
                    feature = NULL,
-                   eps = 0.5)
+                   qt = 5)
 {
 
   if (!(inherits(object, "Interpreter"))){
@@ -1211,8 +1212,8 @@ pdp.rank = function(object,
       stop("Please reduce data frame to one row (i.e. one new observation).")
     }
   }
-  if (eps <= 0) {
-    stop("Please set eps to a value greater than 0.")
+  if (qt < 0) {
+    stop("Please set qt to a value greater than or equal to 0.")
   }
   if (sum(is.na(object$saved$ICE)) != 0) {
     predict_ICE.Plotter(object)
@@ -1234,10 +1235,13 @@ pdp.rank = function(object,
         if (object$feat.class[[feature]] == "factor") {
           idx <- object$predictor$data[[feature]] == new.obs[[feature]]
         } else {
-          idx <- abs(object$predictor$data[[feature]] - new.obs[[feature]]) < eps
+          q <- ecdf(object$predictor$data[[feature]])
+          bounds <- quantile(object$predictor$data[[feature]], probs = c(max(0.0, q(new.obs[[feature]]) - (qt/100)), min(1.0, q(new.obs[[feature]]) + (qt/100))))
+          idx <- bounds[[1]] <= object$predictor$data[[feature]] & object$predictor$data[[feature]] <= bounds[[2]]
         }
         obs.weight <- rep(1/sum(idx), sum(idx))
       } else {
+        idx <- rep(TRUE, nrow(object$predictor$data))
         train.classes <- sapply(object$predictor$data[, tcn], class)
         train.classes <- train.classes[colnames(new.obs)]
         num <- which(train.classes == "integer" | train.classes == "numeric")
@@ -1247,6 +1251,7 @@ pdp.rank = function(object,
       }
     }
   } else {
+    idx <- rep(TRUE, nrow(object$predictor$data))
     obs.weight <- rep(1/nrow(object$predictor$data), nrow(object$predictor$data))
   }
 
@@ -1270,11 +1275,10 @@ pdp.rank = function(object,
       pdp_scores <- append(pdp_scores, -1)
     }
     else {
-      if (!is.null(feature)) {
-        curr_pdp <- as.matrix(design[[feat]][, -1][, idx]) %*% obs.weight
-      } else {
-        curr_pdp <- as.matrix(design[[feat]][,-1]) %*% obs.weight
+      if (dim(design[[feat]][, -1])[2] != nrow(object$predictor$data)) {
+        stop("Please set the \'samples\' parameter in the Interpreter object passed in as pdp.rank's \'object\' parameter as the number of rows in the train data.")
       }
+      curr_pdp <- as.matrix(design[[feat]][, -1][, idx]) %*% obs.weight
       score <- chosen_methodol(curr_pdp)
       pdp_scores <- append(pdp_scores, score)
     }
