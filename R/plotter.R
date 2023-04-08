@@ -10,6 +10,7 @@
 #' @importFrom utils head
 #' @importFrom stats kmeans
 #' @importFrom stats ksmooth
+#' @importFrom stats ecdf
 
 
 #' @name set.center.at
