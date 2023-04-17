@@ -1164,26 +1164,27 @@ localSurrogate = function(object,
 #' @param object The Interpreter class that we want understand the PDP ranking scores of.
 #' @param rank.method A string to select which PDP ranking methodology. Should be one of
 #'        c("Variance", "FO.Derivative"). When set to "Variance" the PDP functions are ranked by variance
-#'        of the function over the range of grid.points and when set to "FO.Derivative" the PDP functions
-#'        are ranked by empirical first order derivative.
-#' @param new.obs A data frame with equivalent name/features of the data that trained the
-#'        predictor parameter, holding information/statistics of an observation of interest.
-#'        A non-empty data frame re-weights the PDP function by impact of similar observations
-#'        in the training data on the response variable.
-#' @param feature A feature of interest within a new observation to filter out observations within the
-#'        train data from the ICE/PDP plots if the feature value is within a quantile bound set by the qt
-#'        parameter. Note that if the feature is a factor within the train data, observations
-#'        within the train data will be filtered out if they are not equivalent to the new observations'
-#'        feature of interest value.
-#' @param qt A positive value that dictates how many quantiles above and below a new observation's selected
-#'        feature value of the training data will be incorporated into PDP rankings.
+#'        of the PDP function. When set to "FO.Derivative" the PDP functions are ranked by the maximum absolute
+#'        value of the numerical first order derivative. Note that a PDP ranking score of -1 will be given
+#'        to categorical features with a 'FO.Derivative' PDP ranking methodology.
+#' @param pdp.weight.obs A single observation that takes the form of a data frame with a single row.
+#'        PDP rankings are computed by applying the rank.method functionality on a region (dictated by the
+#'        quantile.dist parameter) around this observation's feature values within the PDP function.
+#' @param weight.pdp A boolean flag that dictates whether or not to construct the PDP function
+#'        as a weighted average of ICE functions. Should be one of c(TRUE, FALSE).
+#'        The standard PDP function is a simple average of the ICE functions; this option produces a
+#'        personalized PDP curve that is the weighted average of the ICE functions where the kth ICE function
+#'        is given the weight the forestry predictor (stored within the object parameter) gives observation k
+#'        when predicting for pdp.weight.obs.
+#' @param quantile.dist A positive number that dictates how many quantiles above and below each feature of
+#'        a new observation comprises the PDP ranking value.
 #' @return A list of PDP ranking scores by feature.
 #' @export
 pdp.rank = function(object,
                    rank.method = 'Variance',
-                   new.obs = NULL,
-                   feature = NULL,
-                   qt = 5)
+                   pdp.weight.obs = NULL,
+                   weight.pdp = FALSE,
+                   quantile.dist = 20)
 {
 
   if (!(inherits(object, "Interpreter"))){
@@ -1194,27 +1195,22 @@ pdp.rank = function(object,
   tcn <- colnames(object$predictor$data)
   tcn <- tcn[-which(tcn == object$predictor$y)]
 
-  if (!(rank.method %in% methodols)) {
+  if (!(rank.method %in% methodols)){
     stop("rank.method must be \'Variance\' or \'FO.Derivative\'")
   }
-  if (!is.null(feature)) {
-    if (is.null(new.obs)) {
-      stop("Feature based PDP ranking method requires a new observation.")
+  if (!is.null(pdp.weight.obs)){
+    if (!is.data.frame(pdp.weight.obs)){
+      stop("New Observation is not in valid form. Please convert pdp.weight.obs to a data frame.")
     }
-    if (!(feature %in% tcn)) {
-      stop("Feature based PDP ranking method requires a valid feature.")
-    }
-  }
-  if (!is.null(new.obs)){
-    if (!is.data.frame(new.obs)){
-      stop("New Observation is not in valid form. Please convert new.obs to a data frame.")
-    }
-    if (nrow(new.obs) != 1){
+    if (nrow(pdp.weight.obs) != 1){
       stop("Please reduce data frame to one row (i.e. one new observation).")
     }
   }
-  if (qt < 0) {
-    stop("Please set qt to a value greater than or equal to 0.")
+  if (!weight.pdp %in% c(TRUE, FALSE)){
+    stop("weight.pdp must be TRUE or FALSE.")
+  }
+  if (quantile.dist < 0) {
+    stop("Please set quantile.dist to a value greater than or equal to 0.")
   }
   if (sum(is.na(object$saved$ICE)) != 0) {
     predict_ICE.Plotter(object)
@@ -1222,37 +1218,29 @@ pdp.rank = function(object,
 
   design <- object$saved$ICE
 
-  #Correctly weight observation predictions depending on new.obs
-  if (!is.null(new.obs)) {
-    new.obs <- new.obs[sort(colnames(new.obs))]
+  #Correctly weight observation predictions depending on pdp.weight.obs
+  if (!is.null(pdp.weight.obs)) {
+    pdp.weight.obs <- pdp.weight.obs[sort(colnames(pdp.weight.obs))]
+    #ONLY IF pdp.forest.weight = TRUE:
     if (!inherits(object$predictor$model, "forestry")) {
       stop("Weighted PDP option via new observation is not compatible with non-forestry objects.")
-    } else if (ncol(new.obs) != length(tcn)) {
-      stop("Please set new.obs to the correct number of features that of the training data.")
-    } else if ((length(setdiff(colnames(new.obs), tcn)) != 0) | (length(setdiff(tcn, colnames(new.obs))) != 0)){
-      stop("Please set the names of the new.obs vector to that of the training data.")
+    } else if (ncol(pdp.weight.obs) != length(tcn)) {
+      stop("Please set pdp.weight.obs to the correct number of features that of the training data.")
+    } else if ((length(setdiff(colnames(pdp.weight.obs), tcn)) != 0) | (length(setdiff(tcn, colnames(pdp.weight.obs))) != 0)){
+      stop("Please set the names of the pdp.weight.obs vector to that of the training data.")
     } else {
-      if (!is.null(feature)) {
-        if (object$feat.class[[feature]] == "factor") {
-          idx <- object$predictor$data[[feature]] == new.obs[[feature]]
-        } else {
-          q <- ecdf(object$predictor$data[[feature]])
-          bounds <- quantile(object$predictor$data[[feature]], probs = c(max(0.0, q(new.obs[[feature]]) - (qt/100)), min(1.0, q(new.obs[[feature]]) + (qt/100))))
-          idx <- bounds[[1]] <= object$predictor$data[[feature]] & object$predictor$data[[feature]] <= bounds[[2]]
-        }
-        obs.weight <- rep(1/sum(idx), sum(idx))
-      } else {
-        idx <- rep(TRUE, nrow(object$predictor$data))
+      if (weight.pdp == TRUE) {
         train.classes <- sapply(object$predictor$data[, tcn], class)
-        train.classes <- train.classes[colnames(new.obs)]
+        train.classes <- train.classes[colnames(pdp.weight.obs)]
         num <- which(train.classes == "integer" | train.classes == "numeric")
-        new.obs[ , num] <- apply(new.obs[ , num,drop=F], 2, function(x) as.numeric(as.character(x)))
-        new.obs <- new.obs[tcn]
-        obs.weight <- t(predict(object$predictor$model, new.obs, weightMatrix = TRUE)$weightMatrix)
+        pdp.weight.obs[ , num] <- apply(pdp.weight.obs[ , num,drop=F], 2, function(x) as.numeric(as.character(x)))
+        pdp.weight.obs <- pdp.weight.obs[tcn]
+        obs.weight <- t(predict(object$predictor$model, pdp.weight.obs, weightMatrix = TRUE)$weightMatrix)
+      } else {
+        obs.weight <- rep(1/nrow(object$predictor$data), nrow(object$predictor$data))
       }
     }
   } else {
-    idx <- rep(TRUE, nrow(object$predictor$data))
     obs.weight <- rep(1/nrow(object$predictor$data), nrow(object$predictor$data))
   }
 
@@ -1274,14 +1262,25 @@ pdp.rank = function(object,
   for (feat in object$features) {
     if ((object$feat.class[[feat]] == "factor") & (rank.method == 'FO.Derivative')){
       pdp_scores <- append(pdp_scores, -1)
-    }
-    else {
+    } else {
       if (dim(design[[feat]][, -1])[2] != nrow(object$predictor$data)) {
         stop("Please set the \'samples\' parameter in the Interpreter object passed in as pdp.rank's \'object\' parameter as the number of rows in the train data.")
+      } else {
+        if (!is.null(pdp.weight.obs)) {
+          if (object$feat.class[[feat]] == "factor") {
+            idx <- object$grid.points[[feat]] == as.character(pdp.weight.obs[[feat]])
+          } else {
+            q <- ecdf(object$grid.points[[feat]])
+            bounds <- quantile(object$grid.points[[feat]], probs = c(max(0.0, q(pdp.weight.obs[[feat]]) - (quantile.dist/100)), min(1.0, q(pdp.weight.obs[[feat]]) + (quantile.dist/100))))
+            idx <- bounds[[1]] <= object$grid.points[[feat]] & object$grid.points[[feat]] <= bounds[[2]]
+          }
+        } else {
+          idx <- rep(TRUE, length(object$grid.points[[feat]]))
+        }
+        curr_pdp <- as.matrix(design[[feat]][idx, -1]) %*% obs.weight
+        score <- chosen_methodol(curr_pdp)
+        pdp_scores <- append(pdp_scores, score)
       }
-      curr_pdp <- as.matrix(design[[feat]][, -1][, idx]) %*% obs.weight
-      score <- chosen_methodol(curr_pdp)
-      pdp_scores <- append(pdp_scores, score)
     }
   }
   names(pdp_scores) <- object$features

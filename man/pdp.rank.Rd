@@ -9,9 +9,9 @@
 pdp.rank(
   object,
   rank.method = "Variance",
-  new.obs = NULL,
-  feature = NULL,
-  qt = 5
+  pdp.weight.obs = NULL,
+  weight.pdp = FALSE,
+  quantile.dist = 20
 )
 }
 \arguments{
@@ -19,22 +19,23 @@ pdp.rank(
 
 \item{rank.method}{A string to select which PDP ranking methodology. Should be one of
 c("Variance", "FO.Derivative"). When set to "Variance" the PDP functions are ranked by variance
-of the function over the range of grid.points and when set to "FO.Derivative" the PDP functions
-are ranked by empirical first order derivative.}
+of the PDP function. When set to "FO.Derivative" the PDP functions are ranked by the maximum absolute
+value of the numerical first order derivative. Note that a PDP ranking score of -1 will be given
+to categorical features with a 'FO.Derivative' PDP ranking methodology.}
 
-\item{new.obs}{A data frame with equivalent name/features of the data that trained the
-predictor parameter, holding information/statistics of an observation of interest.
-A non-empty data frame re-weights the PDP function by impact of similar observations
-in the training data on the response variable.}
+\item{pdp.weight.obs}{A single observation that takes the form of a data frame with a single row.
+PDP rankings are computed by applying the rank.method functionality on a region (dictated by the
+quantile.dist parameter) around this observation's feature values within the PDP function.}
 
-\item{feature}{A feature of interest within a new observation to filter out observations within the
-train data from the ICE/PDP plots if the feature value is within a quantile bound set by the qt
-parameter. Note that if the feature is a factor within the train data, observations
-within the train data will be filtered out if they are not equivalent to the new observations'
-feature of interest value.}
+\item{weight.pdp}{A boolean flag that dictates whether or not to construct the PDP function
+as a weighted average of ICE functions. Should be one of c(TRUE, FALSE).
+The standard PDP function is a simple average of the ICE functions; this option produces a
+personalized PDP curve that is the weighted average of the ICE functions where the kth ICE function
+is given the weight the forestry predictor (stored within the object parameter) gives observation k
+when predicting for pdp.weight.obs.}
 
-\item{qt}{A positive value that dictates how many quantiles above and below a new observation's selected
-feature value of the training data will be incorporated into PDP rankings.}
+\item{quantile.dist}{A positive number that dictates how many quantiles above and below each feature of
+a new observation comprises the PDP ranking value.}
 }
 \value{
 A list of PDP ranking scores by feature.

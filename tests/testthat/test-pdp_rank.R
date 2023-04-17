@@ -37,69 +37,58 @@ test_that("Tests if the PDP ranking function is working", {
 
   skip_if_not_mac()
   expect_equal(names(sort(pdp.rank(forest_interpret, rank.method = 'Variance',
-                                  new.obs = new.obs1))),
-               c("Sepal.Width", "Species", "Petal.Width", "Petal.Length"))
+                                   pdp.weight.obs = new.obs1))),
+               c("Species", "Sepal.Width", "Petal.Length", "Petal.Width" ))
 
   skip_if_not_mac()
   expect_equal(names(sort(pdp.rank(forest_interpret, rank.method = 'FO.Derivative',
-                                  new.obs = new.obs1))),
-               c("Species", "Sepal.Width", "Petal.Width", "Petal.Length"))
+                                   pdp.weight.obs = new.obs1))),
+               c("Species", "Petal.Length", "Sepal.Width", "Petal.Width"))
 
   new.obs2 <- data[test_ind[2], -which(names(data)==forest_predictor$y)]
 
   skip_if_not_mac()
   expect_equal(all((pdp.rank(forest_interpret, rank.method = 'Variance',
-                            new.obs = new.obs2)
-                    - c(0.0257, 0.1215, 0.0632, 0.0325)) < 0.001), TRUE)
+                            pdp.weight.obs = new.obs2)
+                    - c(0.0032, 0.0366, 0.0181, 0)) < 0.001), TRUE)
 
   skip_if_not_mac()
   expect_equal(all((pdp.rank(forest_interpret, rank.method = 'FO.Derivative',
-                             new.obs = new.obs2)
-                    - c(0.1027, 0.2607, 0.2830, -1)) < 0.001), TRUE)
+                             pdp.weight.obs = new.obs2)
+                    - c(0.0582, 0.2368, 0.2586, -1)) < 0.001), TRUE)
 
-  ### START NEED CHANGE ###
-  context("Check feature based PDP ranking methodologies")
+  context("Check weighted PDP ranking methodologies")
   skip_if_not_mac()
-  expect_equal(names(sort(pdp.rank(forest_interpret, new.obs = new.obs1,
-                                   feature = 'Petal.Width'))),
-               c("Sepal.Width", "Species", "Petal.Width", "Petal.Length"))
-
-  skip_if_not_mac()
-  expect_equal(names(sort(pdp.rank(forest_interpret, rank.method = 'FO.Derivative',
-                                   new.obs = new.obs1, feature = 'Petal.Width'))),
-               c("Species", "Sepal.Width", "Petal.Width", "Petal.Length"))
+  expect_equal(names(sort(pdp.rank(forest_interpret, pdp.weight.obs = new.obs1,
+                                   weight.pdp = TRUE))),
+               c("Species", "Sepal.Width", "Petal.Length", "Petal.Width"))
 
   skip_if_not_mac()
-  expect_equal(all((pdp.rank(forest_interpret, rank.method = 'Variance',
-                             new.obs = new.obs2, feature = 'Species')
-                    - c(0.0256, 0.1257, 0.0579, 0.0303)) < 0.001), TRUE)
+  expect_equal(names(sort(pdp.rank(forest_interpret, rank.method = 'FO.Derivative', pdp.weight.obs = new.obs1,
+                                   weight.pdp = TRUE))),
+               c("Species", "Petal.Length", "Sepal.Width", "Petal.Width"))
 
   skip_if_not_mac()
-  expect_equal(all((pdp.rank(forest_interpret, rank.method = 'FO.Derivative',
-                             new.obs = new.obs2, feature = 'Species')
-                    - c(0.1048, 0.2755, 0.2711, -1)) < 0.001), TRUE)
+  expect_equal(all((pdp.rank(forest_interpret, pdp.weight.obs = new.obs1,
+                             weight.pdp = TRUE)
+                    - c(0.0003, 0.0004, 0.0015, 0)) < 0.001), TRUE)
 
   skip_if_not_mac()
-  expect_equal(all((pdp.rank(forest_interpret, rank.method = 'Variance',
-                             new.obs = new.obs2, feature = 'Petal.Width')
-                    - c(0.0280, 0.1328, 0.0726, 0.0354)) < 0.001), TRUE)
+  expect_equal(all((pdp.rank(forest_interpret, pdp.weight.obs = new.obs2, rank.method = 'FO.Derivative',
+                             weight.pdp = TRUE)
+                    - c(0.0539, 0.2554, 0.2830, -1)) < 0.001), TRUE)
+
+  context("Check PDP rankings subject to different quantiles")
+  skip_if_not_mac()
+  expect_equal(all((pdp.rank(forest_interpret, pdp.weight.obs = new.obs2, rank.method = 'FO.Derivative',
+                             weight.pdp = TRUE, quantile.dist = 40)
+                    - c( 0.1027, 0.2607, 0.2830, -1)) < 0.001), TRUE)
 
   skip_if_not_mac()
-  expect_equal(all((pdp.rank(forest_interpret, rank.method = 'FO.Derivative',
-                             new.obs = new.obs2, feature = 'Petal.Width')
-                    - c(0.1084, 0.2846, 0.2945, -1)) < 0.001), TRUE)
+  expect_equal(all((pdp.rank(forest_interpret, pdp.weight.obs = new.obs2,
+                             weight.pdp = TRUE, quantile.dist = 60)
+                    - c( 0.0257, 0.1215, 0.0632, 0)) < 0.001), TRUE)
 
-  skip_if_not_mac()
-  expect_equal(all((pdp.rank(forest_interpret, rank.method = 'Variance',
-                             new.obs = new.obs2, feature = 'Petal.Width', qt = 20)
-                    - c(0.0270, 0.1306, 0.0582, 0.0306)) < 0.001), TRUE)
-
-  skip_if_not_mac()
-  expect_equal(all((pdp.rank(forest_interpret, rank.method = 'FO.Derivative',
-                             new.obs = new.obs2, feature = 'Petal.Width', qt = 40)
-                    - c(0.1077, 0.2860, 0.2593, -1)) < 0.001), TRUE)
-
-  ### END NEED CHANGE ###
 
   context("Check PDP ranking stopping mechanisms")
   off.obs <- data[test_ind[1], -c(2)]
@@ -117,26 +106,26 @@ test_that("Tests if the PDP ranking function is working", {
   expect_error(pdp.rank(linear),
                "Object given is not of the interpreter class.",
                fixed = TRUE)
-  expect_error(pdp.rank(forest_interpret, new.obs = as.matrix(new.obs1)),
-               "New Observation is not in valid form. Please convert new.obs to a data frame.",
+  expect_error(pdp.rank(forest_interpret, pdp.weight.obs = as.matrix(new.obs1)),
+               "New Observation is not in valid form. Please convert pdp.weight.obs to a data frame.",
                fixed = TRUE)
-  expect_error(pdp.rank(forest_interpret, new.obs = two.obs),
+  expect_error(pdp.rank(forest_interpret, pdp.weight.obs = two.obs),
                "Please reduce data frame to one row (i.e. one new observation).",
                fixed = TRUE)
-  expect_error(pdp.rank(linear_interpret, new.obs = new.obs1),
+  expect_error(pdp.rank(forest_interpret, pdp.weight.obs = new.obs1, weight.pdp = 100),
+               "weight.pdp must be TRUE or FALSE.",
+               fixed = TRUE)
+  expect_error(pdp.rank(forest_interpret, pdp.weight.obs = new.obs1, quantile.dist = -100),
+               "Please set quantile.dist to a value greater than or equal to 0.",
+               fixed = TRUE)
+  expect_error(pdp.rank(linear_interpret, pdp.weight.obs = new.obs1),
                "Weighted PDP option via new observation is not compatible with non-forestry objects.",
                fixed = TRUE)
-  expect_error(pdp.rank(forest_interpret, new.obs = withy.obs),
-               "Please set new.obs to the correct number of features that of the training data.",
+  expect_error(pdp.rank(forest_interpret, pdp.weight.obs = withy.obs),
+               "Please set pdp.weight.obs to the correct number of features that of the training data.",
                fixed = TRUE)
-  expect_error(pdp.rank(forest_interpret, new.obs = off.obs),
-               "Please set the names of the new.obs vector to that of the training data.",
-               fixed = TRUE)
-  expect_error(pdp.rank(forest_interpret, feature = 'Petal.Width'),
-               "Feature based PDP ranking method requires a new observation.",
-               fixed = TRUE)
-  expect_error(pdp.rank(forest_interpret, new.obs = new.obs1, feature = 'species'),
-               "Feature based PDP ranking method requires a valid feature.",
+  expect_error(pdp.rank(forest_interpret, pdp.weight.obs = off.obs),
+               "Please set the names of the pdp.weight.obs vector to that of the training data.",
                fixed = TRUE)
   expect_error(pdp.rank(samples_interpret),
                "Please set the \'samples\' parameter in the Interpreter object passed in as pdp.rank's \'object\' parameter as the number of rows in the train data.",
