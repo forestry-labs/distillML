@@ -1277,7 +1277,11 @@ pdp.rank = function(object,
         } else {
           idx <- rep(TRUE, length(object$grid.points[[feat]]))
         }
-        curr_pdp <- as.matrix(design[[feat]][idx, -1]) %*% obs.weight
+        if (rank.method %in% c('FO.Derivative')) {
+          curr_pdp <- as.matrix(design[[feat]][idx, -1][c(1, sum(idx)), ]) %*% obs.weight
+        } else {
+          curr_pdp <- as.matrix(design[[feat]][idx, -1]) %*% obs.weight
+        }
         score <- chosen_methodol(curr_pdp)
         pdp_scores <- append(pdp_scores, score)
       }

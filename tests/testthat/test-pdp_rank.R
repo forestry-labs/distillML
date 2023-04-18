@@ -43,7 +43,7 @@ test_that("Tests if the PDP ranking function is working", {
   skip_if_not_mac()
   expect_equal(names(sort(pdp.rank(forest_interpret, rank.method = 'FO.Derivative',
                                    pdp.weight.obs = new.obs1))),
-               c("Species", "Petal.Length", "Sepal.Width", "Petal.Width"))
+               c("Species", "Sepal.Width", "Petal.Length", "Petal.Width"))
 
   new.obs2 <- data[test_ind[2], -which(names(data)==forest_predictor$y)]
 
@@ -55,7 +55,7 @@ test_that("Tests if the PDP ranking function is working", {
   skip_if_not_mac()
   expect_equal(all((pdp.rank(forest_interpret, rank.method = 'FO.Derivative',
                              pdp.weight.obs = new.obs2)
-                    - c(0.0582, 0.2368, 0.2586, -1)) < 0.001), TRUE)
+                    - c(0.1893, 0.6418, 0.4071, -1)) < 0.001), TRUE)
 
   context("Check weighted PDP ranking methodologies")
   skip_if_not_mac()
@@ -66,7 +66,7 @@ test_that("Tests if the PDP ranking function is working", {
   skip_if_not_mac()
   expect_equal(names(sort(pdp.rank(forest_interpret, rank.method = 'FO.Derivative', pdp.weight.obs = new.obs1,
                                    weight.pdp = TRUE))),
-               c("Species", "Petal.Length", "Sepal.Width", "Petal.Width"))
+               c("Species", "Sepal.Width", "Petal.Length", "Petal.Width"))
 
   skip_if_not_mac()
   expect_equal(all((pdp.rank(forest_interpret, pdp.weight.obs = new.obs1,
@@ -76,13 +76,13 @@ test_that("Tests if the PDP ranking function is working", {
   skip_if_not_mac()
   expect_equal(all((pdp.rank(forest_interpret, pdp.weight.obs = new.obs2, rank.method = 'FO.Derivative',
                              weight.pdp = TRUE)
-                    - c(0.0539, 0.2554, 0.2830, -1)) < 0.001), TRUE)
+                    - c(0.1757, 0.6200, 0.4685, -1)) < 0.001), TRUE)
 
   context("Check PDP rankings subject to different quantiles")
   skip_if_not_mac()
   expect_equal(all((pdp.rank(forest_interpret, pdp.weight.obs = new.obs2, rank.method = 'FO.Derivative',
                              weight.pdp = TRUE, quantile.dist = 40)
-                    - c( 0.1027, 0.2607, 0.2830, -1)) < 0.001), TRUE)
+                    - c(0.4277, 0.9170, 0.5441, -1)) < 0.001), TRUE)
 
   skip_if_not_mac()
   expect_equal(all((pdp.rank(forest_interpret, pdp.weight.obs = new.obs2,
