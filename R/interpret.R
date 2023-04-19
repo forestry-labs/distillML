@@ -53,6 +53,7 @@
 #'              1-D PDP plots, 2-D PDP plots, and grid points for building the distilled model.
 #'              This saves the uncentered calculations.
 #' @field ale.grid A list that caches the saved predictions for the ALE plots
+#'
 #' @examples
 #' library(distillML)
 #' library(Rforestry)
@@ -88,7 +89,6 @@ Interpreter <- R6::R6Class(
     grid.size = NULL,
     saved = NULL,
     ale.grid = NULL,
-
     # initialize an interpreter object
     #' @param predictor The Predictor object that contains the model that the user wants
     #'        to query. This is the only parameter that is required to initialize an

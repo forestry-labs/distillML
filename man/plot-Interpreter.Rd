@@ -59,7 +59,7 @@ or "normal". The default is "normal".}
 default, this is twice the number of grid points for that
 feature.}
 
-\item{...}{Additiional parameters to pass to the plot function}
+\item{...}{Additional parameters to pass to the plot function}
 }
 \value{
 A list of plots with 1-d features and 2-d features. For 2-d features with

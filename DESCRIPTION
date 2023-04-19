@@ -1,7 +1,7 @@
 Package: distillML
 Type: Package
 Title: Model Distillation and Interpretability Methods for Machine Learning Models
-Version: 0.1.0.13
+Version: 0.1.0.14
 Authors@R: c(
     person("Brian", "Cho", role = "aut"),
     person("Theo", "Saarinen", role = c("aut","cre"), email = "theo_s@berkeley.edu"),

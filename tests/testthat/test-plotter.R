@@ -10,7 +10,6 @@ test_that("Tests that the plotting functions are working", {
   test_ind <- sample(1:nrow(data), nrow(data)%/%5)
   train_reg <- data[-test_ind,]
   test_reg <- data[test_ind,]
-
   # Train a random forest on the data set
   forest <- forestry(x=train_reg[,-1],
                      y=train_reg[,1])
